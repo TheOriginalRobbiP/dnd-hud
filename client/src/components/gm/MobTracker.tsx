@@ -108,7 +108,7 @@ export function MobTracker({ mobs, currentFloor, send }: MobTrackerProps) {
           currentFloor={currentFloor}
           onClose={() => setShowBestiary(false)}
           onSpawn={(mob) => {
-            send({ type: 'mob_add', mob: { id: crypto.randomUUID(), ...mob } })
+            send({ type: 'mob_add', mob: { id: crypto.randomUUID(), ...mob, effortType: mob.effortType as 'basic' | 'weapon' | 'magic' } })
           }}
         />
       )}

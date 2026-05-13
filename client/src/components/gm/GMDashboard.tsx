@@ -14,7 +14,6 @@ interface GMDashboardProps {
 export function GMDashboard({ state, send }: GMDashboardProps) {
   const [mobilePanel, setMobilePanel] = useState<'room' | 'log'>('room')
   const [dmMessages, setDmMessages] = useState<DirectMessage[]>([])
-  const handleDM = useCallback((dm: DirectMessage) => setDmMessages(prev => [...prev, dm]), [])
   const handleDMRead = useCallback(() => setDmMessages(prev => prev.map(m => ({ ...m, read: true }))), [])
 
   return (

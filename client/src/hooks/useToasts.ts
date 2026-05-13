@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import type { Toast } from './ToastOverlay'
+import type { Toast } from '../components/shared/ToastOverlay'
 
 export function useToasts() {
   const [toasts, setToasts] = useState<Toast[]>([])

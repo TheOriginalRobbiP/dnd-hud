@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import type { WSMessage } from '../../types'
 
 interface MobTemplate {
   id: string

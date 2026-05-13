@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Character, LootBox as LootBoxType, WSMessage, InventoryItem } from '../../types'
+import type { Character, LootBox as LootBoxType, WSMessage } from '../../types'
 import { LootBox } from './LootBox'
 
 const SLOTS = [

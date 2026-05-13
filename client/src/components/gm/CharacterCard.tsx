@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import type { Character, WSMessage, LootBox } from '../../types'
 import { HPBar } from '../shared/HPBar'
 import { getCrawlerPortrait } from '../../utils/portraits'
@@ -29,11 +28,12 @@ export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign,
     <div className={`border ${borderCol} bg-hud-panel p-4 min-w-[220px] flex flex-col gap-2 transition-colors`}>
       {/* Portrait + Header */}
       {portrait && (
-        <div className="relative w-full h-28 overflow-hidden border border-hud-border mb-1">
+        <div className="relative w-full h-36 overflow-hidden border border-hud-border mb-1">
           <img
             src={portrait}
             alt={crawlerName}
-            className={`w-full h-full object-cover object-top transition-all duration-300 ${!isAlive ? 'grayscale opacity-40' : ''}`}
+            className={`w-full h-full object-cover object-center transition-all duration-300 ${!isAlive ? 'grayscale opacity-40' : ''}`}
+            style={{ objectPosition: '50% 15%' }}
           />
           {!isAlive && (
             <div className="absolute inset-0 flex items-center justify-center">
