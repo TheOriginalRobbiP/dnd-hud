@@ -4,9 +4,10 @@ import { useState } from 'react'
 interface PartySidebarProps {
   characters: Character[]
   myCharId: string
+  onInspect?: (charId: string) => void
 }
 
-export function PartySidebar({ characters, myCharId }: PartySidebarProps) {
+export function PartySidebar({ characters, myCharId, onInspect }: PartySidebarProps) {
   const [open, setOpen] = useState(false)
   const others = characters.filter(c => c.id !== myCharId)
   if (others.length === 0) return null
@@ -25,10 +26,13 @@ export function PartySidebar({ characters, myCharId }: PartySidebarProps) {
             const pct = c.maxHp > 0 ? Math.max(0, c.hp / c.maxHp) : 0
             const col = pct > 0.5 ? 'var(--hp-high)' : pct > 0.25 ? 'var(--hp-mid)' : 'var(--hp-low)'
             return (
-              <div key={c.id}>
+              <div key={c.id}
+                onClick={() => onInspect?.(c.id)}
+                className={onInspect ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}>
                 <div className="flex justify-between font-hud text-sm mb-1">
                   <span className={c.isAlive ? 'text-hud-text' : 'text-hp-low'}>
                     {c.isAlive ? c.crawlerName : `☠ ${c.crawlerName}`}
+                    {onInspect && <span className="text-hud-muted text-xs ml-2">↗</span>}
                   </span>
                   <span className="text-hud-muted">{c.hp}/{c.maxHp}</span>
                 </div>

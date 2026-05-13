@@ -75,7 +75,7 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead }: Play
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {tab === 'status' && <StatusTab character={character} floor={state.floor} allCharacters={state.characters} />}
+        {tab === 'status' && <StatusTab character={character} floor={state.floor} allCharacters={state.characters} onInspect={setInspectCharId} />}
         {tab === 'skills' && <SkillsTab character={character} />}
         {tab === 'inventory' && <InventoryTab
           character={character}
@@ -86,7 +86,7 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead }: Play
         {tab === 'fame' && <FameTab character={character} floorNumber={state.floor.floorNumber} />}
       </div>
       <ToastOverlay toasts={toasts} onDismiss={dismiss} />
-
+      {inspectChar && <InspectModal character={inspectChar} onClose={() => setInspectCharId(null)} hideNotes />}
     </div>
   )
 }

@@ -15,9 +15,10 @@ interface StatusTabProps {
   character: Character
   floor: FloorState
   allCharacters: Character[]
+  onInspect?: (charId: string) => void
 }
 
-export function StatusTab({ character, floor, allCharacters }: StatusTabProps) {
+export function StatusTab({ character, floor, allCharacters, onInspect }: StatusTabProps) {
   const { crawlerName, hp, maxHp, mp, maxMp, stats, statusEffects } = character
   const [timerSecs, setTimerSecs] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -92,7 +93,7 @@ export function StatusTab({ character, floor, allCharacters }: StatusTabProps) {
       </div>
 
       {/* Party sidebar */}
-      <PartySidebar characters={allCharacters} myCharId={character.id} />
+      <PartySidebar characters={allCharacters} myCharId={character.id} onInspect={onInspect} />
 
       {/* Status effects */}
       {statusEffects.length > 0 && (

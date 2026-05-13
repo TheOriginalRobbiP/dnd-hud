@@ -65,7 +65,7 @@ function App() {
   )
 
   const dmRead = useCallback(() => onDMRead(), [onDMRead])
-  return <>{connBadge}<PlayerHUD character={character} state={state} send={send} /><ToastFeed toasts={toasts} onDismiss={dismissToast} /></>
+  return <>{connBadge}<PlayerHUD character={character} state={state} send={send} dmMessages={dmMessages} onDMRead={onDMRead} /><ToastFeed toasts={toasts} onDismiss={dismissToast} /></>
 }
 
 export default App
