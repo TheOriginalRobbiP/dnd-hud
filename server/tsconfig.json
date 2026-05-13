@@ -9,5 +9,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "src/db/items-seed.ts",
+    "src/db/mobs-seed.ts",
+    "src/db/clear-items.ts"
+  ]
 }

@@ -3,11 +3,6 @@ import { mobTemplates } from './schema.js'
 import * as dotenv from 'dotenv'
 dotenv.config()
 
-import { db } from './client.js'
-import { mobTemplates } from './schema.js'
-import * as dotenv from 'dotenv'
-dotenv.config()
-
 const MOBS = [
 
   // ════════════════════════════════════════

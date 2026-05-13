@@ -3,11 +3,6 @@ import { items } from './schema.js'
 import * as dotenv from 'dotenv'
 dotenv.config()
 
-import { db } from './client.js'
-import { items } from './schema.js'
-import * as dotenv from 'dotenv'
-dotenv.config()
-
 const ITEMS = [
   // ── FLOOR 1 COMMONS ──────────────────────────────────────────
   // Weapons
