@@ -1,23 +1,45 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
-import type { WSMessage, AppState } from '../types'
+import type { WSMessage, AppState, UserRole } from '../types'
 
 const WS_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`
 const RECONNECT_MS = 2000
 
-export function useWebSocket(onAnnouncement?: (label: string, text: string) => void) {
+export interface DirectMessage {
+  fromCharId: string | 'gm'
+  fromName: string
+  text: string
+  timestamp: number
+  read: boolean
+}
+
+interface UseWebSocketOptions {
+  role?: UserRole
+  onAnnouncement?: (label: string, text: string) => void
+  onDirectMessage?: (dm: DirectMessage) => void
+}
+
+export function useWebSocket({ role, onAnnouncement, onDirectMessage }: UseWebSocketOptions = {}) {
   const wsRef = useRef<WebSocket | null>(null)
   const [state, setState] = useState<AppState | null>(null)
   const [connected, setConnected] = useState(false)
-  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const announcementRef = useRef(onAnnouncement)
+  const dmRef = useRef(onDirectMessage)
+  const roleRef = useRef(role)
   announcementRef.current = onAnnouncement
+  dmRef.current = onDirectMessage
+  roleRef.current = role
 
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return
     const ws = new WebSocket(WS_URL)
     wsRef.current = ws
 
-    ws.onopen = () => { setConnected(true); console.log('[WS] Connected') }
+    ws.onopen = () => {
+      setConnected(true)
+      if (roleRef.current) {
+        ws.send(JSON.stringify({ type: 'register', role: roleRef.current }))
+      }
+    }
 
     ws.onmessage = (evt) => {
       try {
@@ -25,14 +47,17 @@ export function useWebSocket(onAnnouncement?: (label: string, text: string) => v
         if (msg.type === 'full_state_sync') { setState(msg.state); return }
         if (msg.type === 'pong') return
         if (msg.type === 'announcement') { announcementRef.current?.(msg.label, msg.text) }
+        if (msg.type === 'direct_message') {
+          dmRef.current?.({ ...msg, read: false })
+          return
+        }
         setState(prev => prev ? applyPatch(prev, msg) : prev)
       } catch (err) { console.error('[WS] Parse error:', err) }
     }
 
     ws.onclose = () => {
       setConnected(false)
-      console.log('[WS] Disconnected — reconnecting')
-      reconnectTimer.current = setTimeout(connect, RECONNECT_MS)
+      setTimeout(connect, RECONNECT_MS)
     }
 
     ws.onerror = () => ws.close()
@@ -40,8 +65,14 @@ export function useWebSocket(onAnnouncement?: (label: string, text: string) => v
 
   useEffect(() => {
     connect()
-    return () => { wsRef.current?.close(); if (reconnectTimer.current) clearTimeout(reconnectTimer.current) }
+    return () => { wsRef.current?.close() }
   }, [connect])
+
+  useEffect(() => {
+    if (role && wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'register', role }))
+    }
+  }, [role])
 
   const send = useCallback((msg: WSMessage) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -62,13 +93,7 @@ function applyPatch(state: AppState, msg: WSMessage): AppState {
     case 'viewer_update':
       return { ...state, characters: state.characters.map(c => c.id === msg.charId ? { ...c, viewerCount: msg.viewerCount } : c) }
     case 'death':
-      return {
-        ...state,
-        characters: state.characters.map(c => c.id === msg.charId
-          ? { ...c, isAlive: false, viewerCount: c.viewerCount + Math.floor(Math.random() * 1500 + 500) }
-          : c
-        )
-      }
+      return { ...state, characters: state.characters.map(c => c.id === msg.charId ? { ...c, isAlive: false, viewerCount: c.viewerCount + Math.floor(Math.random() * 1500 + 500) } : c) }
     case 'revive':
       return { ...state, characters: state.characters.map(c => c.id === msg.charId ? { ...c, isAlive: true, hp: msg.hp } : c) }
     case 'room_target_update':

@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import type { Character, AppState, WSMessage } from '../../types'
 import { ToastOverlay } from '../shared/ToastOverlay'
+import { DMPanel } from '../shared/DMPanel'
+import { InspectModal } from '../shared/InspectModal'
+import type { DirectMessage } from '../../hooks/useWebSocket'
 import { useToasts } from '../../hooks/useToasts'
 import { StatusTab } from './StatusTab'
 import { SkillsTab } from './SkillsTab'
@@ -19,10 +22,13 @@ interface PlayerHUDProps {
   character: Character
   state: AppState
   send: (msg: WSMessage) => void
+  dmMessages: DirectMessage[]
+  onDMRead: () => void
 }
 
-export function PlayerHUD({ character, state, send }: PlayerHUDProps) {
+export function PlayerHUD({ character, state, send, dmMessages, onDMRead }: PlayerHUDProps) {
   const [tab, setTab] = useState<Tab>('status')
+  const [inspectCharId, setInspectCharId] = useState<string | null>(null)
   const { toasts, addToast, dismiss } = useToasts()
   const prevGmLogLen = useRef(0)
 
@@ -40,6 +46,8 @@ export function PlayerHUD({ character, state, send }: PlayerHUDProps) {
     prevGmLogLen.current = state.gmLog.length
   }, [state.gmLog, addToast])
 
+  const inspectChar = inspectCharId ? state.characters.find(c => c.id === inspectCharId) ?? null : null
+
   return (
 
     <div className="h-screen flex flex-col bg-hud-bg overflow-hidden">
@@ -47,8 +55,11 @@ export function PlayerHUD({ character, state, send }: PlayerHUDProps) {
         <div className={`font-hud tracking-widest ${character.isAlive ? 'text-hud-accent' : 'text-red-500'}`}>
           {character.isAlive ? character.crawlerName.toUpperCase() : `☠ ${character.crawlerName.toUpperCase()}`}
         </div>
-        <div className="font-hud text-sm text-hud-muted">
-          HP {character.hp}/{character.maxHp} · TARGET {state.floor.roomTarget}
+        <div className="flex items-center gap-3">
+          <DMPanel mode="player" myCharId={character.id} myName={character.crawlerName} messages={dmMessages} send={send} onRead={onDMRead} />
+          <div className="font-hud text-sm text-hud-muted">
+            HP {character.hp}/{character.maxHp} · TARGET {state.floor.roomTarget}
+          </div>
         </div>
       </div>
 
@@ -75,6 +86,7 @@ export function PlayerHUD({ character, state, send }: PlayerHUDProps) {
         {tab === 'fame' && <FameTab character={character} floorNumber={state.floor.floorNumber} />}
       </div>
       <ToastOverlay toasts={toasts} onDismiss={dismiss} />
+
     </div>
   )
 }

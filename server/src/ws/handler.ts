@@ -1,6 +1,6 @@
 import { WebSocket } from 'ws'
 import type { WSMessage } from '../types/index.js'
-import { addClient, removeClient, broadcast } from './broadcast.js'
+import { addClient, removeClient, broadcast, registerRole, sendToRole, sendToGM } from './broadcast.js'
 import { getFullState, applyMessage } from '../db/state.js'
 
 export function handleWsConnection(ws: WebSocket) {
@@ -21,6 +21,23 @@ export function handleWsConnection(ws: WebSocket) {
 
       if (message.type === 'ping') {
         ws.send(JSON.stringify({ type: 'pong' }))
+        return
+      }
+
+      // Client registering its role — store in map, don't broadcast
+      if (message.type === 'register') {
+        registerRole(ws, message.role)
+        return
+      }
+
+      // Direct message — route to specific recipient only (don't broadcast to all)
+      if (message.type === 'direct_message') {
+        const { toCharId } = message
+        if (toCharId === 'gm') {
+          sendToGM(message)
+        } else {
+          sendToRole(`player:${toCharId}`, message)
+        }
         return
       }
 

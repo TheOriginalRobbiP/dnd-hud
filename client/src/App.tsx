@@ -5,6 +5,7 @@ import { GMDashboard } from './components/gm/GMDashboard'
 import { PlayerHUD } from './components/player/PlayerHUD'
 import { ToastFeed } from './components/shared/ToastFeed'
 import type { UserRole } from './types'
+import type { DirectMessage } from './hooks/useWebSocket'
 import type { Toast } from './components/shared/ToastFeed'
 
 const ROLE_KEY = 'hud:role'
@@ -14,6 +15,10 @@ function App() {
     return (localStorage.getItem(ROLE_KEY) as UserRole | null)
   })
   const [toasts, setToasts] = useState<Toast[]>([])
+  const [dmMessages, setDmMessages] = useState<DirectMessage[]>([])
+
+  const onDM = useCallback((dm: DirectMessage) => setDmMessages(prev => [...prev, dm]), [])
+  const onDMRead = useCallback(() => setDmMessages(prev => prev.map(m => ({ ...m, read: true }))), [])
 
   const onAnnouncement = useCallback((label: string, text: string) => {
     setToasts(prev => {
@@ -22,7 +27,7 @@ function App() {
     })
   }, [])
 
-  const { state, connected, send } = useWebSocket(onAnnouncement)
+  const { state, connected, send } = useWebSocket({ role: role ?? undefined, onAnnouncement, onDirectMessage: onDM })
 
   const dismissToast = (id: string) => setToasts(p => p.filter(t => t.id !== id))
 
@@ -59,6 +64,7 @@ function App() {
     </div>
   )
 
+  const dmRead = useCallback(() => onDMRead(), [onDMRead])
   return <>{connBadge}<PlayerHUD character={character} state={state} send={send} /><ToastFeed toasts={toasts} onDismiss={dismissToast} /></>
 }
 

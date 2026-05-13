@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import type { DirectMessage } from '../../hooks/useWebSocket'
 import type { AppState, WSMessage } from '../../types'
 import { CharacterBar } from './CharacterBar'
 import { RoomPanel } from './RoomPanel'
@@ -12,6 +13,9 @@ interface GMDashboardProps {
 
 export function GMDashboard({ state, send }: GMDashboardProps) {
   const [mobilePanel, setMobilePanel] = useState<'room' | 'log'>('room')
+  const [dmMessages, setDmMessages] = useState<DirectMessage[]>([])
+  const handleDM = useCallback((dm: DirectMessage) => setDmMessages(prev => [...prev, dm]), [])
+  const handleDMRead = useCallback(() => setDmMessages(prev => prev.map(m => ({ ...m, read: true }))), [])
 
   return (
     <div className="h-screen flex flex-col bg-hud-bg overflow-hidden">
@@ -38,7 +42,7 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
       </div>
 
       {/* Character bar */}
-      <CharacterBar characters={state.characters} lootQueue={state.lootQueue} send={send} />
+      <CharacterBar characters={state.characters} lootQueue={state.lootQueue} send={send} dmMessages={dmMessages} onDMRead={handleDMRead} />
 
       {/* Main panels — side by side on desktop, tabbed on mobile */}
       <div className="flex flex-1 overflow-hidden">

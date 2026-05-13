@@ -9,9 +9,10 @@ interface CharacterCardProps {
   onLootAssign: (charId: string) => void
   onStatusEffects: (charId: string) => void
   onEdit: (charId: string) => void
+  onInspect: (charId: string) => void
 }
 
-export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign, onStatusEffects, onEdit }: CharacterCardProps) {
+export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign, onStatusEffects, onEdit, onInspect }: CharacterCardProps) {
   const { id, crawlerName, playerName, hp, maxHp, mp, maxMp, isAlive, viewerCount, statusEffects } = character
 
   const adjust = (delta: number) => {
@@ -102,6 +103,11 @@ export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign,
           aria-label="Edit character"
           className="flex-1 border border-hud-border text-sm font-hud py-2 hover:border-hud-accent hover:text-hud-accent transition-colors text-hud-muted">
           ✎
+        </button>
+        <button onClick={() => onInspect(id)}
+          aria-label="Inspect character"
+          className="flex-1 border border-hud-border text-sm font-hud py-2 hover:border-cyan-700 hover:text-cyan-400 transition-colors text-hud-muted">
+          🔍
         </button>
       </div>
     </div>

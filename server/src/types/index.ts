@@ -188,3 +188,5 @@ export type WSMessage =
   | { type: 'full_state_sync'; state: AppState }  // sent on client connect
   | { type: 'ping' }
   | { type: 'pong' }
+  | { type: 'register'; role: UserRole }           // client identifies itself on connect
+  | { type: 'direct_message'; toCharId: string | 'gm'; fromCharId: string | 'gm'; fromName: string; text: string; timestamp: number }
