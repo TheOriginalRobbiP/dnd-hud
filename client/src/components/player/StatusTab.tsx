@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import type { Character, FloorState } from '../../types'
 import { HPBar } from '../shared/HPBar'
 import { PartySidebar } from './PartySidebar'
+import { getCrawlerPortrait } from '../../utils/portraits'
 
 const STATS = ['STR','DEX','CON','INT','CHA'] as const
 
@@ -20,6 +21,7 @@ interface StatusTabProps {
 
 export function StatusTab({ character, floor, allCharacters, onInspect }: StatusTabProps) {
   const { crawlerName, hp, maxHp, mp, maxMp, stats, statusEffects, skills } = character
+  const portrait = getCrawlerPortrait(crawlerName)
   const [timerSecs, setTimerSecs] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -63,25 +65,32 @@ export function StatusTab({ character, floor, allCharacters, onInspect }: Status
           )}
         </div>
 
-        {/* HP bar — big and prominent */}
-        <div>
-          <div className="flex justify-between font-hud text-xs text-hud-muted mb-1">
-            <span>HEALTH</span><span>{hp} / {maxHp}</span>
+        {/* HP bar — with portrait if available */}
+        <div className="flex gap-3 items-start">
+          {portrait && (
+            <div className="flex-shrink-0 w-16 h-20 border border-hud-border overflow-hidden">
+              <img src={portrait} alt={crawlerName} className="w-full h-full object-cover object-top" />
+            </div>
+          )}
+          <div className="flex-1">
+            <div className="flex justify-between font-hud text-xs text-hud-muted mb-1">
+              <span>HEALTH</span><span>{hp} / {maxHp}</span>
+            </div>
+            <HPBar current={hp} max={maxHp} className="h-5" />
+            {maxMp > 0 && (
+              <div className="mt-2">
+                <div className="flex justify-between font-hud text-xs text-hud-muted mb-1">
+                  <span>MANA</span><span>{mp} / {maxMp}</span>
+                </div>
+                <div className="w-full h-3 bg-hud-border">
+                  <div className="h-full bg-cyan-500 transition-all duration-300" style={{ width: `${(mp/maxMp)*100}%` }} />
+                </div>
+              </div>
+            )}
           </div>
-          <HPBar current={hp} max={maxHp} className="h-5" />
         </div>
 
-        {/* MP bar — only if has MP */}
-        {maxMp > 0 && (
-          <div>
-            <div className="flex justify-between font-hud text-xs text-hud-muted mb-1">
-              <span>MANA</span><span>{mp} / {maxMp}</span>
-            </div>
-            <div className="w-full h-3 bg-hud-border">
-              <div className="h-full bg-cyan-500 transition-all duration-300" style={{ width: `${(mp/maxMp)*100}%` }} />
-            </div>
-          </div>
-        )}
+        {/* MP bar — moved into portrait block above */}
 
         {/* Active status effects — inline chips */}
         {statusEffects.length > 0 && (

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Character, WSMessage, LootBox } from '../../types'
 import { HPBar } from '../shared/HPBar'
+import { getCrawlerPortrait } from '../../utils/portraits'
 
 interface CharacterCardProps {
   character: Character
@@ -22,15 +23,37 @@ export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign,
   }
 
   const borderCol = isAlive ? 'border-hud-border hover:border-hud-accent' : 'border-red-900'
+  const portrait = getCrawlerPortrait(crawlerName)
 
   return (
     <div className={`border ${borderCol} bg-hud-panel p-4 min-w-[220px] flex flex-col gap-2 transition-colors`}>
-      {/* Header */}
+      {/* Portrait + Header */}
+      {portrait && (
+        <div className="relative w-full h-28 overflow-hidden border border-hud-border mb-1">
+          <img
+            src={portrait}
+            alt={crawlerName}
+            className={`w-full h-full object-cover object-top transition-all duration-300 ${!isAlive ? 'grayscale opacity-40' : ''}`}
+          />
+          {!isAlive && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-4xl">☠</span>
+            </div>
+          )}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-hud-bg/90 to-transparent px-2 py-1">
+            <div className={`font-hud text-xs tracking-widest ${isAlive ? 'text-hud-accent' : 'text-red-400'}`}>
+              {crawlerName.toUpperCase()}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex justify-between items-start">
         <div>
-          <div className={`font-hud text-sm tracking-wider ${isAlive ? 'text-hud-accent' : 'text-red-500'}`}>
-            {isAlive ? crawlerName.toUpperCase() : `☠ ${crawlerName.toUpperCase()}`}
-          </div>
+          {!portrait && (
+            <div className={`font-hud text-sm tracking-wider ${isAlive ? 'text-hud-accent' : 'text-red-500'}`}>
+              {isAlive ? crawlerName.toUpperCase() : `☠ ${crawlerName.toUpperCase()}`}
+            </div>
+          )}
           <div className="font-hud text-sm text-hud-muted">{playerName}</div>
         </div>
         <div className="font-hud text-sm text-hud-muted">👁 {viewerCount.toLocaleString()}</div>

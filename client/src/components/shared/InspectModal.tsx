@@ -1,4 +1,5 @@
 import type { Character } from '../../types'
+import { getCrawlerPortrait } from '../../utils/portraits'
 
 const EFFORT_COLOURS: Record<string, string> = {
   basic:   'border-hud-border text-hud-muted',
@@ -23,6 +24,7 @@ interface InspectModalProps {
 
 export function InspectModal({ character, onClose, hideNotes = false }: InspectModalProps) {
   const { crawlerName, playerName, hp, maxHp, mp, maxMp, stats, skills, equipment, inventory, notes } = character
+  const portrait = getCrawlerPortrait(crawlerName)
 
   const equippedSlots = SLOTS.filter(([key]) => (equipment as any)[key] !== null && (equipment as any)[key] !== undefined)
   const carriedItems = inventory.filter(item => !item.isEquipped)
@@ -34,14 +36,19 @@ export function InspectModal({ character, onClose, hideNotes = false }: InspectM
         style={{ maxHeight: '90vh' }}
         onClick={e => e.stopPropagation()}>
 
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-hud-border px-5 py-3 flex-shrink-0">
-          <div>
+        {/* Header — portrait + name */}
+        <div className="flex items-center justify-between border-b border-hud-border flex-shrink-0">
+          {portrait && (
+            <div className="w-20 h-20 flex-shrink-0 overflow-hidden border-r border-hud-border">
+              <img src={portrait} alt={crawlerName} className="w-full h-full object-cover object-top" />
+            </div>
+          )}
+          <div className="flex-1 px-4 py-3">
             <div className="font-hud text-hud-accent tracking-widest">{crawlerName.toUpperCase()}</div>
             <div className="font-hud text-sm text-hud-muted">{playerName} · HP {hp}/{maxHp}{maxMp > 0 ? ` · MP ${mp}/${maxMp}` : ''}</div>
           </div>
           <button onClick={onClose} aria-label="Close"
-            className="font-hud text-hud-muted hover:text-hp-low px-2 text-lg">✕</button>
+            className="font-hud text-hud-muted hover:text-hp-low px-3 py-3 text-lg self-start">✕</button>
         </div>
 
         <div className="overflow-y-auto flex-1 p-5 flex flex-col gap-5">
