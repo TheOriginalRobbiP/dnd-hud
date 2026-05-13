@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: the_hud
+      POSTGRES_USER: hud
+      POSTGRES_PASSWORD: hudpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - hud_pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hud -d the_hud"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server.dev
+    container_name: the-hud-server
+    environment:
+      DATABASE_URL: postgresql://hud:hudpass@db:5432/the_hud
+      PORT: 3001
+      NODE_ENV: development
+    volumes:
+      - ./server/src:/app/server/src
+    ports:
+      - "3002:3001"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client.dev
+    container_name: the-hud-client
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - VITE_HOST=0.0.0.0
+    volumes:
+      - ./client/src:/app/client/src
+      - ./client/index.html:/app/client/index.html
+      - ./client/tailwind.config.js:/app/client/tailwind.config.js
+      - ./client/postcss.config.js:/app/client/postcss.config.js
+      - ./client/vite.config.ts:/app/client/vite.config.ts
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+
+volumes:
+  hud_pgdata_dev:

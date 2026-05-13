@@ -1,0 +1,92 @@
+import { pgTable, text, integer, boolean, jsonb, timestamp, uuid } from 'drizzle-orm/pg-core'
+
+// ── Characters ───────────────────────────────────────────────
+export const characters = pgTable('characters', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  crawlerName: text('crawler_name').notNull(),
+  playerName: text('player_name').notNull(),
+  class: text('class'),
+  race: text('race'),
+  hp: integer('hp').notNull().default(10),
+  maxHp: integer('max_hp').notNull().default(10),
+  mp: integer('mp').notNull().default(0),
+  maxMp: integer('max_mp').notNull().default(0),
+  stats: jsonb('stats').notNull().default({}),
+  skills: jsonb('skills').notNull().default([]),
+  equipment: jsonb('equipment').notNull().default({}),
+  inventory: jsonb('inventory').notNull().default([]),
+  achievements: jsonb('achievements').notNull().default([]),
+  viewerCount: integer('viewer_count').notNull().default(1000),
+  sponsors: jsonb('sponsors').notNull().default([]),
+  statusEffects: jsonb('status_effects').notNull().default([]),
+  notes: text('notes').notNull().default(''),
+  isAlive: boolean('is_alive').notNull().default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+// ── Floor State ──────────────────────────────────────────────
+export const floorState = pgTable('floor_state', {
+  id: integer('id').primaryKey().default(1), // singleton row
+  floorNumber: integer('floor_number').notNull().default(1),
+  neighbourhoodName: text('neighbourhood_name').notNull().default('The Commons'),
+  roomNumber: integer('room_number').notNull().default(1),
+  roomTarget: integer('room_target').notNull().default(10),
+  roomDescription: text('room_description').notNull().default(''),
+  collapseTimerSeconds: integer('collapse_timer_seconds'),
+  collapseTimerActive: boolean('collapse_timer_active').notNull().default(false),
+  collapseTimerStartedAt: timestamp('collapse_timer_started_at'),
+  activeMobs: jsonb('active_mobs').notNull().default([]),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+// ── Loot Boxes ───────────────────────────────────────────────
+export const lootBoxes = pgTable('loot_boxes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tier: text('tier').notNull(), // LootBoxTier enum
+  contents: jsonb('contents').notNull().default([]),
+  state: text('state').notNull().default('pending'), // pending | authorised | opened
+  assignedTo: text('assigned_to').notNull(), // character id
+  assignedAt: timestamp('assigned_at').defaultNow(),
+  openedAt: timestamp('opened_at'),
+})
+
+// ── GM Log ───────────────────────────────────────────────────
+export const gmLog = pgTable('gm_log', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  message: text('message').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+// ── Item Database ─────────────────────────────────────────────
+export const items = pgTable('items', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  description: text('description').notNull().default(''),
+  tier: text('tier').notNull(),              // common | uncommon | rare | legendary
+  lootBoxTier: text('loot_box_tier'),        // which box tier this typically drops from
+  slot: text('slot'),                        // equipment slot, null = consumable/utility
+  effortType: text('effort_type'),           // basic | weapon | magic | null
+  skillBonus: text('skill_bonus'),           // e.g. "+2 to Unarmed Combat Skill"
+  floorFound: integer('floor_found').default(1), // earliest floor this appears
+  isConsumable: boolean('is_consumable').notNull().default(false),
+  tags: text('tags').notNull().default(''), // comma-separated: weapon, armor, jewelry etc
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+// ── Mob Template Database ─────────────────────────────────────
+export const mobTemplates = pgTable('mob_templates', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  description: text('description').notNull().default(''),
+  hpMin: integer('hp_min').notNull().default(5),
+  hpMax: integer('hp_max').notNull().default(10),
+  effortType: text('effort_type').notNull().default('basic'), // basic | weapon | magic
+  floor: integer('floor').notNull().default(1),
+  isElite: boolean('is_elite').notNull().default(false),
+  isBoss: boolean('is_boss').notNull().default(false),
+  abilities: text('abilities').notNull().default(''),  // notable attacks/abilities
+  notes: text('notes').notNull().default(''),          // GM tips
+  tags: text('tags').notNull().default(''),
+  createdAt: timestamp('created_at').defaultNow(),
+})
