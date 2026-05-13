@@ -1,13 +1,14 @@
 import { useState } from 'react'
+import { systemSpeak } from '../../utils/audio'
 import type { WSMessage, LootBox, Character } from '../../types'
 
 const ANNOUNCEMENTS = [
-  { label: 'Floor Start', text: 'Welcome, Crawlers. The floor is open. Your audience is watching. Do try to be entertaining.' },
-  { label: 'Death', text: 'Oh! A crawler is down! Viewer counts are spiking. The audience LOVES this.' },
-  { label: 'Achievement', text: 'New Achievement unlocked! The System has noted your... creativity.' },
-  { label: 'Sponsor Bid', text: 'Attention Crawler: a sponsor has expressed interest. A bidding war has begun.' },
-  { label: 'Floor Collapse', text: 'WARNING: Floor integrity at 20%. The stairwell will seal in 10 minutes. Run.' },
-  { label: 'Safe Room', text: 'Safe Room detected. You have found a brief reprieve. The cameras are still rolling.' },
+  { label: 'Floor Start', audioKey: 'floor_start', text: 'Welcome, Crawlers. The floor is open. Your audience is watching. Do try to be entertaining.' },
+  { label: 'Death', audioKey: 'death', text: 'Oh! A crawler is down! Viewer counts are spiking. The audience LOVES this.' },
+  { label: 'Achievement', audioKey: 'achievement', text: 'New Achievement unlocked! The System has noted your... creativity.' },
+  { label: 'Sponsor Bid', audioKey: 'sponsor_bid', text: 'Attention Crawler: a sponsor has expressed interest. A bidding war has begun.' },
+  { label: 'Floor Collapse', audioKey: 'floor_collapse', text: 'WARNING: Floor integrity at 20%. The stairwell will seal in 10 minutes. Run.' },
+  { label: 'Safe Room', audioKey: 'safe_room', text: 'Safe Room detected. You have found a brief reprieve. The cameras are still rolling.' },
 ]
 
 import { tierColour } from '../../utils/colours'
@@ -45,7 +46,12 @@ export function GMLogPanel({ gmLog, lootQueue, characters, send }: GMLogPanelPro
   }
   const pendingBoxes = lootQueue.filter(b => b.state === 'pending' || b.state === 'authorised')
 
-  const fire = (label: string, text: string) => send({ type: 'announcement', label, text })
+  const fire = (label: string, text: string, audioKey?: string) => {
+    const ann = ANNOUNCEMENTS.find(a => a.label === label)
+    const key = audioKey || (ann as any)?.audioKey
+    if (key) systemSpeak(key)
+    send({ type: 'announcement', label, text })
+  }
   const getCharName = (id: string) => characters.find(c => c.id === id)?.crawlerName ?? '???'
 
   return (
@@ -119,7 +125,7 @@ export function GMLogPanel({ gmLog, lootQueue, characters, send }: GMLogPanelPro
         <textarea value={custom} onChange={e => setCustom(e.target.value)} rows={2}
           placeholder="Custom announcement..."
           className="mt-1 w-full bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2 focus:border-hud-accent outline-none resize-none" />
-        <button onClick={() => { if (custom.trim()) { fire('Custom', custom.trim()); setCustom('') } }}
+        <button onClick={() => { if (custom.trim()) { systemSpeak(custom.trim(), true); fire('Custom', custom.trim()); setCustom('') } }}
           className="border border-hud-accent text-hud-accent font-hud text-sm py-1 hover:bg-hud-accent hover:text-hud-bg transition-colors tracking-wider">
           BROADCAST
         </button>
