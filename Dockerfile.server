@@ -11,6 +11,9 @@ COPY server/ ./server/
 
 RUN npm run build --workspace=server
 
+COPY startup.sh ./startup.sh
+RUN chmod +x ./startup.sh
+
 EXPOSE 3001
 
-CMD ["node", "server/dist/index.js"]
+CMD ["./startup.sh"]
