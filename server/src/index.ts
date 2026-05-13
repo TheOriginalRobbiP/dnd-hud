@@ -18,6 +18,37 @@ app.route('/api/characters', charactersRouter)
 app.route('/api/session', sessionRouter)
 app.route('/api/items', itemsRouter)
 app.route('/api/mobs', mobsRouter)
+// ── GM PIN auth ──────────────────────────────────────────────
+// PIN is set via GM_PIN env var. Defaults to '1234' if not set.
+// Clients send a guess; server returns ok: true/false.
+// Rate limited: 5 wrong attempts per IP per 60 seconds.
+const GM_PIN = process.env.GM_PIN ?? '1234'
+const attempts = new Map<string, { count: number; resetAt: number }>()
+
+app.post('/api/auth/verify-pin', async (c) => {
+  const ip = c.req.header('x-forwarded-for') ?? 'local'
+  const now = Date.now()
+
+  // Rate limit check
+  const record = attempts.get(ip)
+  if (record && record.resetAt > now && record.count >= 5) {
+    return c.json({ ok: false, error: 'Too many attempts. Wait 60 seconds.' }, 429)
+  }
+  if (!record || record.resetAt <= now) {
+    attempts.set(ip, { count: 0, resetAt: now + 60_000 })
+  }
+
+  const { pin } = await c.req.json()
+  if (pin === GM_PIN) {
+    attempts.delete(ip)
+    return c.json({ ok: true })
+  }
+
+  const rec = attempts.get(ip)!
+  rec.count++
+  return c.json({ ok: false, remaining: 5 - rec.count })
+})
+
 app.get('/', (c) => c.text('The HUD server is running.'))
 
 const port = Number(process.env.PORT ?? 3001)

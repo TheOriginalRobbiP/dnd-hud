@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { useWebSocket } from './hooks/useWebSocket'
 import { RoleSelector } from './components/shared/RoleSelector'
 import { GMDashboard } from './components/gm/GMDashboard'
+import { GMPinGate, isGMVerified, clearGMVerified } from './components/gm/GMPinGate'
 import { PlayerHUD } from './components/player/PlayerHUD'
 import { ToastFeed } from './components/shared/ToastFeed'
 import type { UserRole } from './types'
@@ -14,6 +15,7 @@ function App() {
   const [role, setRole] = useState<UserRole | null>(() => {
     return (localStorage.getItem(ROLE_KEY) as UserRole | null)
   })
+  const [gmVerified, setGmVerified] = useState(() => isGMVerified())
   const [toasts, setToasts] = useState<Toast[]>([])
   const [dmMessages, setDmMessages] = useState<DirectMessage[]>([])
 
@@ -27,7 +29,11 @@ function App() {
   const { state, connected, send } = useWebSocket({ role: role ?? undefined, onAnnouncement, onDirectMessage: onDM })
 
   const dismissToast = useCallback((id: string) => setToasts(p => p.filter(t => t.id !== id)), [])
-  const handleRoleSelect = useCallback((r: UserRole) => { localStorage.setItem(ROLE_KEY, r); setRole(r) }, [])
+  const handleRoleSelect = useCallback((r: UserRole) => {
+    localStorage.setItem(ROLE_KEY, r)
+    if (r !== 'gm') clearGMVerified()
+    setRole(r)
+  }, [])
 
   // ── Render ──────────────────────────────────────────────────
 
@@ -44,6 +50,7 @@ function App() {
   )
 
   if (role === 'gm') {
+    if (!gmVerified) return <GMPinGate onVerified={() => setGmVerified(true)} />
     if (!state) return <div className="h-screen bg-hud-bg flex items-center justify-center font-hud text-hud-muted animate-pulse">SYNCING STATE...</div>
     return <>{connBadge}<GMDashboard state={state} send={send} /><ToastFeed toasts={toasts} onDismiss={dismissToast} /></>
   }
