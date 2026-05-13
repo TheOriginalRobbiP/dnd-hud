@@ -19,7 +19,7 @@ interface StatusTabProps {
 }
 
 export function StatusTab({ character, floor, allCharacters, onInspect }: StatusTabProps) {
-  const { crawlerName, hp, maxHp, mp, maxMp, stats, statusEffects } = character
+  const { crawlerName, hp, maxHp, mp, maxMp, stats, statusEffects, skills } = character
   const [timerSecs, setTimerSecs] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -36,79 +36,101 @@ export function StatusTab({ character, floor, allCharacters, onInspect }: Status
 
   const isCritical = floor.collapseTimerActive && timerSecs <= 120
 
+  const EFFORT_COLOURS: Record<string, string> = {
+    basic:   'border-hud-border   text-hud-muted',
+    weapon:  'border-red-900      text-red-400',
+    magic:   'border-cyan-900     text-cyan-400',
+    ultimate:'border-yellow-700   text-yellow-400',
+  }
+
   return (
-    <div className="p-4 flex flex-col gap-5">
-      {/* Crawler name */}
-      <div>
-        <div className="font-hud text-sm text-hud-muted tracking-widest">CRAWLER DESIGNATION</div>
-        <div className="font-hud text-3xl text-hud-accent tracking-wider mt-1">{crawlerName.toUpperCase()}</div>
-      </div>
+    <div className="flex flex-col h-full overflow-hidden">
 
-      {/* Room target */}
-      <div className="border border-hud-border p-3 flex items-center justify-between">
-        <div className="font-hud text-sm text-hud-muted tracking-widest">ROOM TARGET</div>
-        <div className="font-hud text-4xl text-hud-accent">{floor.roomTarget}</div>
-      </div>
+      {/* ── COMBAT STRIP — always visible, no scroll ─────── */}
+      <div className="flex-shrink-0 p-4 flex flex-col gap-3 border-b border-hud-border">
 
-      {/* Collapse timer */}
-      {floor.collapseTimerActive && (
-        <div className={`border p-3 ${isCritical ? 'border-red-800 animate-pulse' : 'border-hud-border'}`}>
-          <div className="font-hud text-sm text-hud-muted tracking-widest">FLOOR COLLAPSE</div>
-          <div className={`font-hud text-2xl mt-1 ${isCritical ? 'text-red-500' : 'text-hud-text'}`}>{formatTime(timerSecs)}</div>
-          {isCritical && <div className="font-hud text-sm text-red-500 mt-1">⚠ GET TO THE STAIRS</div>}
+        {/* Room target + collapse timer inline */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 border border-hud-border px-3 py-1.5 flex-1">
+            <span className="font-hud text-xs text-hud-muted tracking-widest">TARGET</span>
+            <span className="font-hud text-3xl text-hud-accent ml-auto">{floor.roomTarget}</span>
+          </div>
+          {floor.collapseTimerActive && (
+            <div className={`flex items-center gap-2 border px-3 py-1.5 ${isCritical ? 'border-red-800 animate-pulse' : 'border-hud-border'}`}>
+              <span className="font-hud text-xs text-hud-muted">⏱</span>
+              <span className={`font-hud text-xl ${isCritical ? 'text-red-500' : 'text-hud-text'}`}>{formatTime(timerSecs)}</span>
+            </div>
+          )}
         </div>
-      )}
 
-      {/* HP / MP */}
-      <div className="flex flex-col gap-3">
+        {/* HP bar — big and prominent */}
         <div>
-          <div className="flex justify-between font-hud text-sm text-hud-muted mb-1">
+          <div className="flex justify-between font-hud text-xs text-hud-muted mb-1">
             <span>HEALTH</span><span>{hp} / {maxHp}</span>
           </div>
-          <HPBar current={hp} max={maxHp} className="h-4" />
+          <HPBar current={hp} max={maxHp} className="h-5" />
         </div>
+
+        {/* MP bar — only if has MP */}
         {maxMp > 0 && (
           <div>
-            <div className="flex justify-between font-hud text-sm text-hud-muted mb-1">
+            <div className="flex justify-between font-hud text-xs text-hud-muted mb-1">
               <span>MANA</span><span>{mp} / {maxMp}</span>
             </div>
             <div className="w-full h-3 bg-hud-border">
-              <div className="h-full bg-cyan-500 transition-all duration-300" style={{ width: `${maxMp > 0 ? (mp/maxMp)*100 : 0}%` }} />
+              <div className="h-full bg-cyan-500 transition-all duration-300" style={{ width: `${(mp/maxMp)*100}%` }} />
             </div>
+          </div>
+        )}
+
+        {/* Active status effects — inline chips */}
+        {statusEffects.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {statusEffects.map((e: any) => (
+              <span key={e.id} className={`font-hud text-xs border px-2 py-0.5 ${e.type === 'buff' ? 'border-green-800 text-green-400' : 'border-red-900 text-red-400'}`}>
+                {e.name}{e.duration != null ? ` (${e.duration}r)` : ''}
+              </span>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Stats */}
-      <div>
-        <div className="font-hud text-sm text-hud-muted tracking-widest mb-2">SYSTEM STATS</div>
-        <div className="grid grid-cols-5 gap-2">
-          {STATS.map(stat => (
-            <div key={stat} className="border border-hud-border p-3 text-center">
-              <div className="font-hud text-sm text-hud-muted">{stat}</div>
-              <div className="font-hud text-2xl text-hud-text">{(stats as any)[stat] ?? '—'}</div>
+      {/* ── QUICK SKILLS — top 3 skills inline for combat ref */}
+      {skills.length > 0 && (
+        <div className="flex-shrink-0 border-b border-hud-border px-4 py-2 flex gap-2 overflow-x-auto">
+          {(skills as any[]).slice(0, 4).map((sk: any) => (
+            <div key={sk.id} className={`flex-shrink-0 border px-2 py-1 flex items-center gap-2 ${EFFORT_COLOURS[sk.effortType] || EFFORT_COLOURS.basic}`}>
+              <span className="font-hud text-xs">{sk.name}</span>
+              <span className="font-hud text-xs opacity-60">Lv{sk.level}</span>
             </div>
           ))}
+          {skills.length > 4 && (
+            <div className="flex-shrink-0 border border-hud-border px-2 py-1 font-hud text-xs text-hud-muted">
+              +{skills.length - 4} more →
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
-      {/* Party sidebar */}
-      <PartySidebar characters={allCharacters} myCharId={character.id} onInspect={onInspect} />
+      {/* ── REFERENCE — scrollable ────────────────────────── */}
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
 
-      {/* Status effects */}
-      {statusEffects.length > 0 && (
+        {/* Stats — compact row */}
         <div>
-          <div className="font-hud text-sm text-hud-muted tracking-widest mb-2">ACTIVE EFFECTS</div>
-          <div className="flex flex-col gap-1">
-            {statusEffects.map((e: any) => (
-              <div key={e.id} className={`border px-2 py-1 flex justify-between ${e.type === 'buff' ? 'border-green-900' : 'border-red-900'}`}>
-                <span className={`font-hud text-sm ${e.type === 'buff' ? 'text-green-400' : 'text-red-400'}`}>{e.name}</span>
-                {e.duration !== null && <span className="font-hud text-sm text-hud-muted">{e.duration}r</span>}
+          <div className="font-hud text-xs text-hud-muted tracking-widest mb-2">STATS</div>
+          <div className="grid grid-cols-5 gap-1.5">
+            {STATS.map(stat => (
+              <div key={stat} className="border border-hud-border py-2 text-center">
+                <div className="font-hud text-xs text-hud-muted">{stat}</div>
+                <div className="font-hud text-lg text-hud-text">{(stats as any)[stat] ?? '—'}</div>
               </div>
             ))}
           </div>
         </div>
-      )}
+
+        {/* Party status */}
+        <PartySidebar characters={allCharacters} myCharId={character.id} onInspect={onInspect} />
+      </div>
     </div>
   )
 }

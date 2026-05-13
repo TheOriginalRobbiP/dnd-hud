@@ -16,8 +16,6 @@ function formatTime(secs: number) {
 export function RoomPanel({ floor, send }: RoomPanelProps) {
   const [editingTarget, setEditingTarget] = useState(false)
   const [targetVal, setTargetVal] = useState(String(floor.roomTarget))
-  const [editingFloor, setEditingFloor] = useState(false)
-  const [floorVal, setFloorVal] = useState(String(floor.floorNumber))
   const [editingNeighbourhood, setEditingNeighbourhood] = useState(false)
   const [neighbourhoodVal, setNeighbourhoodVal] = useState(floor.neighbourhoodName)
   const [roomNotes, setRoomNotes] = useState('')
@@ -47,76 +45,101 @@ export function RoomPanel({ floor, send }: RoomPanelProps) {
   const isCritical = floor.collapseTimerActive && timerSecs <= 120
 
   return (
-    <div className="flex-1 p-4 flex flex-col gap-4 overflow-y-auto">
-      <div className="flex gap-4 items-start">
-        <div>
-          <div className="font-hud text-sm text-hud-muted mb-1 tracking-wider">FLOOR</div>
-          {editingFloor
-            ? <input autoFocus value={floorVal} onChange={e => setFloorVal(e.target.value)}
-                onBlur={() => { send({ type: 'floor_update', floor: { floorNumber: parseInt(floorVal) || 1 } }); setEditingFloor(false) }}
-                onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
-                className="w-16 bg-hud-bg border border-hud-accent text-hud-accent font-hud text-2xl p-1 outline-none" />
-            : <div onClick={() => setEditingFloor(true)} className="font-hud text-2xl text-hud-accent cursor-pointer hover:opacity-70">{floor.floorNumber}</div>
-          }
-        </div>
-        <div className="flex-1">
-          <div className="font-hud text-sm text-hud-muted mb-1 tracking-wider">NEIGHBOURHOOD</div>
+    <div className="flex-1 flex flex-col overflow-hidden">
+
+      {/* ── Compact room header strip ─────────────────────── */}
+      <div className="border-b border-hud-border bg-hud-panel px-4 py-2 flex items-center gap-4 flex-wrap flex-shrink-0">
+
+        {/* Floor + neighbourhood — click to edit */}
+        <div className="flex items-center gap-2">
+          <span className="font-hud text-xs text-hud-muted tracking-wider">FL</span>
+          <span className="font-hud text-hud-accent text-sm">{floor.floorNumber}</span>
+          <span className="font-hud text-hud-muted text-xs">·</span>
           {editingNeighbourhood
             ? <input autoFocus value={neighbourhoodVal} onChange={e => setNeighbourhoodVal(e.target.value)}
                 onBlur={() => { send({ type: 'floor_update', floor: { neighbourhoodName: neighbourhoodVal } }); setEditingNeighbourhood(false) }}
                 onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
-                className="w-full bg-hud-bg border border-hud-accent text-hud-accent font-hud text-lg p-1 outline-none" />
-            : <div onClick={() => setEditingNeighbourhood(true)} className="font-hud text-lg text-hud-text cursor-pointer hover:text-hud-accent">{floor.neighbourhoodName}</div>
+                className="bg-hud-bg border border-hud-accent text-hud-accent font-hud text-sm px-1 outline-none w-36" />
+            : <span onClick={() => setEditingNeighbourhood(true)}
+                className="font-hud text-sm text-hud-text cursor-pointer hover:text-hud-accent transition-colors">
+                {floor.neighbourhoodName}
+              </span>
           }
         </div>
-      </div>
 
-      <div className="flex items-center gap-3">
-        <div className="font-hud text-sm text-hud-muted tracking-wider">ROOM</div>
-        <button onClick={() => send({ type: 'floor_update', floor: { roomNumber: Math.max(1, floor.roomNumber - 1) } })}
-          className="border border-hud-border text-hud-muted font-hud px-2 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors">◀</button>
-        <span className="font-hud text-xl text-hud-text">{floor.roomNumber}</span>
-        <button onClick={() => send({ type: 'floor_update', floor: { roomNumber: floor.roomNumber + 1 } })}
-          className="border border-hud-border text-hud-muted font-hud px-2 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors">▶</button>
-      </div>
+        {/* Room counter */}
+        <div className="flex items-center gap-1">
+          <span className="font-hud text-xs text-hud-muted tracking-wider">ROOM</span>
+          <button onClick={() => send({ type: 'floor_update', floor: { roomNumber: Math.max(1, floor.roomNumber - 1) } })}
+            className="font-hud text-hud-muted px-1 hover:text-hud-accent transition-colors text-xs">◀</button>
+          <span className="font-hud text-sm text-hud-text w-5 text-center">{floor.roomNumber}</span>
+          <button onClick={() => send({ type: 'floor_update', floor: { roomNumber: floor.roomNumber + 1 } })}
+            className="font-hud text-hud-muted px-1 hover:text-hud-accent transition-colors text-xs">▶</button>
+        </div>
 
-      <div className="border border-hud-border p-4 bg-hud-bg">
-        <div className="font-hud text-sm text-hud-muted tracking-widest mb-2">ROOM TARGET</div>
-        {editingTarget
-          ? <input autoFocus value={targetVal} onChange={e => setTargetVal(e.target.value)}
-              onBlur={() => { send({ type: 'room_target_update', target: parseInt(targetVal) || 10 }); setEditingTarget(false) }}
-              onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
-              className="w-24 bg-hud-bg border border-hud-accent text-hud-accent font-hud text-5xl text-center outline-none" />
-          : <div onClick={() => setEditingTarget(true)} className="font-hud text-5xl text-hud-accent cursor-pointer hover:opacity-70 select-none">{floor.roomTarget}</div>
-        }
-        <div className="font-hud text-sm text-hud-muted mt-1">CLICK TO EDIT · SYNCS TO ALL PLAYERS</div>
-      </div>
+        {/* Room target — compact inline */}
+        <div className="flex items-center gap-2 border border-hud-border px-3 py-1">
+          <span className="font-hud text-xs text-hud-muted tracking-wider">TARGET</span>
+          {editingTarget
+            ? <input autoFocus value={targetVal} onChange={e => setTargetVal(e.target.value)}
+                onBlur={() => { send({ type: 'room_target_update', target: parseInt(targetVal) || 10 }); setEditingTarget(false) }}
+                onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                className="w-12 bg-hud-bg border-0 text-hud-accent font-hud text-xl text-center outline-none" />
+            : <span onClick={() => setEditingTarget(true)}
+                className="font-hud text-xl text-hud-accent cursor-pointer hover:opacity-70 select-none min-w-[1.5rem] text-center">
+                {floor.roomTarget}
+              </span>
+          }
+        </div>
 
-      <div className="border border-hud-border p-3">
-        <div className="font-hud text-sm text-hud-muted tracking-widest mb-2">FLOOR COLLAPSE TIMER</div>
+        {/* Collapse timer — compact */}
         {floor.collapseTimerActive ? (
-          <div>
-            <div className={`font-hud text-3xl ${isCritical ? 'text-red-500 animate-pulse' : 'text-hud-text'}`}>{formatTime(timerSecs)}</div>
-            {isCritical && <div className="font-hud text-sm text-red-500 mt-1 animate-pulse">⚠ FLOOR COLLAPSE IMMINENT</div>}
+          <div className={`flex items-center gap-2 border px-3 py-1 ${isCritical ? 'border-red-800 animate-pulse' : 'border-hud-border'}`}>
+            <span className="font-hud text-xs text-hud-muted">⏱</span>
+            <span className={`font-hud text-sm ${isCritical ? 'text-red-500' : 'text-hud-text'}`}>{formatTime(timerSecs)}</span>
             <button onClick={() => send({ type: 'collapse_timer_stop' })}
-              className="mt-2 border border-red-900 text-red-400 font-hud text-sm px-3 py-1 hover:border-red-500 transition-colors">STOP TIMER</button>
+              className="font-hud text-xs text-hud-muted hover:text-red-400 transition-colors ml-1">✕</button>
           </div>
         ) : (
           <button onClick={startTimer}
-            className="border border-hud-border text-hud-muted font-hud text-sm px-3 py-1 hover:border-red-800 hover:text-red-400 transition-colors">
-            START TIMER
+            className="font-hud text-xs border border-hud-border text-hud-muted px-3 py-1 hover:border-red-800 hover:text-red-400 transition-colors">
+            ⏱ TIMER
           </button>
         )}
+
+        {/* Room notes — collapsed into a small button that opens inline */}
+        <RoomNotesButton notes={roomNotes} onChange={setRoomNotes} />
       </div>
 
-      <MobTracker mobs={floor.activeMobs} currentFloor={floor.floorNumber} send={send} />
-
-      <div>
-        <div className="font-hud text-sm text-hud-muted tracking-widest mb-1">ROOM NOTES (GM ONLY)</div>
-        <textarea value={roomNotes} onChange={e => setRoomNotes(e.target.value)} rows={3}
-          placeholder="Private notes — not synced to players..."
-          className="w-full bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2 focus:border-hud-accent outline-none resize-none" />
+      {/* ── Mob tracker — gets all remaining space ─────────── */}
+      <div className="flex-1 overflow-y-auto">
+        <MobTracker mobs={floor.activeMobs} currentFloor={floor.floorNumber} send={send} />
       </div>
+    </div>
+  )
+}
+
+function RoomNotesButton({ notes, onChange }: { notes: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="relative ml-auto">
+      <button onClick={() => setOpen(o => !o)}
+        className={`font-hud text-xs border px-3 py-1 transition-colors ${notes.trim() ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'}`}>
+        {notes.trim() ? '📝 NOTES ●' : '📝 NOTES'}
+      </button>
+      {open && (
+        <div className="absolute right-0 top-8 z-20 w-72 bg-hud-panel border border-hud-border p-3 flex flex-col gap-2 shadow-xl">
+          <div className="font-hud text-xs text-hud-muted tracking-wider">ROOM NOTES (GM ONLY)</div>
+          <textarea value={notes} onChange={e => onChange(e.target.value)} rows={4}
+            autoFocus
+            placeholder="Private notes — not synced to players..."
+            className="w-full bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2 focus:border-hud-accent outline-none resize-none" />
+          <button onClick={() => setOpen(false)}
+            className="font-hud text-xs border border-hud-border text-hud-muted px-2 py-1 hover:border-hud-accent self-end">
+            DONE
+          </button>
+        </div>
+      )}
     </div>
   )
 }
