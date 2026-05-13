@@ -66,6 +66,10 @@ export interface InventoryItem {
   equippedSlot: keyof EquipmentSlots | null
   fromLootBox: boolean
   lootBoxTier: LootBoxTier | null
+  isConsumable?: boolean
+  charges?: number | null       // null = single use, number = remaining uses
+  hpEffect?: number | null      // positive = heal, negative = damage
+  mpEffect?: number | null
 }
 
 // ── Loot Box ─────────────────────────────────────────────────
@@ -186,6 +190,7 @@ export type WSMessage =
   | { type: 'mob_add'; mob: Mob }
   | { type: 'mob_remove'; mobId: string }
   | { type: 'full_state_sync'; state: AppState }  // sent on client connect
+  | { type: 'use_item'; charId: string; itemId: string; itemName: string; hpEffect?: number | null; mpEffect?: number | null }
   | { type: 'ping' }
   | { type: 'pong' }
   | { type: 'register'; role: UserRole }

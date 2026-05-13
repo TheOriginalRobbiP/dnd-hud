@@ -118,6 +118,30 @@ function applyPatch(state: AppState, msg: WSMessage): AppState {
       return { ...state, floor: { ...state.floor, activeMobs: state.floor.activeMobs.map(m => m.id === msg.mobId ? { ...m, hp: msg.hp } : m) } }
     case 'achievement_unlock':
       return { ...state, characters: state.characters.map(c => c.id === msg.charId ? { ...c, achievements: [...c.achievements, msg.achievement] } : c) }
+    case 'use_item': {
+      const updated = state.characters.map(c => {
+        if (c.id !== msg.charId) return c
+        const item = c.inventory.find((i: any) => i.id === msg.itemId) as any
+        let newInv: any[]
+        if (item?.charges != null && item.charges > 1) {
+          newInv = c.inventory.map((i: any) => i.id === msg.itemId ? { ...i, charges: i.charges - 1 } : i)
+        } else {
+          newInv = c.inventory.filter((i: any) => i.id !== msg.itemId)
+        }
+        return {
+          ...c,
+          inventory: newInv,
+          hp: msg.hpEffect ? Math.max(0, Math.min(c.maxHp, c.hp + msg.hpEffect)) : c.hp,
+          mp: msg.mpEffect ? Math.max(0, Math.min(c.maxMp, c.mp + msg.mpEffect)) : c.mp,
+        }
+      })
+      const logEntry = msg.hpEffect
+        ? `[ITEM] ${msg.charId.slice(0,6)} used ${msg.itemName} — ${msg.hpEffect > 0 ? '+' : ''}${msg.hpEffect} HP`
+        : msg.mpEffect
+        ? `[ITEM] ${msg.charId.slice(0,6)} used ${msg.itemName} — ${msg.mpEffect > 0 ? '+' : ''}${msg.mpEffect} MP`
+        : `[ITEM] ${msg.charId.slice(0,6)} used ${msg.itemName} — GM: apply effect`
+      return { ...state, characters: updated, gmLog: [logEntry, ...state.gmLog].slice(0, 20) }
+    }
     case 'announcement':
       return { ...state, gmLog: [`[${msg.label}] ${msg.text}`, ...state.gmLog].slice(0, 20) }
     default:

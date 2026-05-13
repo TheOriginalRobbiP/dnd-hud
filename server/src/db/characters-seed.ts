@@ -22,9 +22,9 @@ const crawlers = [
     inventory: [
       { id: crypto.randomUUID(), name: "Leather Handbag", description: "Heavy. Something inside it — she won't say what. Weapon effort in melee.", tier: 'uncommon', isEquipped: true, equippedSlot: 'mainHand', fromLootBox: false, lootBoxTier: null },
       { id: crypto.randomUUID(), name: "Reading Glasses", description: "+1 INT when worn. She doesn't need them for dungeon crawling. She's keeping them on.", tier: 'common', isEquipped: true, equippedSlot: 'face', fromLootBox: false, lootBoxTier: null },
-      { id: crypto.randomUUID(), name: "Werther's Original", description: "Heals 1 HP. She has several. Non-stackable (dignity reasons).", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null },
-      { id: crypto.randomUUID(), name: "Werther's Original", description: "Heals 1 HP.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null },
-      { id: crypto.randomUUID(), name: "Werther's Original", description: "Heals 1 HP.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null },
+      { id: crypto.randomUUID(), name: "Werther's Original", description: "Heals 1 HP. She has several. Non-stackable (dignity reasons).", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null, isConsumable: true, hpEffect: 1, charges: null },
+      { id: crypto.randomUUID(), name: "Werther's Original", description: "Heals 1 HP.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null, isConsumable: true, hpEffect: 1, charges: null },
+      { id: crypto.randomUUID(), name: "Werther's Original", description: "Heals 1 HP.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null, isConsumable: true, hpEffect: 1, charges: null },
     ],
     viewerCount: 1240,
     notes: "Retired bingo hall manager from Wolverhampton. 67. Three recessions, two divorces, one dungeon. She has a son who was in a different sector when the sky cracked. She doesn't talk about it. She keeps moving. BEGINNER FRIENDLY: high HP, forgiving, readable skills.",
@@ -93,7 +93,7 @@ const crawlers = [
     inventory: [
       { id: crypto.randomUUID(), name: "High-Vis Vest", description: "Chest slot. +2 to being spotted (good or bad). The System has flagged this as valid equipment. No one knows why.", tier: 'common', isEquipped: true, equippedSlot: 'chest', fromLootBox: false, lootBoxTier: null },
       { id: crypto.randomUUID(), name: "Key Fob (Van, No Van)", description: "He still has the key. The van is gone. The wetware won't let him delete it.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null },
-      { id: crypto.randomUUID(), name: "Thermos (Coffee, Lukewarm)", description: "3 uses. Each use: restore 1 MP or gain Focused Buff (+1 to next INT roll).", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null },
+      { id: crypto.randomUUID(), name: "Thermos (Coffee, Lukewarm)", description: "3 uses. Each use: restore 1 MP or gain Focused Buff (+1 to next INT roll).", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null, isConsumable: true, mpEffect: 1, charges: 3 },
     ],
     viewerCount: 1100,
     notes: "Delivery driver. Has 6 deliveries left on his route. Keeps checking his phone to see if the app updated. It hasn't. He's going to finish the route. He doesn't know what that means down here. BEGINNER FRIENDLY: utility, hard to panic, clear role.",

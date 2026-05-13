@@ -149,6 +149,36 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
       }
       break
     }
+    case 'use_item': {
+      const [char] = await db.select().from(characters).where(eq(characters.id, msg.charId))
+      if (char) {
+        const inv = (char.inventory as Array<{id:string; charges?: number | null}>) ?? []
+        const item = inv.find(i => i.id === msg.itemId)
+        let newInv: typeof inv
+
+        if (item && item.charges != null && item.charges > 1) {
+          // Decrement charges — item stays
+          newInv = inv.map(i => i.id === msg.itemId ? { ...i, charges: (i.charges ?? 1) - 1 } : i)
+        } else {
+          // Single use or last charge — remove item
+          newInv = inv.filter(i => i.id !== msg.itemId)
+        }
+
+        // Apply HP/MP effects
+        const updates: Record<string, unknown> = { inventory: newInv, updatedAt: new Date() }
+        if (msg.hpEffect) {
+          const newHp = Math.max(0, Math.min(char.maxHp, char.hp + msg.hpEffect))
+          updates.hp = newHp
+        }
+        if (msg.mpEffect) {
+          const newMp = Math.max(0, Math.min(char.maxMp, char.mp + msg.mpEffect))
+          updates.mp = newMp
+        }
+
+        await db.update(characters).set(updates).where(eq(characters.id, msg.charId))
+      }
+      break
+    }
     default:
       break
   }
