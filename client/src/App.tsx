@@ -17,19 +17,19 @@ function App() {
   const [toasts, setToasts] = useState<Toast[]>([])
   const [dmMessages, setDmMessages] = useState<DirectMessage[]>([])
 
+  // ALL hooks must be unconditional — no hooks after any early return
   const onDM = useCallback((dm: DirectMessage) => setDmMessages(prev => [...prev, dm]), [])
   const onDMRead = useCallback(() => setDmMessages(prev => prev.map(m => ({ ...m, read: true }))), [])
-
   const onAnnouncement = useCallback((label: string, text: string) => {
-    setToasts(prev => {
-      const next = [...prev, { id: crypto.randomUUID(), label, text, ts: Date.now() }]
-      return next.slice(-3)
-    })
+    setToasts(prev => [...prev, { id: crypto.randomUUID(), label, text, ts: Date.now() }].slice(-3))
   }, [])
 
   const { state, connected, send } = useWebSocket({ role: role ?? undefined, onAnnouncement, onDirectMessage: onDM })
 
-  const dismissToast = (id: string) => setToasts(p => p.filter(t => t.id !== id))
+  const dismissToast = useCallback((id: string) => setToasts(p => p.filter(t => t.id !== id)), [])
+  const handleRoleSelect = useCallback((r: UserRole) => { localStorage.setItem(ROLE_KEY, r); setRole(r) }, [])
+
+  // ── Render ──────────────────────────────────────────────────
 
   const connBadge = (
     <div className={`fixed top-2 right-2 text-xs px-2 py-1 font-hud z-50 ${
@@ -38,8 +38,6 @@ function App() {
       {connected ? '● ONLINE' : '● RECONNECTING'}
     </div>
   )
-
-  const handleRoleSelect = (r: UserRole) => { localStorage.setItem(ROLE_KEY, r); setRole(r) }
 
   if (!role) return (
     <>{connBadge}<RoleSelector characters={state?.characters ?? []} onSelect={handleRoleSelect} /></>
@@ -64,8 +62,13 @@ function App() {
     </div>
   )
 
-  const dmRead = useCallback(() => onDMRead(), [onDMRead])
-  return <>{connBadge}<PlayerHUD character={character} state={state} send={send} dmMessages={dmMessages} onDMRead={onDMRead} /><ToastFeed toasts={toasts} onDismiss={dismissToast} /></>
+  return (
+    <>
+      {connBadge}
+      <PlayerHUD character={character} state={state} send={send} dmMessages={dmMessages} onDMRead={onDMRead} />
+      <ToastFeed toasts={toasts} onDismiss={dismissToast} />
+    </>
+  )
 }
 
 export default App
