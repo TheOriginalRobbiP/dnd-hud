@@ -23,6 +23,7 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
   const [showCreate, setShowCreate] = useState(false)
   const [editCharId, setEditCharId] = useState<string | null>(null)
   const [inspectCharId, setInspectCharId] = useState<string | null>(null)
+  const [showInactive, setShowInactive] = useState(false)
   const [optimisticActive, setOptimisticActive] = useState<Record<string, boolean>>({})
 
   const handleToggleActive = async (id: string, newActive: boolean) => {
@@ -102,27 +103,35 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
       </div>
 
       {inactiveCharacters.length > 0 && (
-        <div className="mt-4 border-t border-hud-border pt-2">
-          <div className="font-hud text-xs text-hud-muted tracking-widest mb-2 opacity-50">INACTIVE CRAWLERS</div>
-          <div className="flex gap-3 overflow-x-auto pb-1 flex-wrap sm:flex-nowrap opacity-50 hover:opacity-100 transition-opacity">
-            {inactiveCharacters.map(c => (
-              <div key={c.id} className="relative group flex flex-col gap-1 grayscale scale-95 origin-top">
-                <CharacterCard
-                  character={c}
-                  pendingLootBoxes={lootQueue.filter(b => b.assignedTo === c.id && b.state === 'pending')}
-                  send={send}
-                  onLootAssign={setLootModalCharId}
-                  onStatusEffects={setStatusModalCharId}
-                  onEdit={setEditCharId}
-                  onInspect={setInspectCharId}
-                />
-                <button onClick={() => handleToggleActive(c.id, true)}
-                  className="font-hud text-xs border border-hud-border text-hud-muted hover:border-green-800 hover:text-green-400 py-1 transition-colors">
-                  SHOW (ACTIVATE)
-                </button>
-              </div>
-            ))}
-          </div>
+        <div className="mt-3 border-t border-hud-border pt-2">
+          <button
+            onClick={() => setShowInactive(p => !p)}
+            className="font-hud text-xs text-hud-muted tracking-widest opacity-50 hover:opacity-100 transition-opacity flex items-center gap-2"
+          >
+            <span>{showInactive ? '▾' : '▸'}</span>
+            <span>INACTIVE CRAWLERS ({inactiveCharacters.length})</span>
+          </button>
+          {showInactive && (
+            <div className="flex gap-3 overflow-x-auto pb-1 flex-wrap sm:flex-nowrap mt-2 opacity-50 hover:opacity-100 transition-opacity">
+              {inactiveCharacters.map(c => (
+                <div key={c.id} className="relative group flex flex-col gap-1 grayscale scale-95 origin-top">
+                  <CharacterCard
+                    character={c}
+                    pendingLootBoxes={lootQueue.filter(b => b.assignedTo === c.id && b.state === 'pending')}
+                    send={send}
+                    onLootAssign={setLootModalCharId}
+                    onStatusEffects={setStatusModalCharId}
+                    onEdit={setEditCharId}
+                    onInspect={setInspectCharId}
+                  />
+                  <button onClick={() => handleToggleActive(c.id, true)}
+                    className="font-hud text-xs border border-hud-border text-hud-muted hover:border-green-800 hover:text-green-400 py-1 transition-colors">
+                    SHOW (ACTIVATE)
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
