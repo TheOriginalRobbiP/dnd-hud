@@ -21,24 +21,25 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
   const activeCharacters = state.characters.filter(c => c.isActive !== false)
 
   return (
-    <div className="h-screen flex flex-col bg-hud-bg overflow-hidden">
+    <div className="h-screen flex flex-col bg-hud-bg overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
       {sessionMgrOpen && (
         <SessionManager send={send} onClose={() => setSessionMgrOpen(false)} />
       )}
 
       {/* Header */}
-      <div className="border-b border-hud-border px-4 py-2 flex items-center justify-between bg-hud-panel flex-shrink-0">
-        <div className="font-hud text-hud-accent tracking-widest text-sm">THE HUD — GM CONSOLE</div>
-        <div className="flex items-center gap-3">
+      <div className="border-b border-hud-border px-3 py-2 flex items-center justify-between bg-hud-panel flex-shrink-0 gap-2">
+        <div className="font-hud text-hud-accent tracking-widest text-xs sm:text-sm flex-shrink-0">THE HUD — GM</div>
+        <div className="flex items-center gap-2 flex-shrink-0">
           <SessionLog state={state} />
           <button onClick={() => setSessionMgrOpen(true)}
             className="font-hud text-xs border border-hud-border text-hud-muted px-2 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider">
-            ⟳ SESSION
+            ⟳
           </button>
-        <div className="font-hud text-xs text-hud-muted hidden sm:block">
-          FLOOR {state.floor.floorNumber} · {state.floor.neighbourhoodName.toUpperCase()} · ROOM {state.floor.roomNumber} · {activeCharacters.length} CRAWLERS
-        </div></div>
+          <div className="font-hud text-xs text-hud-muted hidden md:block">
+            F{state.floor.floorNumber} · {state.floor.neighbourhoodName.toUpperCase()} · R{state.floor.roomNumber} · {activeCharacters.length} CRAWLERS
+          </div>
+        </div>
         {/* Mobile panel switcher */}
         <div className="flex gap-1 sm:hidden">
           <button onClick={() => setMobilePanel('room')}

@@ -25,6 +25,7 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
   const [inspectCharId, setInspectCharId] = useState<string | null>(null)
   const [showInactive, setShowInactive] = useState(false)
   const [optimisticActive, setOptimisticActive] = useState<Record<string, boolean>>({})
+  const [mobileCardIdx, setMobileCardIdx] = useState(0)
 
   const handleToggleActive = async (id: string, newActive: boolean) => {
     setOptimisticActive(prev => ({ ...prev, [id]: newActive }))
@@ -74,33 +75,78 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
           />
           <button onClick={() => setShowCreate(true)}
             className="font-hud text-xs border border-hud-border text-hud-muted px-3 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider">
-            + ADD CRAWLER
+            + ADD
           </button>
         </div>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-1 flex-wrap sm:flex-nowrap">
-        {activeCharacters.length === 0
-          ? <p className="font-hud text-hud-muted text-sm italic">No active crawlers.</p>
-          : activeCharacters.map(c => (
-            <div key={c.id} className="relative group flex flex-col gap-1">
-              <CharacterCard
-                character={c}
-                pendingLootBoxes={lootQueue.filter(b => b.assignedTo === c.id && b.state === 'pending')}
-                send={send}
-                onLootAssign={setLootModalCharId}
-                onStatusEffects={setStatusModalCharId}
-                onEdit={setEditCharId}
-                onInspect={setInspectCharId}
-              />
-              <button onClick={() => handleToggleActive(c.id, false)}
-                className="font-hud text-xs border border-hud-border text-hud-muted hover:border-red-800 hover:text-red-400 py-1 transition-colors">
-                HIDE (DEACTIVATE)
-              </button>
+      {/* ── Mobile: single card with prev/next ── Desktop: horizontal scroll */}
+      {activeCharacters.length === 0
+        ? <p className="font-hud text-hud-muted text-sm italic">No active crawlers.</p>
+        : <>
+            {/* Desktop — horizontal scroll */}
+            <div className="hidden sm:flex gap-3 overflow-x-auto pb-1">
+              {activeCharacters.map(c => (
+                <div key={c.id} className="relative flex flex-col gap-1 flex-shrink-0">
+                  <CharacterCard
+                    character={c}
+                    pendingLootBoxes={lootQueue.filter(b => b.assignedTo === c.id && b.state === 'pending')}
+                    send={send}
+                    onLootAssign={setLootModalCharId}
+                    onStatusEffects={setStatusModalCharId}
+                    onEdit={setEditCharId}
+                    onInspect={setInspectCharId}
+                  />
+                  <button onClick={() => handleToggleActive(c.id, false)}
+                    className="font-hud text-xs border border-hud-border text-hud-muted hover:border-red-800 hover:text-red-400 py-1 transition-colors">
+                    HIDE
+                  </button>
+                </div>
+              ))}
             </div>
-          ))
-        }
-      </div>
+
+            {/* Mobile — single card navigator */}
+            <div className="flex sm:hidden flex-col gap-2">
+              <div className="flex items-center justify-between mb-1">
+                <button
+                  onClick={() => setMobileCardIdx(i => Math.max(0, i - 1))}
+                  disabled={mobileCardIdx === 0}
+                  className="font-hud text-sm border border-hud-border text-hud-muted px-3 py-1 disabled:opacity-30">
+                  ◀
+                </button>
+                <span className="font-hud text-xs text-hud-muted tracking-wider">
+                  {mobileCardIdx + 1} / {activeCharacters.length}
+                </span>
+                <button
+                  onClick={() => setMobileCardIdx(i => Math.min(activeCharacters.length - 1, i + 1))}
+                  disabled={mobileCardIdx >= activeCharacters.length - 1}
+                  className="font-hud text-sm border border-hud-border text-hud-muted px-3 py-1 disabled:opacity-30">
+                  ▶
+                </button>
+              </div>
+              {(() => {
+                const c = activeCharacters[Math.min(mobileCardIdx, activeCharacters.length - 1)]
+                return c ? (
+                  <div className="flex flex-col gap-1">
+                    <CharacterCard
+                      character={c}
+                      pendingLootBoxes={lootQueue.filter(b => b.assignedTo === c.id && b.state === 'pending')}
+                      send={send}
+                      onLootAssign={setLootModalCharId}
+                      onStatusEffects={setStatusModalCharId}
+                      onEdit={setEditCharId}
+                      onInspect={setInspectCharId}
+                    />
+                    <button onClick={() => handleToggleActive(c.id, false)}
+                      className="font-hud text-xs border border-hud-border text-hud-muted hover:border-red-800 hover:text-red-400 py-1 transition-colors">
+                      HIDE (DEACTIVATE)
+                    </button>
+                  </div>
+                ) : null
+              })()}
+            </div>
+          </>
+      }
 
       {inactiveCharacters.length > 0 && (
         <div className="mt-3 border-t border-hud-border pt-2">

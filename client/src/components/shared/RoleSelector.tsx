@@ -52,7 +52,7 @@ export function RoleSelector({ characters, onSelect, onCharacterCreated }: RoleS
           </p>
         </div>
 
-        <div className="w-72 flex flex-col gap-3">
+        <div className="w-full max-w-xs flex flex-col gap-3">
           {/* Create your own */}
           <button
             onClick={() => setStage({ type: 'wizard', slot })}
@@ -137,21 +137,21 @@ export function RoleSelector({ characters, onSelect, onCharacterCreated }: RoleS
       {/* GM button */}
       <button
         onClick={() => onSelect('gm')}
-        className="w-72 mb-4 py-4 border border-hud-accent text-hud-accent font-hud tracking-widest text-lg
+        className="w-full max-w-xs mb-4 py-4 border border-hud-accent text-hud-accent font-hud tracking-widest text-lg
                    hover:bg-hud-accent hover:text-hud-bg transition-colors duration-150"
       >
         GAME MASTER
       </button>
 
       {/* Divider */}
-      <div className="w-72 flex items-center gap-3 my-4">
+      <div className="w-full max-w-xs flex items-center gap-3 my-4">
         <div className="flex-1 h-px bg-hud-border" />
         <span className="font-hud text-hud-muted text-sm tracking-widest">OR</span>
         <div className="flex-1 h-px bg-hud-border" />
       </div>
 
       {/* Player slots */}
-      <div className="w-72 flex flex-col gap-2">
+      <div className="w-full max-w-xs flex flex-col gap-2">
         {SLOT_LABELS.map((label, i) => (
           <button
             key={i}

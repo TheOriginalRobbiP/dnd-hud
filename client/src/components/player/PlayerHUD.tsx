@@ -50,7 +50,7 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead }: Play
 
   return (
 
-    <div className="h-screen flex flex-col bg-hud-bg overflow-hidden">
+    <div className="h-screen flex flex-col bg-hud-bg overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="border-b border-hud-border px-4 py-2 flex items-center justify-between bg-hud-panel">
         <div className={`font-hud tracking-widest ${character.isAlive ? 'text-hud-accent' : 'text-red-500'}`}>
           {character.isAlive ? character.crawlerName.toUpperCase() : `☠ ${character.crawlerName.toUpperCase()}`}

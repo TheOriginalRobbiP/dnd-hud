@@ -29,7 +29,7 @@ export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign,
   const portrait = getCrawlerPortrait(crawlerName)
 
   return (
-    <div className={`border ${borderCol} bg-hud-panel p-4 min-w-[220px] flex flex-col gap-2 transition-colors`}>
+    <div className={`border ${borderCol} bg-hud-panel p-4 w-full sm:min-w-[220px] sm:w-auto flex flex-col gap-2 transition-colors`}>
       {/* Portrait + Header */}
       {portrait && (
         <div className="relative w-full h-36 overflow-hidden border border-hud-border mb-1">
