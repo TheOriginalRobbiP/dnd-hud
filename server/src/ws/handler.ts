@@ -41,6 +41,17 @@ export function handleWsConnection(ws: WebSocket) {
         return
       }
 
+      // Full state sync request — re-send state to requesting client only
+      if ((message as any).type === 'full_state_sync_request') {
+        const state = await getFullState()
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'full_state_sync', state }))
+        }
+        // Also broadcast to all so everyone sees the new character
+        broadcast({ type: 'full_state_sync', state } as any, null)
+        return
+      }
+
       await applyMessage(message)
       broadcast(message, ws)
     } catch (err) {

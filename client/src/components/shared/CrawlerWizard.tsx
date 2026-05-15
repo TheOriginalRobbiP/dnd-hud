@@ -264,6 +264,8 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
       })
       if (!res.ok) throw new Error('Server error')
       const created = await res.json()
+      // Small delay to let WS state sync catch up before navigating
+      await new Promise(r => setTimeout(r, 800))
       onComplete(created)
     } catch {
       setError('Failed to register crawler. Check server.')
