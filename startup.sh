@@ -2,7 +2,7 @@
 set -e
 
 echo "[startup] Running DB migrations..."
-cd /app && npm run db:push --workspace=server
+cd /app/server && npx drizzle-kit push
 
 echo "[startup] Seeding floor state..."
 cd /app && node server/dist/db/seed.js
