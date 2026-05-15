@@ -1,4 +1,4 @@
-import { pgTable, text, integer, boolean, jsonb, timestamp, uuid } from 'drizzle-orm/pg-core'
+import { pgTable, text, integer, boolean, jsonb, timestamp, uuid, unique } from 'drizzle-orm/pg-core'
 
 // ── Characters ───────────────────────────────────────────────
 export const characters = pgTable('characters', {
@@ -71,9 +71,11 @@ export const items = pgTable('items', {
   skillBonus: text('skill_bonus'),           // e.g. "+2 to Unarmed Combat Skill"
   floorFound: integer('floor_found').default(1), // earliest floor this appears
   isConsumable: boolean('is_consumable').notNull().default(false),
+  hpEffect: integer('hp_effect'),            // heal/damage on use (positive = heal)
+  mpEffect: integer('mp_effect'),            // mana restore on use
   tags: text('tags').notNull().default(''), // comma-separated: weapon, armor, jewelry etc
   createdAt: timestamp('created_at').defaultNow(),
-})
+}, (t) => ({ nameUnique: unique().on(t.name) }))
 
 // ── Mob Template Database ─────────────────────────────────────
 export const mobTemplates = pgTable('mob_templates', {
@@ -90,4 +92,4 @@ export const mobTemplates = pgTable('mob_templates', {
   notes: text('notes').notNull().default(''),          // GM tips
   tags: text('tags').notNull().default(''),
   createdAt: timestamp('created_at').defaultNow(),
-})
+}, (t) => ({ nameUnique: unique().on(t.name) }))
