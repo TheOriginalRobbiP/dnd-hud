@@ -34,7 +34,7 @@ export function RoleSelector({ characters, onSelect, onCharacterCreated }: RoleS
   // ── Slot choice screen ───────────────────────────────────────
   if (stage.type === 'slot') {
     const slot = stage.slot
-    const aliveChars = characters.filter(c => c.isAlive)
+    const aliveChars = characters.filter(c => c.isAlive && !c.isActive)
     return (
       <div className="min-h-screen bg-hud-bg flex flex-col items-center justify-center p-8">
         <button
@@ -82,7 +82,18 @@ export function RoleSelector({ characters, onSelect, onCharacterCreated }: RoleS
             aliveChars.map(char => (
               <button
                 key={char.id}
-                onClick={() => onSelect(`player:${char.id}`)}
+                onClick={async () => {
+                  // Activate the pre-gen if it isn't already
+                  if (!char.isActive) {
+                    await fetch(`/api/characters/${char.id}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ isActive: true }),
+                    })
+                    onCharacterCreated?.() // triggers full_state_sync_request
+                  }
+                  onSelect(`player:${char.id}`)
+                }}
                 className="py-4 px-4 border border-hud-border font-hud text-left transition-colors duration-150
                            hover:border-hud-accent hover:text-hud-accent"
               >
