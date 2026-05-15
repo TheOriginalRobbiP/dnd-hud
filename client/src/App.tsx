@@ -45,8 +45,13 @@ function App() {
     </div>
   )
 
+  const handleCharacterCreated = useCallback(() => {
+    // Force a full state re-sync so the new character appears
+    send({ type: 'full_state_sync_request' } as any)
+  }, [send])
+
   if (!role) return (
-    <>{connBadge}<RoleSelector characters={state?.characters ?? []} onSelect={handleRoleSelect} /></>
+    <>{connBadge}<RoleSelector characters={state?.characters ?? []} onSelect={handleRoleSelect} onCharacterCreated={handleCharacterCreated} /></>
   )
 
   if (role === 'gm') {
