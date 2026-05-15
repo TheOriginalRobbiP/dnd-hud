@@ -19,6 +19,11 @@ interface DBItem {
   tags: string
 }
 
+function pickRandom<T>(arr: T[]): T | null {
+  if (!arr.length) return null
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
 interface LootAssignModalProps {
   characterId: string
   characterName: string
@@ -28,7 +33,7 @@ interface LootAssignModalProps {
 
 export function LootAssignModal({ characterId, characterName, onClose, send }: LootAssignModalProps) {
   const [tier, setTier] = useState<LootBoxTier>('bronze')
-  const [mode, setMode] = useState<'pick' | 'custom'>('pick')
+  const [mode, setMode] = useState<'pick' | 'random' | 'custom'>('random')
   const [search, setSearch] = useState('')
   const [dbItems, setDbItems] = useState<DBItem[]>([])
   const [selectedItem, setSelectedItem] = useState<DBItem | null>(null)
@@ -57,9 +62,29 @@ export function LootAssignModal({ characterId, characterName, onClose, send }: L
   useEffect(() => { fetchItems() }, [fetchItems])
 
   const assign = () => {
-    const name = mode === 'pick' ? selectedItem?.name : customName.trim()
-    const desc = mode === 'pick' ? selectedItem?.description ?? '' : customDesc.trim()
-    if (!name) return
+    let name: string
+    let desc: string
+    let itemTier: string = 'common'
+    let itemSlot: string | null = null
+
+    if (mode === 'random') {
+      const picked = pickRandom(dbItems)
+      if (!picked) return
+      name = picked.name
+      desc = picked.description
+      itemTier = picked.tier
+      itemSlot = picked.slot
+    } else if (mode === 'pick') {
+      if (!selectedItem) return
+      name = selectedItem.name
+      desc = selectedItem.description ?? ''
+      itemTier = selectedItem.tier
+      itemSlot = selectedItem.slot
+    } else {
+      name = customName.trim()
+      desc = customDesc.trim()
+      if (!name) return
+    }
 
     send({
       type: 'loot_assign',
@@ -70,9 +95,9 @@ export function LootAssignModal({ characterId, characterName, onClose, send }: L
           id: crypto.randomUUID(),
           name,
           description: desc,
-          tier: (selectedItem?.tier as any) ?? 'common',
+          tier: (itemTier as any) ?? 'common',
           isEquipped: false,
-          equippedSlot: selectedItem?.slot as any ?? null,
+          equippedSlot: itemSlot as any ?? null,
           fromLootBox: true,
           lootBoxTier: tier,
         }],
@@ -114,15 +139,35 @@ export function LootAssignModal({ characterId, characterName, onClose, send }: L
 
         {/* Mode toggle */}
         <div className="flex gap-2">
+          <button onClick={() => setMode('random')}
+            className={`flex-1 font-hud text-sm py-2 border transition-colors ${mode === 'random' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
+            🎲 RANDOM
+          </button>
           <button onClick={() => setMode('pick')}
             className={`flex-1 font-hud text-sm py-2 border transition-colors ${mode === 'pick' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
-            FROM BESTIARY
+            BROWSE
           </button>
           <button onClick={() => { setMode('custom'); setSelectedItem(null) }}
             className={`flex-1 font-hud text-sm py-2 border transition-colors ${mode === 'custom' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
-            CUSTOM ITEM
+            CUSTOM
           </button>
         </div>
+
+        {mode === 'random' && (
+          <div className="border border-hud-border p-4 flex flex-col gap-3 items-center text-center">
+            <div className="font-hud text-xs text-hud-muted tracking-wider">
+              ROLL FROM {tier.toUpperCase()} TABLE — {dbItems.length} ITEMS
+            </div>
+            {loading
+              ? <div className="font-hud text-sm text-hud-muted animate-pulse">Loading table...</div>
+              : dbItems.length === 0
+                ? <div className="font-hud text-sm text-hud-muted italic">No items in this tier yet.</div>
+                : <div className="font-hud text-xs text-hud-muted">
+                    Press ASSIGN BOX to roll a random item from the {tier} table. Item revealed only when the box is opened.
+                  </div>
+            }
+          </div>
+        )}
 
         {mode === 'pick' && <>
           {/* Search */}
@@ -185,9 +230,13 @@ export function LootAssignModal({ characterId, characterName, onClose, send }: L
         {/* Assign button */}
         <div className="flex gap-2">
           <button onClick={assign}
-            disabled={mode === 'pick' ? !selectedItem : !customName.trim()}
+            disabled={
+              mode === 'random' ? dbItems.length === 0 :
+              mode === 'pick' ? !selectedItem :
+              !customName.trim()
+            }
             className="flex-1 border border-hud-accent text-hud-accent font-hud text-sm py-3 hover:bg-hud-accent hover:text-hud-bg transition-colors tracking-wider disabled:opacity-40">
-            ASSIGN BOX
+            {mode === 'random' ? '🎲 ROLL & ASSIGN' : 'ASSIGN BOX'}
           </button>
           <button onClick={onClose} aria-label="Cancel"
             className="border border-hud-border text-hud-muted font-hud text-sm px-4 hover:border-hp-low hover:text-hp-low transition-colors">

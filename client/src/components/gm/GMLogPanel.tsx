@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { systemSpeak } from '../../utils/audio'
 import type { WSMessage, LootBox, Character } from '../../types'
 import { tierColour } from '../../utils/colours'
+import { bopcaAchievements } from '../../data/bopcaAchievements'
 
 const ANNOUNCEMENTS = [
   { label: 'Floor Start',    audioKey: 'floor_start',    text: 'Welcome, Crawlers. The floor is open. Your audience is watching. Do try to be entertaining.' },
@@ -26,6 +27,8 @@ export function GMLogPanel({ gmLog, lootQueue, characters, send }: GMLogPanelPro
   const [achieveName, setAchieveName] = useState('')
   const [achieveDesc, setAchieveDesc] = useState('')
   const [achieveTier, setAchieveTier] = useState<'bronze'|'silver'|'gold'|'celestial'>('bronze')
+  const [achieveSearch, setAchieveSearch] = useState('')
+  const [achieveMode, setAchieveMode] = useState<'bopca' | 'custom'>('bopca')
 
   const fire = (label: string, text: string, audioKey?: string) => {
     const ann = ANNOUNCEMENTS.find(a => a.label === label)
@@ -130,17 +133,69 @@ export function GMLogPanel({ gmLog, lootQueue, characters, send }: GMLogPanelPro
         </button>
         {achieveOpen && (
           <div className="px-3 pb-3 flex flex-col gap-2 border-t border-hud-border">
+            {/* Crawler select */}
             <select value={achieveCharId} onChange={e => setAchieveCharId(e.target.value)}
               className="w-full bg-hud-bg border border-hud-border text-hud-text font-hud text-xs p-1.5 focus:border-hud-accent outline-none mt-2">
               <option value="">Select crawler...</option>
               {characters.map(c => <option key={c.id} value={c.id}>{c.crawlerName}</option>)}
             </select>
-            <input value={achieveName} onChange={e => setAchieveName(e.target.value)}
-              placeholder="Achievement name..."
-              className="w-full bg-hud-bg border border-hud-border text-hud-text font-hud text-xs p-1.5 focus:border-hud-accent outline-none" />
-            <input value={achieveDesc} onChange={e => setAchieveDesc(e.target.value)}
-              placeholder="Description..."
-              className="w-full bg-hud-bg border border-hud-border text-hud-text font-hud text-xs p-1.5 focus:border-hud-accent outline-none" />
+
+            {/* Mode toggle */}
+            <div className="flex gap-1">
+              <button onClick={() => setAchieveMode('bopca')}
+                className={`flex-1 font-hud text-xs py-1 border transition-colors ${achieveMode === 'bopca' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
+                BOPCA
+              </button>
+              <button onClick={() => { setAchieveMode('custom'); setAchieveName(''); setAchieveDesc('') }}
+                className={`flex-1 font-hud text-xs py-1 border transition-colors ${achieveMode === 'custom' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
+                CUSTOM
+              </button>
+            </div>
+
+            {achieveMode === 'bopca' && (
+              <>
+                <input value={achieveSearch} onChange={e => setAchieveSearch(e.target.value)}
+                  placeholder="Search achievements..."
+                  className="w-full bg-hud-bg border border-hud-border text-hud-text font-hud text-xs p-1.5 focus:border-hud-accent outline-none" />
+                <div className="flex flex-col gap-0.5 max-h-36 overflow-y-auto">
+                  {bopcaAchievements
+                    .filter(a => !achieveSearch || a.name.toLowerCase().includes(achieveSearch.toLowerCase()))
+                    .map(a => (
+                      <button key={a.name}
+                        onClick={() => {
+                          setAchieveName(a.name)
+                          setAchieveDesc(a.description)
+                          setAchieveTier(a.tier as any)
+                        }}
+                        className={`text-left px-2 py-1 border font-hud text-xs transition-colors ${achieveName === a.name ? 'border-hud-accent text-hud-accent bg-hud-accent/10' : 'border-hud-border text-hud-muted hover:border-hud-accent'}`}>
+                        <span className="mr-1" style={{ color: tierColour(a.tier as any) }}>
+                          {a.tier[0].toUpperCase()}
+                        </span>
+                        {a.name}
+                      </button>
+                    ))
+                  }
+                </div>
+                {achieveName && (
+                  <div className="font-hud text-xs text-hud-muted italic border-l-2 border-hud-accent pl-2">
+                    {achieveDesc}
+                  </div>
+                )}
+              </>
+            )}
+
+            {achieveMode === 'custom' && (
+              <>
+                <input value={achieveName} onChange={e => setAchieveName(e.target.value)}
+                  placeholder="Achievement name..."
+                  className="w-full bg-hud-bg border border-hud-border text-hud-text font-hud text-xs p-1.5 focus:border-hud-accent outline-none" />
+                <input value={achieveDesc} onChange={e => setAchieveDesc(e.target.value)}
+                  placeholder="Description..."
+                  className="w-full bg-hud-bg border border-hud-border text-hud-text font-hud text-xs p-1.5 focus:border-hud-accent outline-none" />
+              </>
+            )}
+
+            {/* Tier selector */}
             <div className="flex gap-1">
               {(['bronze','silver','gold','celestial'] as const).map(t => (
                 <button key={t} onClick={() => setAchieveTier(t)}
@@ -151,7 +206,8 @@ export function GMLogPanel({ gmLog, lootQueue, characters, send }: GMLogPanelPro
               ))}
             </div>
             <button onClick={fireAchievement}
-              className="border border-hud-accent text-hud-accent font-hud text-xs py-1.5 hover:bg-hud-accent hover:text-hud-bg transition-colors tracking-wider">
+              disabled={!achieveCharId || !achieveName.trim()}
+              className="border border-hud-accent text-hud-accent font-hud text-xs py-1.5 hover:bg-hud-accent hover:text-hud-bg transition-colors tracking-wider disabled:opacity-40">
               UNLOCK
             </button>
           </div>

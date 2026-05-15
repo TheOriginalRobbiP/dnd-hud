@@ -3,6 +3,7 @@ import {
   STAT_ARRAY, COMBAT_SKILLS, YOUTH_BACKGROUNDS, TRAINING_BACKGROUNDS,
   ADULT_BACKGROUNDS, QUIRK_BACKGROUNDS, calcEvade, calcMaxHp, calcMaxMp, calcMove, statMod
 } from '../../data/characterCreation'
+import { bopcaSkills } from '../../data/bopcaSkills'
 
 // ── Types ────────────────────────────────────────────────────
 interface WizardSkill {
@@ -38,6 +39,8 @@ interface WizardState {
   looseEnd: string
   regrets: string
   // Screen 6 — Review (no extra data)
+  // Bonus — Bopca skill
+  bopcaSkill: string
 }
 
 const SCREENS = ['IDENTITY', 'BACKGROUNDS', 'COMBAT', 'STATS', 'BACKSTORY', 'REVIEW'] as const
@@ -56,6 +59,7 @@ const INITIAL: WizardState = {
   combatSkillIdx: null, combatSkill2Idx: null,
   statAssignments: { STR: null, DEX: null, CON: null, INT: null, CHA: null },
   pastTrauma: '', looseEnd: '', regrets: '',
+  bopcaSkill: '',
 }
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -147,6 +151,7 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
   const [wizard, setWizard] = useState<WizardState>(INITIAL)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [bopSearchVal, setBopSearchVal] = useState('')
 
   const screen = SCREENS[screenIdx]
   const update = (patch: Partial<WizardState>) => setWizard(p => ({ ...p, ...patch }))
@@ -239,6 +244,18 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
     try {
       const skills = [...allBgSkills(), ...combatSkills()]
         .map(s => ({ ...s, id: crypto.randomUUID() }))
+
+      // Add Bopca bonus skill if chosen
+      if (wizard.bopcaSkill) {
+        const bopData = bopcaSkills.find(s => s.name === wizard.bopcaSkill)
+        skills.push({
+          id: crypto.randomUUID(),
+          name: wizard.bopcaSkill,
+          level: 1,
+          effortType: 'basic',
+          description: bopData?.description ?? '',
+        })
+      }
 
       const body = {
         crawlerName: wizard.crawlerName.trim().toUpperCase(),
@@ -396,6 +413,46 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
               chosenSkills={wizard.quirkySkills}
               onSkillToggle={s => handleBgSkillToggle('quirkySkills', s)}
             />
+
+            {/* ── BOPCA BONUS SKILL ─────────────────────────── */}
+            <div className="border border-hud-border p-3 mb-3">
+              <div className="font-hud text-xs text-hud-muted tracking-wider mb-2">
+                BONUS SKILL — BOPCA COMMUNITY (Optional)
+              </div>
+              <p className="font-hud text-xs text-hud-muted italic mb-3">
+                Pick one fan-created skill from the Bopca Community Center. These are weird, flavourful, and not in the official rulebook.
+              </p>
+              <div className="relative mb-2">
+                <input
+                  placeholder="Search Bopca skills..."
+                  onChange={e => {
+                    const val = e.target.value.toLowerCase()
+                    setBopSearchVal(val)
+                  }}
+                  className="w-full bg-hud-bg border border-hud-border text-hud-text font-hud text-xs p-2 focus:border-hud-accent outline-none"
+                />
+              </div>
+              <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto">
+                {bopcaSkills
+                  .filter(s => !bopSearchVal || s.name.toLowerCase().includes(bopSearchVal))
+                  .map(s => (
+                    <button
+                      key={s.name}
+                      title={s.description}
+                      onClick={() => update({ bopcaSkill: wizard.bopcaSkill === s.name ? '' : s.name })}
+                      className={`font-hud text-xs py-1 px-2 border transition-colors ${wizard.bopcaSkill === s.name ? 'border-hud-accent text-hud-accent bg-hud-accent/10' : 'border-hud-border text-hud-muted hover:border-hud-accent'}`}
+                    >
+                      {s.name}
+                    </button>
+                  ))
+                }
+              </div>
+              {wizard.bopcaSkill && (
+                <div className="mt-2 font-hud text-xs text-hud-muted italic border-l-2 border-hud-accent pl-2">
+                  {bopcaSkills.find(s => s.name === wizard.bopcaSkill)?.description}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
