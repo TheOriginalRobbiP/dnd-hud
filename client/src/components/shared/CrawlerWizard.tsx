@@ -41,7 +41,6 @@ interface WizardState {
 }
 
 const SCREENS = ['IDENTITY', 'BACKGROUNDS', 'COMBAT', 'STATS', 'BACKSTORY', 'REVIEW'] as const
-type Screen = typeof SCREENS[number]
 
 interface CrawlerWizardProps {
   onClose: () => void
