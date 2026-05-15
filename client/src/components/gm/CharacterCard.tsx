@@ -13,12 +13,16 @@ interface CharacterCardProps {
 }
 
 export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign, onStatusEffects, onEdit, onInspect }: CharacterCardProps) {
-  const { id, crawlerName, playerName, hp, maxHp, mp, maxMp, isAlive, viewerCount, statusEffects } = character
+  const { id, crawlerName, playerName, hp, maxHp, mp, maxMp, isAlive, viewerCount, statusEffects, aiFavour } = character
 
   const adjust = (delta: number) => {
     const newHp = Math.max(0, Math.min(maxHp, hp + delta))
     send({ type: 'hp_update', charId: id, hp: newHp })
     if (newHp === 0 && isAlive) send({ type: 'death', charId: id })
+  }
+
+  const adjustFavour = (delta: number) => {
+    send({ type: 'ai_favour_update', charId: id, delta })
   }
 
   const borderCol = isAlive ? 'border-hud-border hover:border-hud-accent' : 'border-red-900'
@@ -101,6 +105,25 @@ export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign,
           ))}
         </div>
       )}
+
+      {/* AI Favour */}
+      <div className="flex items-center justify-between border border-hud-border px-2 py-1">
+        <div className="flex items-center gap-1">
+          <span className="text-yellow-400 text-sm">⚡</span>
+          <span className="font-hud text-xs text-hud-muted tracking-wider">AI FAVOUR</span>
+          <span className="font-hud text-sm text-yellow-400 ml-1">{aiFavour ?? 0}</span>
+        </div>
+        <div className="flex gap-1">
+          <button onClick={() => adjustFavour(-1)} disabled={(aiFavour ?? 0) <= 0}
+            className="font-hud text-xs border border-hud-border text-hud-muted w-6 h-6 flex items-center justify-center hover:border-hp-low hover:text-hp-low transition-colors disabled:opacity-30">
+            −
+          </button>
+          <button onClick={() => adjustFavour(1)}
+            className="font-hud text-xs border border-hud-border text-hud-muted w-6 h-6 flex items-center justify-center hover:border-yellow-400 hover:text-yellow-400 transition-colors">
+            +
+          </button>
+        </div>
+      </div>
 
       {/* Revive button — only shown when dead */}
       {!isAlive && (

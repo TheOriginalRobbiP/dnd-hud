@@ -1,5 +1,5 @@
 import { db } from './client.js'
-import { characters, floorState, lootBoxes, gmLog } from './schema.js'
+import { characters, floorState, lootBoxes, gmLog, sessionSnapshots } from './schema.js'
 import { desc, eq, ne } from 'drizzle-orm'
 import type { AppState, WSMessage, Character, FloorState, LootBox } from '../types/index.js'
 
@@ -177,6 +177,60 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
 
         await db.update(characters).set(updates).where(eq(characters.id, msg.charId))
       }
+      break
+    }
+    case 'ai_favour_update': {
+      const [char] = await db.select().from(characters).where(eq(characters.id, msg.charId))
+      if (char) {
+        const newFavour = Math.max(0, ((char as any).aiFavour ?? 0) + msg.delta)
+        await db.update(characters)
+          .set({ aiFavour: newFavour, updatedAt: new Date() } as any)
+          .where(eq(characters.id, msg.charId))
+      }
+      break
+    }
+    case 'session_reset': {
+      // Reset all characters: HP to max, clear status effects, revive dead
+      const allChars = await db.select().from(characters)
+      for (const char of allChars) {
+        await db.update(characters)
+          .set({ hp: char.maxHp, mp: char.maxMp, isAlive: true, statusEffects: [], updatedAt: new Date() })
+          .where(eq(characters.id, char.id))
+      }
+      // Reset floor: clear mobs, stop collapse timer, reset room to 1
+      await db.update(floorState)
+        .set({ activeMobs: [], collapseTimerActive: false, collapseTimerSeconds: null, collapseTimerStartedAt: null, roomNumber: 1, updatedAt: new Date() })
+        .where(eq(floorState.id, 1))
+      // Clear pending/authorised loot boxes
+      await db.delete(lootBoxes).where(ne(lootBoxes.state, 'opened'))
+      // Log it
+      await db.insert(gmLog).values({ message: '[System] Session reset — HP/MP restored, status cleared, mobs removed.' })
+      break
+    }
+    case 'session_snapshot_save': {
+      const state = await getFullState()
+      await db.insert(sessionSnapshots).values({ name: msg.name, snapshotData: state as any })
+      await db.insert(gmLog).values({ message: `[System] Snapshot saved: "${msg.name}"` })
+      break
+    }
+    case 'session_snapshot_load': {
+      const [snap] = await db.select().from(sessionSnapshots).where(eq(sessionSnapshots.id, msg.snapshotId))
+      if (!snap) break
+      const saved = snap.snapshotData as AppState
+      // Restore all characters
+      for (const char of saved.characters) {
+        await db.update(characters)
+          .set({ hp: char.hp, maxHp: char.maxHp, mp: char.mp, maxMp: char.maxMp,
+                 isAlive: char.isAlive, statusEffects: char.statusEffects as any,
+                 inventory: char.inventory as any, achievements: char.achievements as any,
+                 aiFavour: (char as any).aiFavour ?? 0, updatedAt: new Date() })
+          .where(eq(characters.id, char.id))
+      }
+      // Restore floor state
+      await db.update(floorState)
+        .set({ ...saved.floor as any, updatedAt: new Date() })
+        .where(eq(floorState.id, 1))
+      await db.insert(gmLog).values({ message: `[System] Snapshot restored: "${snap.name}"` })
       break
     }
     default:

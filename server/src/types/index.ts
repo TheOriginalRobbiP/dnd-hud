@@ -193,3 +193,7 @@ export type WSMessage =
   | { type: 'register'; role: UserRole }           // client identifies itself on connect
   | { type: 'direct_message'; toCharId: string | 'gm'; fromCharId: string | 'gm'; fromName: string; text: string; timestamp: number }
   | { type: 'full_state_sync_request' }
+  | { type: 'ai_favour_update'; charId: string; delta: number }
+  | { type: 'session_reset' }
+  | { type: 'session_snapshot_save'; name: string }
+  | { type: 'session_snapshot_load'; snapshotId: string }

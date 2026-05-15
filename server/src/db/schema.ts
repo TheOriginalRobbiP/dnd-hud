@@ -22,6 +22,7 @@ export const characters = pgTable('characters', {
   notes: text('notes').notNull().default(''),
   isAlive: boolean('is_alive').notNull().default(true),
   isActive: boolean('is_active').notNull().default(true),
+  aiFavour: integer('ai_favour').notNull().default(0),  // AI Favour tokens
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 })
@@ -93,3 +94,12 @@ export const mobTemplates = pgTable('mob_templates', {
   tags: text('tags').notNull().default(''),
   createdAt: timestamp('created_at').defaultNow(),
 }, (t) => ({ nameUnique: unique().on(t.name) }))
+
+// ── Session Snapshots ─────────────────────────────────────────
+// Named saves of the full game state — restore any snapshot to roll back
+export const sessionSnapshots = pgTable('session_snapshots', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),                 // e.g. "Pre-Floor 2", "End of Session 1"
+  snapshotData: jsonb('snapshot_data').notNull(), // full AppState JSON
+  createdAt: timestamp('created_at').defaultNow(),
+})

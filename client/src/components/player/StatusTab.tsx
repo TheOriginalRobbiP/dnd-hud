@@ -20,7 +20,7 @@ interface StatusTabProps {
 }
 
 export function StatusTab({ character, floor, allCharacters, onInspect }: StatusTabProps) {
-  const { crawlerName, hp, maxHp, mp, maxMp, stats, statusEffects, skills } = character
+  const { crawlerName, hp, maxHp, mp, maxMp, stats, statusEffects, skills, aiFavour } = character
   const portrait = getCrawlerPortrait(crawlerName)
   const [timerSecs, setTimerSecs] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -102,6 +102,16 @@ export function StatusTab({ character, floor, allCharacters, onInspect }: Status
             ))}
           </div>
         )}
+
+        {/* AI Favour — always shown */}
+        <div className="flex items-center gap-2">
+          <span className="text-yellow-400 text-base">⚡</span>
+          <span className="font-hud text-xs text-hud-muted tracking-wider">AI FAVOUR</span>
+          <span className="font-hud text-sm text-yellow-400 font-bold">{aiFavour ?? 0}</span>
+          <span className="font-hud text-xs text-hud-muted italic ml-1">
+            {(aiFavour ?? 0) === 0 ? '— earn more by being creative' : 'spend in clutch moments'}
+          </span>
+        </div>
       </div>
 
       {/* ── QUICK SKILLS — top 3 skills inline for combat ref */}
