@@ -48,7 +48,7 @@ export function handleWsConnection(ws: WebSocket) {
           ws.send(JSON.stringify({ type: 'full_state_sync', state }))
         }
         // Also broadcast to all so everyone sees the new character
-        broadcast({ type: 'full_state_sync', state } as any, null)
+        broadcast({ type: 'full_state_sync', state } as any, undefined)
         return
       }
 
