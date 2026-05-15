@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import type { Character, FloorState } from '../../types'
+import type { Character, FloorState, WSMessage } from '../../types'
 import { HPBar } from '../shared/HPBar'
 import { PartySidebar } from './PartySidebar'
 import { getCrawlerPortrait } from '../../utils/portraits'
+import { DiceRoller } from './DiceRoller'
 
 const STATS = ['STR','DEX','CON','INT','CHA'] as const
 
@@ -17,9 +18,10 @@ interface StatusTabProps {
   floor: FloorState
   allCharacters: Character[]
   onInspect?: (charId: string) => void
+  send: (msg: WSMessage) => void
 }
 
-export function StatusTab({ character, floor, allCharacters, onInspect }: StatusTabProps) {
+export function StatusTab({ character, floor, allCharacters, onInspect, send }: StatusTabProps) {
   const { crawlerName, hp, maxHp, mp, maxMp, stats, statusEffects, skills, aiFavour } = character
   const portrait = getCrawlerPortrait(crawlerName)
   const [timerSecs, setTimerSecs] = useState(0)
@@ -112,6 +114,9 @@ export function StatusTab({ character, floor, allCharacters, onInspect }: Status
             {(aiFavour ?? 0) === 0 ? '— earn more by being creative' : 'spend in clutch moments'}
           </span>
         </div>
+
+        {/* Dice roller — collapsible */}
+        <DiceRoller character={character} floor={floor} send={send} />
       </div>
 
       {/* ── QUICK SKILLS — top 3 skills inline for combat ref */}

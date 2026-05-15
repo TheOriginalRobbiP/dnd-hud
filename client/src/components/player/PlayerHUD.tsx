@@ -75,7 +75,7 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead }: Play
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {tab === 'status' && <StatusTab character={character} floor={state.floor} allCharacters={state.characters} onInspect={setInspectCharId} />}
+        {tab === 'status' && <StatusTab character={character} floor={state.floor} allCharacters={state.characters} onInspect={setInspectCharId} send={send} />}
         {tab === 'skills' && <SkillsTab character={character} />}
         {tab === 'inventory' && <InventoryTab
           character={character}
