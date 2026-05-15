@@ -131,6 +131,7 @@ export interface Character {
   statusEffects: StatusEffect[]
   notes: string
   isAlive: boolean
+  isActive: boolean
 }
 
 // ── Mob ──────────────────────────────────────────────────────
@@ -191,3 +192,4 @@ export type WSMessage =
   | { type: 'pong' }
   | { type: 'register'; role: UserRole }           // client identifies itself on connect
   | { type: 'direct_message'; toCharId: string | 'gm'; fromCharId: string | 'gm'; fromName: string; text: string; timestamp: number }
+  | { type: 'full_state_sync_request' }

@@ -16,6 +16,8 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
   const [dmMessages, setDmMessages] = useState<DirectMessage[]>([])
   const handleDMRead = useCallback(() => setDmMessages(prev => prev.map(m => ({ ...m, read: true }))), [])
 
+  const activeCharacters = state.characters.filter(c => c.isActive !== false)
+
   return (
     <div className="h-screen flex flex-col bg-hud-bg overflow-hidden">
 
@@ -25,7 +27,7 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
         <div className="flex items-center gap-3">
           <SessionLog state={state} />
         <div className="font-hud text-xs text-hud-muted hidden sm:block">
-          FLOOR {state.floor.floorNumber} · {state.floor.neighbourhoodName.toUpperCase()} · ROOM {state.floor.roomNumber} · {state.characters.length} CRAWLERS
+          FLOOR {state.floor.floorNumber} · {state.floor.neighbourhoodName.toUpperCase()} · ROOM {state.floor.roomNumber} · {activeCharacters.length} CRAWLERS
         </div></div>
         {/* Mobile panel switcher */}
         <div className="flex gap-1 sm:hidden">
@@ -48,13 +50,13 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
         {/* Desktop: both panels visible */}
         <div className="hidden sm:flex flex-1 overflow-hidden">
           <RoomPanel floor={state.floor} send={send} />
-          <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={state.characters} send={send} />
+          <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
         </div>
         {/* Mobile: one panel at a time */}
         <div className="flex sm:hidden flex-1 overflow-hidden">
           {mobilePanel === 'room'
             ? <RoomPanel floor={state.floor} send={send} />
-            : <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={state.characters} send={send} />
+            : <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
           }
         </div>
       </div>

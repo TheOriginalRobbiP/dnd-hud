@@ -23,11 +23,41 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
   const [showCreate, setShowCreate] = useState(false)
   const [editCharId, setEditCharId] = useState<string | null>(null)
   const [inspectCharId, setInspectCharId] = useState<string | null>(null)
+  const [optimisticActive, setOptimisticActive] = useState<Record<string, boolean>>({})
 
-  const lootChar = characters.find(c => c.id === lootModalCharId)
-  const editChar = characters.find(c => c.id === editCharId)
-  const statusChar = characters.find(c => c.id === statusModalCharId)
-  const inspectChar = inspectCharId ? characters.find(c => c.id === inspectCharId) ?? null : null
+  const handleToggleActive = async (id: string, newActive: boolean) => {
+    setOptimisticActive(prev => ({ ...prev, [id]: newActive }))
+    try {
+      await fetch(`/api/characters/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: newActive })
+      })
+      send({ type: 'full_state_sync_request' } as any)
+    } catch (e) {
+      console.error(e)
+      setOptimisticActive(prev => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+    }
+  }
+
+  const displayCharacters = characters.map(c => {
+    if (optimisticActive[c.id] !== undefined) {
+      return { ...c, isActive: optimisticActive[c.id] }
+    }
+    return c
+  })
+
+  const activeCharacters = displayCharacters.filter(c => c.isActive !== false)
+  const inactiveCharacters = displayCharacters.filter(c => c.isActive === false)
+
+  const lootChar = displayCharacters.find(c => c.id === lootModalCharId)
+  const editChar = displayCharacters.find(c => c.id === editCharId)
+  const statusChar = displayCharacters.find(c => c.id === statusModalCharId)
+  const inspectChar = inspectCharId ? displayCharacters.find(c => c.id === inspectCharId) ?? null : null
 
   return (
     <div className="border-b border-hud-border bg-hud-panel p-3 flex-shrink-0">
@@ -49,22 +79,52 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
       </div>
 
       <div className="flex gap-3 overflow-x-auto pb-1 flex-wrap sm:flex-nowrap">
-        {characters.length === 0
-          ? <p className="font-hud text-hud-muted text-sm italic">No crawlers registered. Add one to begin.</p>
-          : characters.map(c => (
-            <CharacterCard
-              key={c.id}
-              character={c}
-              pendingLootBoxes={lootQueue.filter(b => b.assignedTo === c.id && b.state === 'pending')}
-              send={send}
-              onLootAssign={setLootModalCharId}
-              onStatusEffects={setStatusModalCharId}
-              onEdit={setEditCharId}
-              onInspect={setInspectCharId}
-            />
+        {activeCharacters.length === 0
+          ? <p className="font-hud text-hud-muted text-sm italic">No active crawlers.</p>
+          : activeCharacters.map(c => (
+            <div key={c.id} className="relative group flex flex-col gap-1">
+              <CharacterCard
+                character={c}
+                pendingLootBoxes={lootQueue.filter(b => b.assignedTo === c.id && b.state === 'pending')}
+                send={send}
+                onLootAssign={setLootModalCharId}
+                onStatusEffects={setStatusModalCharId}
+                onEdit={setEditCharId}
+                onInspect={setInspectCharId}
+              />
+              <button onClick={() => handleToggleActive(c.id, false)}
+                className="font-hud text-xs border border-hud-border text-hud-muted hover:border-red-800 hover:text-red-400 py-1 transition-colors">
+                HIDE (DEACTIVATE)
+              </button>
+            </div>
           ))
         }
       </div>
+
+      {inactiveCharacters.length > 0 && (
+        <div className="mt-4 border-t border-hud-border pt-2">
+          <div className="font-hud text-xs text-hud-muted tracking-widest mb-2 opacity-50">INACTIVE CRAWLERS</div>
+          <div className="flex gap-3 overflow-x-auto pb-1 flex-wrap sm:flex-nowrap opacity-50 hover:opacity-100 transition-opacity">
+            {inactiveCharacters.map(c => (
+              <div key={c.id} className="relative group flex flex-col gap-1 grayscale scale-95 origin-top">
+                <CharacterCard
+                  character={c}
+                  pendingLootBoxes={lootQueue.filter(b => b.assignedTo === c.id && b.state === 'pending')}
+                  send={send}
+                  onLootAssign={setLootModalCharId}
+                  onStatusEffects={setStatusModalCharId}
+                  onEdit={setEditCharId}
+                  onInspect={setInspectCharId}
+                />
+                <button onClick={() => handleToggleActive(c.id, true)}
+                  className="font-hud text-xs border border-hud-border text-hud-muted hover:border-green-800 hover:text-green-400 py-1 transition-colors">
+                  SHOW (ACTIVATE)
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {lootModalCharId && lootChar && (
         <LootAssignModal

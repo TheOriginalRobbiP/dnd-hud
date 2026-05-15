@@ -21,6 +21,7 @@ export const characters = pgTable('characters', {
   statusEffects: jsonb('status_effects').notNull().default([]),
   notes: text('notes').notNull().default(''),
   isAlive: boolean('is_alive').notNull().default(true),
+  isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 })

@@ -126,6 +126,7 @@ async function seed() {
       statusEffects: [],
       notes: c.notes,
       isAlive: true,
+      isActive: true,
     })
     console.log(`[seed] Created: ${c.crawlerName} — ${c.notes.split('.')[0]}`)
   }
