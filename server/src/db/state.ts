@@ -4,6 +4,7 @@ import { desc, eq, ne } from 'drizzle-orm'
 import type { AppState, WSMessage, Character, FloorState, LootBox } from '../types/index.js'
 
 const DEFAULT_FLOOR: FloorState = {
+  sessionActive: false,
   floorNumber: 1,
   neighbourhoodName: 'The Commons',
   roomNumber: 1,
