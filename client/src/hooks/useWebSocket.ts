@@ -144,6 +144,10 @@ function applyPatch(state: AppState, msg: WSMessage): AppState {
     }
     case 'announcement':
       return { ...state, gmLog: [`[${msg.label}] ${msg.text}`, ...state.gmLog].slice(0, 20) }
+    case 'session_start':
+      return { ...state, floor: { ...state.floor, sessionActive: true } }
+    case 'session_stop':
+      return { ...state, floor: { ...state.floor, sessionActive: false } }
     default:
       return state
   }
