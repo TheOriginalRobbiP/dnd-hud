@@ -5,13 +5,22 @@ import { GMDashboard } from './components/gm/GMDashboard'
 import { GMPinGate, isGMVerified, clearGMVerified } from './components/gm/GMPinGate'
 import { PlayerHUD } from './components/player/PlayerHUD'
 import { ToastFeed } from './components/shared/ToastFeed'
+import { DisplayScreen } from './components/display/DisplayScreen'
 import type { UserRole } from './types'
 import type { DirectMessage } from './hooks/useWebSocket'
 import type { Toast } from './components/shared/ToastFeed'
 
+// ── Display route detection ───────────────────────────────────
+const isDisplayRoute =
+  window.location.pathname === '/display' ||
+  new URLSearchParams(window.location.search).get('display') === '1'
+
 const ROLE_KEY = 'hud:role'
 
 function App() {
+  // Short-circuit for display screen — no auth, no role, no hooks overlap
+  if (isDisplayRoute) return <DisplayScreen />
+
   const [role, setRole] = useState<UserRole | null>(() => {
     return (localStorage.getItem(ROLE_KEY) as UserRole | null)
   })

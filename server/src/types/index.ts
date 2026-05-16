@@ -9,7 +9,7 @@ export type LootBoxState = 'pending' | 'authorised' | 'opened'
 export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'celestial'
 export type StatusEffectType = 'buff' | 'debuff' | 'mixed'
 export type ItemTier = 'common' | 'uncommon' | 'rare' | 'legendary'
-export type UserRole = 'gm' | `player:${string}` // player:<charId>
+export type UserRole = 'gm' | 'display' | `player:${string}` // player:<charId>
 
 // ── Stats ────────────────────────────────────────────────────
 // 5 visible stats in DCC canon. WIS exists but is hidden from crawlers.
@@ -197,3 +197,5 @@ export type WSMessage =
   | { type: 'session_reset' }
   | { type: 'session_snapshot_save'; name: string }
   | { type: 'session_snapshot_load'; snapshotId: string }
+  | { type: 'display_room_enter'; roomId: string; roomName: string; flavourArt: string | null; roomTarget: number; theme: string; themeColour: string }
+  | { type: 'display_clear' }
