@@ -78,10 +78,31 @@ export function DisplayScreen() {
                 seconds: floor.collapseTimerSeconds,
                 startedAt: floor.collapseTimerStartedAt,
               })
+              // Restore current room if one is active
+              const rd = (floor as any).currentRoomData
+              if (rd) {
+                setRoom({
+                  roomId: rd.roomId,
+                  roomName: rd.roomName,
+                  flavourArt: rd.flavourArt,
+                  roomTarget: rd.roomTarget,
+                  theme: rd.theme,
+                  themeColour: rd.themeColour,
+                })
+              } else {
+                setRoom(null)
+              }
               break
             }
             case 'room_target_update':
               setRoom(prev => prev ? { ...prev, roomTarget: msg.target } : prev)
+              break
+            case 'session_start':
+              setSessionActive(true)
+              break
+            case 'session_stop':
+              setSessionActive(false)
+              setRoom(null)
               break
           }
         } catch (err) {

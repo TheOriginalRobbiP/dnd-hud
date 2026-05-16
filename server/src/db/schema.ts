@@ -41,6 +41,7 @@ export const floorState = pgTable('floor_state', {
   collapseTimerActive: boolean('collapse_timer_active').notNull().default(false),
   collapseTimerStartedAt: timestamp('collapse_timer_started_at'),
   activeMobs: jsonb('active_mobs').notNull().default([]),
+  currentRoomData: jsonb('current_room_data'),
   updatedAt: timestamp('updated_at').defaultNow(),
 })
 

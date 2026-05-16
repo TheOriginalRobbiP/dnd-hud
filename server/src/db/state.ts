@@ -82,6 +82,27 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
         .set({ ...(msg.floor as object), updatedAt: new Date() })
         .where(eq(floorState.id, 1))
       break
+    case 'display_room_enter':
+      // Persist current room data so display can restore on reconnect
+      await db.update(floorState)
+        .set({
+          currentRoomData: {
+            roomId: msg.roomId,
+            roomName: msg.roomName,
+            flavourArt: msg.flavourArt,
+            roomTarget: msg.roomTarget,
+            theme: msg.theme,
+            themeColour: msg.themeColour,
+          } as any,
+          updatedAt: new Date(),
+        })
+        .where(eq(floorState.id, 1))
+      break
+    case 'display_clear':
+      await db.update(floorState)
+        .set({ currentRoomData: null, updatedAt: new Date() })
+        .where(eq(floorState.id, 1))
+      break
     case 'collapse_timer_start':
       await db.update(floorState)
         .set({ collapseTimerSeconds: msg.seconds, collapseTimerActive: true, collapseTimerStartedAt: new Date(), updatedAt: new Date() })
@@ -158,14 +179,11 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
         let newInv: typeof inv
 
         if (item && item.charges != null && item.charges > 1) {
-          // Decrement charges — item stays
           newInv = inv.map(i => i.id === msg.itemId ? { ...i, charges: (i.charges ?? 1) - 1 } : i)
         } else {
-          // Single use or last charge — remove item
           newInv = inv.filter(i => i.id !== msg.itemId)
         }
 
-        // Apply HP/MP effects
         const updates: Record<string, unknown> = { inventory: newInv, updatedAt: new Date() }
         if (msg.hpEffect) {
           const newHp = Math.max(0, Math.min(char.maxHp, char.hp + msg.hpEffect))
@@ -198,29 +216,24 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
       break
     }
     case 'session_stop': {
-      // Deactivate all characters (clear joined slots)
       await db.update(characters).set({ isActive: false, updatedAt: new Date() })
       await db.update(floorState)
-        .set({ sessionActive: false, updatedAt: new Date() })
+        .set({ sessionActive: false, currentRoomData: null, updatedAt: new Date() })
         .where(eq(floorState.id, 1))
       await db.insert(gmLog).values({ message: '[System] Session stopped — all crawlers deregistered.' })
       break
     }
     case 'session_reset': {
-      // Reset all characters: HP to max, clear status effects, revive dead
       const allChars = await db.select().from(characters)
       for (const char of allChars) {
         await db.update(characters)
           .set({ hp: char.maxHp, mp: char.maxMp, isAlive: true, statusEffects: [], updatedAt: new Date() })
           .where(eq(characters.id, char.id))
       }
-      // Reset floor: clear mobs, stop collapse timer, reset room to 1
       await db.update(floorState)
-        .set({ activeMobs: [], collapseTimerActive: false, collapseTimerSeconds: null, collapseTimerStartedAt: null, roomNumber: 1, updatedAt: new Date() })
+        .set({ activeMobs: [], collapseTimerActive: false, collapseTimerSeconds: null, collapseTimerStartedAt: null, roomNumber: 1, currentRoomData: null, updatedAt: new Date() })
         .where(eq(floorState.id, 1))
-      // Clear pending/authorised loot boxes
       await db.delete(lootBoxes).where(ne(lootBoxes.state, 'opened'))
-      // Log it
       await db.insert(gmLog).values({ message: '[System] Session reset — HP/MP restored, status cleared, mobs removed.' })
       break
     }
@@ -234,7 +247,6 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
       const [snap] = await db.select().from(sessionSnapshots).where(eq(sessionSnapshots.id, msg.snapshotId))
       if (!snap) break
       const saved = snap.snapshotData as AppState
-      // Restore all characters
       for (const char of saved.characters) {
         await db.update(characters)
           .set({ hp: char.hp, maxHp: char.maxHp, mp: char.mp, maxMp: char.maxMp,
@@ -243,7 +255,6 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
                  aiFavour: (char as any).aiFavour ?? 0, updatedAt: new Date() })
           .where(eq(characters.id, char.id))
       }
-      // Restore floor state
       await db.update(floorState)
         .set({ ...saved.floor as any, updatedAt: new Date() })
         .where(eq(floorState.id, 1))
