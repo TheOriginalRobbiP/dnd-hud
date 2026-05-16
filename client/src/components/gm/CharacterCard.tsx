@@ -14,7 +14,7 @@ interface CharacterCardProps {
 }
 
 export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign, onStatusEffects, onEdit, onInspect }: CharacterCardProps) {
-  const { id, crawlerName, playerName, hp, maxHp, mp, maxMp, isAlive, viewerCount, statusEffects, aiFavour, portrait } = character
+  const { id, crawlerName, playerName, hp, maxHp, mp, maxMp, isAlive, viewerCount, statusEffects, aiFavour } = character
 
   const [editingHp, setEditingHp] = useState(false)
   const [hpInput, setHpInput] = useState('')
