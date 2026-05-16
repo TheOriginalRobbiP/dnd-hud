@@ -479,7 +479,7 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
 
   // ── Room edit callbacks ────────────────────────────────────────
   const handleRoomUpdated = useCallback((updated: FloorRoom) => {
-    setRooms(prev => prev.map(r => r.id === updated.id ? updated : r))
+    setRooms(prev => prev.map(r => r.id === updated.id ? { ...updated, tags: normaliseTags(updated.tags) } : r))
   }, [])
 
   const handleRoomDeleted = useCallback((roomId: string) => {
