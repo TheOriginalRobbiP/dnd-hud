@@ -466,7 +466,7 @@ export function FloorRunnerPanel({ send, notesTextSize = 'md' }: FloorRunnerPane
       if (templateIds.length > 0) {
         const allTemplates: MobTemplate[] = await fetch('/api/mobs').then(r => r.json())
         for (const tId of templateIds) {
-          const template = allTemplates.find(t => t.id === tId)
+          const template = allTemplates.find(t => t.name === tId || t.id === tId)
           if (template) {
             send({
               type: 'mob_add',
