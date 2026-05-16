@@ -306,18 +306,16 @@ function RoomNotesPanel({ room, onClose, onEnterRoom, entering, notesTextSize = 
         )}
       </div>
 
-      {/* FOOTER */}
-      {!room.isCurrentRoom && (
-        <div className="flex-shrink-0 border-t border-hud-border px-5 py-3">
-          <button
-            onClick={() => onEnterRoom(room.id)}
-            disabled={!!entering}
-            className="w-full font-hud tracking-widest py-2 bg-hud-accent text-white transition-opacity disabled:opacity-50"
-          >
-            {isEntering ? 'ENTERING...' : 'ENTER ROOM'}
-          </button>
-        </div>
-      )}
+      {/* FOOTER — always show; re-entering rebroadcasts to display */}
+      <div className="flex-shrink-0 border-t border-hud-border px-5 py-3">
+        <button
+          onClick={() => onEnterRoom(room.id)}
+          disabled={!!entering}
+          className="w-full font-hud tracking-widest py-2 bg-hud-accent text-white transition-opacity disabled:opacity-50"
+        >
+          {isEntering ? 'ENTERING...' : room.isCurrentRoom ? '↺ REBROADCAST TO DISPLAY' : 'ENTER ROOM'}
+        </button>
+      </div>
     </div>
   )
 }
