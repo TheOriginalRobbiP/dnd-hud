@@ -1,4 +1,4 @@
-import { pgTable, text, integer, boolean, jsonb, timestamp, uuid, unique } from 'drizzle-orm/pg-core'
+import { pgTable, text, integer, boolean, jsonb, timestamp, uuid, unique, real } from 'drizzle-orm/pg-core'
 
 // ── Characters ───────────────────────────────────────────────
 export const characters = pgTable('characters', {
@@ -102,4 +102,43 @@ export const sessionSnapshots = pgTable('session_snapshots', {
   name: text('name').notNull(),                 // e.g. "Pre-Floor 2", "End of Session 1"
   snapshotData: jsonb('snapshot_data').notNull(), // full AppState JSON
   createdAt: timestamp('created_at').defaultNow(),
+})
+
+// ── Floor Plans ───────────────────────────────────────────────
+export const floorPlans = pgTable('floor_plans', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  theme: text('theme').notNull().default('the-commons'),
+  themeColour: text('theme_colour').notNull().default('#94a3b8'),
+  isActive: boolean('is_active').notNull().default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+// ── Floor Rooms ───────────────────────────────────────────────
+export const floorRooms = pgTable('floor_rooms', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  floorPlanId: uuid('floor_plan_id').notNull().references(() => floorPlans.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  description: text('description').notNull().default(''),
+  flavourArt: text('flavour_art'),
+  roomTarget: integer('room_target').notNull().default(10),
+  tags: text('tags').notNull().default(''),
+  mobTemplateIds: text('mob_template_ids').notNull().default(''),
+  lootTier: text('loot_tier'),
+  posX: real('pos_x').notNull().default(0),
+  posY: real('pos_y').notNull().default(0),
+  isVisited: boolean('is_visited').notNull().default(false),
+  isCurrentRoom: boolean('is_current_room').notNull().default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+// ── Room Connections ──────────────────────────────────────────
+export const roomConnections = pgTable('room_connections', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  floorPlanId: uuid('floor_plan_id').notNull().references(() => floorPlans.id, { onDelete: 'cascade' }),
+  fromRoomId: uuid('from_room_id').notNull().references(() => floorRooms.id, { onDelete: 'cascade' }),
+  toRoomId: uuid('to_room_id').notNull().references(() => floorRooms.id, { onDelete: 'cascade' }),
+  label: text('label').notNull().default('main path'),
+  isContingency: boolean('is_contingency').notNull().default(false),
 })
