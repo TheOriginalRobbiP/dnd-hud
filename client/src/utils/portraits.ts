@@ -1,12 +1,21 @@
-// Crawler portrait mapping — update filename when a new version is generated
+// Crawler portrait mapping — name-based fallback for pre-gens
+// The primary source is now character.portrait from the DB (set during wizard)
 const PORTRAIT_MAP: Record<string, string> = {
-  doris: '/images/crawlers/hud_doris_v6_00001_.png',
-  flex:  '/images/crawlers/hud_flex_v7_00001_.png',
-  quill: '/images/crawlers/hud_quill_v6_00001_.png',
-  miles: '/images/crawlers/hud_miles_v6_00001_.png',
+  doris: '/images/crawlers/doris.png',
+  flex:  '/images/crawlers/flex.png',
+  quill: '/images/crawlers/quill.png',
+  miles: '/images/crawlers/miles.png',
+  rex:   '/images/crawlers/rex.png',
+  sugar: '/images/crawlers/sugar.png',
+  vance: '/images/crawlers/vance.png',
 }
 
-export function getCrawlerPortrait(crawlerName: string): string | null {
+/**
+ * Resolve a portrait for a character.
+ * Priority: explicit DB portrait → name-based pre-gen map → null
+ */
+export function getCrawlerPortrait(crawlerName: string, dbPortrait?: string | null): string | null {
+  if (dbPortrait) return dbPortrait
   const key = crawlerName.toLowerCase().trim()
   return PORTRAIT_MAP[key] ?? null
 }

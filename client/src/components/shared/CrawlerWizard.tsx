@@ -5,6 +5,22 @@ import {
 } from '../../data/characterCreation'
 import { bopcaSkills } from '../../data/bopcaSkills'
 
+// ── Portrait data ─────────────────────────────────────────────
+const PREGEN_PORTRAITS = [
+  { path: '/images/crawlers/doris.png',  label: 'DORIS',  desc: 'The one who\'s done all the reading.' },
+  { path: '/images/crawlers/miles.png',  label: 'MILES',  desc: 'Arrived holding a glowing drink. Still holding it.' },
+  { path: '/images/crawlers/flex.png',   label: 'FLEX',   desc: 'Built like a question, answers with his fists.' },
+  { path: '/images/crawlers/quill.png',  label: 'QUILL',  desc: 'Taking notes. Panicking. Taking more notes.' },
+  { path: '/images/crawlers/rex.png',    label: 'REX',    desc: 'Has seen worse. Won\'t say when.' },
+  { path: '/images/crawlers/sugar.png',  label: 'SUGAR',  desc: 'Genuinely excited. That\'s the scary part.' },
+  { path: '/images/crawlers/vance.png',  label: 'VANCE',  desc: 'Trust him. No, seriously. Trust him.' },
+]
+
+const POOL_PORTRAITS = Array.from({ length: 8 }, (_, i) => ({
+  path: `/images/pool/portrait-0${i + 1}.png`,
+  label: `UNKNOWN #${i + 1}`,
+}))
+
 // ── Types ────────────────────────────────────────────────────
 interface WizardSkill {
   name: string
@@ -14,6 +30,8 @@ interface WizardSkill {
 }
 
 interface WizardState {
+  // Screen 0 — Portrait
+  portrait: string
   // Screen 1 — Identity
   crawlerName: string
   playerName: string
@@ -43,7 +61,7 @@ interface WizardState {
   bopcaSkill: string
 }
 
-const SCREENS = ['IDENTITY', 'BACKGROUNDS', 'COMBAT', 'STATS', 'BACKSTORY', 'REVIEW'] as const
+const SCREENS = ['PORTRAIT', 'IDENTITY', 'BACKGROUNDS', 'COMBAT', 'STATS', 'BACKSTORY', 'REVIEW'] as const
 
 interface CrawlerWizardProps {
   onClose: () => void
@@ -51,6 +69,7 @@ interface CrawlerWizardProps {
 }
 
 const INITIAL: WizardState = {
+  portrait: '',
   crawlerName: '', playerName: '', pronouns: '', preJob: '', crawlerNumber: '',
   youthBg: null, youthSkills: ['', ''],
   trainingBg: null, trainingSkills: ['', ''],
@@ -208,6 +227,7 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
   // Validate current screen
   const canAdvance = (): boolean => {
     switch (screen) {
+      case 'PORTRAIT': return wizard.portrait !== ''
       case 'IDENTITY': return wizard.crawlerName.trim().length > 0 && wizard.playerName.trim().length > 0
       case 'BACKGROUNDS':
         return wizard.youthSkills.filter(Boolean).length === 2 &&
@@ -260,6 +280,7 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
       const body = {
         crawlerName: wizard.crawlerName.trim().toUpperCase(),
         playerName: wizard.playerName.trim(),
+        portrait: wizard.portrait || null,
         hp: maxHp, maxHp,
         mp: maxMp, maxMp,
         stats: { STR: str, DEX: dex, CON: con, INT: int_, CHA: cha, WIS: 4 },
@@ -302,10 +323,71 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
 
       <div className="flex-1 overflow-y-auto p-6 max-w-2xl mx-auto w-full">
 
+        {/* ── PORTRAIT ─────────────────────────────────────── */}
+        {screen === 'PORTRAIT' && (
+          <div>
+            <ScreenHeader title="STEP 1 — CHOOSE YOUR FACE" step={1} total={7} />
+            <p className="font-hud text-hud-muted text-sm mb-6 italic">
+              "Before you were a crawler, you were a person. Pick the face that fits."
+            </p>
+
+            {/* Pre-gen portraits */}
+            <div className="font-hud text-xs text-hud-muted tracking-wider mb-3">PRE-GENERATED CRAWLERS</div>
+            <div className="grid grid-cols-4 gap-2 mb-6">
+              {PREGEN_PORTRAITS.map(p => (
+                <button
+                  key={p.path}
+                  onClick={() => update({ portrait: p.path })}
+                  title={p.desc}
+                  className={`relative border-2 transition-all overflow-hidden aspect-[3/4] ${wizard.portrait === p.path ? 'border-hud-accent' : 'border-hud-border hover:border-hud-accent/60'}`}
+                >
+                  <img src={p.path} alt={p.label} className="w-full h-full object-cover object-top" />
+                  <div className={`absolute bottom-0 inset-x-0 py-1 font-hud text-[10px] tracking-wider text-center transition-colors ${wizard.portrait === p.path ? 'bg-hud-accent text-hud-bg' : 'bg-hud-bg/80 text-hud-muted'}`}>
+                    {p.label}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Pool portraits */}
+            <div className="font-hud text-xs text-hud-muted tracking-wider mb-3">CUSTOM CHARACTER PORTRAITS</div>
+            <div className="grid grid-cols-4 gap-2">
+              {POOL_PORTRAITS.map(p => (
+                <button
+                  key={p.path}
+                  onClick={() => update({ portrait: p.path })}
+                  className={`relative border-2 transition-all overflow-hidden aspect-[3/4] ${wizard.portrait === p.path ? 'border-hud-accent' : 'border-hud-border hover:border-hud-accent/60'}`}
+                >
+                  <img src={p.path} alt={p.label} className="w-full h-full object-cover object-top" />
+                  {wizard.portrait === p.path && (
+                    <div className="absolute bottom-0 inset-x-0 py-1 font-hud text-[10px] tracking-wider text-center bg-hud-accent text-hud-bg">
+                      SELECTED
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {wizard.portrait && (
+              <div className="mt-4 border border-hud-accent/40 p-3 flex items-center gap-3">
+                <img src={wizard.portrait} alt="Selected" className="w-12 h-16 object-cover object-top border border-hud-accent" />
+                <div>
+                  <div className="font-hud text-xs text-hud-accent tracking-wider">PORTRAIT SELECTED</div>
+                  {PREGEN_PORTRAITS.find(p => p.path === wizard.portrait)?.desc && (
+                    <div className="font-hud text-xs text-hud-muted italic mt-1">
+                      "{PREGEN_PORTRAITS.find(p => p.path === wizard.portrait)?.desc}"
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── IDENTITY ─────────────────────────────────────── */}
         {screen === 'IDENTITY' && (
           <div>
-            <ScreenHeader title="STEP 1 — IDENTITY" step={1} total={6} />
+            <ScreenHeader title="STEP 2 — IDENTITY" step={2} total={7} />
             <p className="font-hud text-hud-muted text-sm mb-6 italic">
               "Before entering the World Dungeon, you were someone. That life is gone now — but every part of it follows you down."
             </p>
@@ -373,7 +455,7 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
         {/* ── BACKGROUNDS ──────────────────────────────────── */}
         {screen === 'BACKGROUNDS' && (
           <div>
-            <ScreenHeader title="STEP 2 — BACKGROUNDS" step={2} total={6} />
+            <ScreenHeader title="STEP 3 — BACKGROUNDS" step={3} total={7} />
             <p className="font-hud text-hud-muted text-sm mb-4 italic">
               "Skills represent activities and talents you've trained or enhanced. The list is nearly endless — Internet Memes is a Skill."
             </p>
@@ -459,7 +541,7 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
         {/* ── COMBAT ───────────────────────────────────────── */}
         {screen === 'COMBAT' && (
           <div>
-            <ScreenHeader title="STEP 3 — COMBAT SKILL" step={3} total={6} />
+            <ScreenHeader title="STEP 4 — COMBAT SKILL" step={4} total={7} />
             <p className="font-hud text-hud-muted text-sm mb-2 italic">
               "Everyone enters with Unarmed Combat at Rank 3. Now pick how you'll murder for the entertainment of the masses."
             </p>
@@ -502,7 +584,7 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
         {/* ── STATS ────────────────────────────────────────── */}
         {screen === 'STATS' && (
           <div>
-            <ScreenHeader title="STEP 4 — ASSIGN STATS" step={4} total={6} />
+            <ScreenHeader title="STEP 5 — ASSIGN STATS" step={5} total={7} />
             <p className="font-hud text-hud-muted text-sm mb-2 italic">
               "You can be reduced to a number. Or a few numbers, all of which round down to zero in the infinite expanse of the universe."
             </p>
@@ -596,7 +678,7 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
         {/* ── BACKSTORY ─────────────────────────────────────── */}
         {screen === 'BACKSTORY' && (
           <div>
-            <ScreenHeader title="STEP 5 — BACKSTORY" step={5} total={6} />
+            <ScreenHeader title="STEP 6 — BACKSTORY" step={6} total={7} />
             <p className="font-hud text-hud-muted text-sm mb-6 italic">
               "Events and trauma shaped you. That life is gone now — but every part of it follows you into the dungeon."
             </p>
@@ -623,7 +705,7 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
         {/* ── REVIEW ───────────────────────────────────────── */}
         {screen === 'REVIEW' && (
           <div>
-            <ScreenHeader title="STEP 6 — REVIEW" step={6} total={6} />
+            <ScreenHeader title="STEP 7 — REVIEW" step={7} total={7} />
             <p className="font-hud text-hud-muted text-sm mb-6 italic">
               "Good luck. Try not to die."
             </p>

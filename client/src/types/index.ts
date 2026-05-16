@@ -137,6 +137,7 @@ export interface Character {
   isAlive: boolean
   isActive: boolean
   aiFavour: number        // AI Favour tokens — shown as ⚡
+  portrait: string | null // path to portrait image
 }
 
 // ── Mob ──────────────────────────────────────────────────────

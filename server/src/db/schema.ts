@@ -23,6 +23,7 @@ export const characters = pgTable('characters', {
   isAlive: boolean('is_alive').notNull().default(true),
   isActive: boolean('is_active').notNull().default(true),
   aiFavour: integer('ai_favour').notNull().default(0),  // AI Favour tokens
+  portrait: text('portrait'),                           // path to portrait image e.g. /images/crawlers/doris.png
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 })

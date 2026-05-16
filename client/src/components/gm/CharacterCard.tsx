@@ -14,7 +14,7 @@ interface CharacterCardProps {
 }
 
 export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign, onStatusEffects, onEdit, onInspect }: CharacterCardProps) {
-  const { id, crawlerName, playerName, hp, maxHp, mp, maxMp, isAlive, viewerCount, statusEffects, aiFavour } = character
+  const { id, crawlerName, playerName, hp, maxHp, mp, maxMp, isAlive, viewerCount, statusEffects, aiFavour, portrait } = character
 
   const [editingHp, setEditingHp] = useState(false)
   const [hpInput, setHpInput] = useState('')
@@ -49,7 +49,7 @@ export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign,
   }
 
   const borderCol = isAlive ? 'border-hud-border hover:border-hud-accent' : 'border-red-900'
-  const portrait = getCrawlerPortrait(crawlerName)
+  const portrait = getCrawlerPortrait(crawlerName, character.portrait)
 
   const quickBtnCls = 'h-6 w-6 text-xs border border-hud-border font-hud flex items-center justify-center hover:border-hud-accent hover:text-hud-accent transition-colors text-hud-muted leading-none'
 
