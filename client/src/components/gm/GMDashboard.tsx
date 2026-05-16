@@ -14,8 +14,9 @@ interface GMDashboardProps {
   send: (msg: WSMessage) => void
 }
 
-type GmMode = 'live' | 'plan' | 'run'
+type GmMode = 'plan' | 'session'
 type NotesSize = 'sm' | 'md' | 'lg'
+type SessionMobileTab = 'map' | 'room' | 'log'
 
 // ── HP dot colour helper ───────────────────────────────────────
 function hpDotClass(hp: number, maxHp: number): string {
@@ -66,21 +67,17 @@ function CollapsedCharStrip({ characters, onExpand }: CollapsedCharStripProps) {
 // ── Main GMDashboard ───────────────────────────────────────────
 
 export function GMDashboard({ state, send }: GMDashboardProps) {
-  const [mobilePanel, setMobilePanel] = useState<'room' | 'log'>('room')
+  const [mobileTab, setMobileTab] = useState<SessionMobileTab>('map')
   const [dmMessages, setDmMessages] = useState<DirectMessage[]>([])
   const [sessionMgrOpen, setSessionMgrOpen] = useState(false)
-  const [gmMode, setGmMode] = useState<GmMode>('live')
+  const [gmMode, setGmMode] = useState<GmMode>('session')
   const [notesSize, setNotesSize] = useState<NotesSize>('md')
   const [charBarCollapsed, setCharBarCollapsed] = useState(false)
   const handleDMRead = useCallback(() => setDmMessages(prev => prev.map(m => ({ ...m, read: true }))), [])
 
-  // Auto-collapse char bar when entering plan/run mode; restore on live
+  // Auto-collapse char bar in both modes; restore never (manual toggle only resets on mode change)
   useEffect(() => {
-    if (gmMode === 'plan' || gmMode === 'run') {
-      setCharBarCollapsed(true)
-    } else {
-      setCharBarCollapsed(false)
-    }
+    setCharBarCollapsed(true)
   }, [gmMode])
 
   const activeCharacters = state.characters.filter(c => c.isActive !== false)
@@ -96,14 +93,8 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
       <div className="border-b border-hud-border px-3 py-2 flex items-center justify-between bg-hud-panel flex-shrink-0 gap-2">
         <div className="font-hud text-hud-accent tracking-widest text-xs sm:text-sm flex-shrink-0">THE HUD — GM</div>
 
-        {/* PLAN / RUN mode toggle */}
+        {/* PLAN / SESSION mode toggle */}
         <div className="flex gap-1 flex-shrink-0">
-          <button
-            onClick={() => setGmMode('live')}
-            className={`font-hud text-xs border px-2 py-1 transition-colors ${gmMode === 'live' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'}`}
-          >
-            LIVE
-          </button>
           <button
             onClick={() => setGmMode('plan')}
             className={`font-hud text-xs border px-2 py-1 transition-colors ${gmMode === 'plan' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'}`}
@@ -111,16 +102,16 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
             PLAN
           </button>
           <button
-            onClick={() => setGmMode('run')}
-            className={`font-hud text-xs border px-2 py-1 transition-colors ${gmMode === 'run' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'}`}
+            onClick={() => setGmMode('session')}
+            className={`font-hud text-xs border px-2 py-1 transition-colors ${gmMode === 'session' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'}`}
           >
-            RUN
+            SESSION
           </button>
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Notes size toggle — only in RUN mode */}
-          {gmMode === 'run' && (
+          {/* Notes size toggle — only in SESSION mode */}
+          {gmMode === 'session' && (
             <div className="flex gap-1 flex-shrink-0">
               {(['sm', 'md', 'lg'] as NotesSize[]).map(size => (
                 <button
@@ -151,15 +142,19 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
           </div>
         </div>
 
-        {/* Mobile panel switcher — only relevant in live mode */}
-        {gmMode === 'live' && (
+        {/* Mobile tab switcher — only in SESSION mode */}
+        {gmMode === 'session' && (
           <div className="flex gap-1 sm:hidden">
-            <button onClick={() => setMobilePanel('room')}
-              className={`font-hud text-xs border px-2 py-1 transition-colors ${mobilePanel === 'room' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
+            <button onClick={() => setMobileTab('map')}
+              className={`font-hud text-xs border px-2 py-1 transition-colors ${mobileTab === 'map' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
+              MAP
+            </button>
+            <button onClick={() => setMobileTab('room')}
+              className={`font-hud text-xs border px-2 py-1 transition-colors ${mobileTab === 'room' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
               ROOM
             </button>
-            <button onClick={() => setMobilePanel('log')}
-              className={`font-hud text-xs border px-2 py-1 transition-colors ${mobilePanel === 'log' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
+            <button onClick={() => setMobileTab('log')}
+              className={`font-hud text-xs border px-2 py-1 transition-colors ${mobileTab === 'log' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
               LOG
             </button>
           </div>
@@ -184,24 +179,6 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
       {/* Main area — switches based on gmMode */}
       <div className="flex flex-1 overflow-hidden">
 
-        {/* ── LIVE mode: existing Room + Log panels ─── */}
-        {gmMode === 'live' && (
-          <>
-            {/* Desktop: both panels visible */}
-            <div className="hidden sm:flex flex-1 overflow-hidden">
-              <RoomPanel floor={state.floor} send={send} />
-              <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
-            </div>
-            {/* Mobile: one panel at a time */}
-            <div className="flex sm:hidden flex-1 overflow-hidden">
-              {mobilePanel === 'room'
-                ? <RoomPanel floor={state.floor} send={send} />
-                : <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
-              }
-            </div>
-          </>
-        )}
-
         {/* ── PLAN mode: FloorPlanner full-width ────── */}
         {gmMode === 'plan' && (
           <div className="flex-1 overflow-hidden">
@@ -209,18 +186,47 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
           </div>
         )}
 
-        {/* ── RUN mode: FloorRunnerPanel 55% + RoomPanel 45% ── */}
-        {gmMode === 'run' && (
-          <div className="flex flex-1 overflow-hidden">
-            {/* Runner canvas — 55% */}
-            <div className="flex-[55] min-w-0 overflow-hidden flex flex-col border-r border-hud-border">
-              <FloorRunnerPanel send={send} notesTextSize={notesSize} />
+        {/* ── SESSION mode: FloorRunnerPanel 55% + split right column 45% ── */}
+        {gmMode === 'session' && (
+          <>
+            {/* Desktop layout */}
+            <div className="hidden sm:flex flex-1 overflow-hidden">
+              {/* Left column — map/runner */}
+              <div className="flex-[55] min-w-0 overflow-hidden flex flex-col border-r border-hud-border">
+                <FloorRunnerPanel send={send} notesTextSize={notesSize} />
+              </div>
+              {/* Right column — room panel + log panel stacked */}
+              <div className="flex-[45] min-w-0 flex flex-col border-l border-hud-border overflow-hidden">
+                {/* Top half: RoomPanel */}
+                <div className="flex-[55] min-h-0 overflow-hidden border-b border-hud-border">
+                  <RoomPanel floor={state.floor} send={send} />
+                </div>
+                {/* Bottom half: GMLogPanel */}
+                <div className="flex-[45] min-h-0 overflow-hidden flex flex-col">
+                  <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
+                </div>
+              </div>
             </div>
-            {/* Room panel — 45% */}
-            <div className="flex-[45] min-w-0 overflow-hidden">
-              <RoomPanel floor={state.floor} send={send} />
+
+            {/* Mobile layout — single panel at a time */}
+            <div className="flex sm:hidden flex-1 overflow-hidden">
+              {mobileTab === 'map' && (
+                <div className="flex-1 overflow-hidden flex flex-col">
+                  <FloorRunnerPanel send={send} notesTextSize={notesSize} />
+                </div>
+              )}
+              {mobileTab === 'room' && (
+                <div className="flex-1 overflow-hidden">
+                  <RoomPanel floor={state.floor} send={send} />
+                </div>
+              )}
+              {mobileTab === 'log' && (
+                <div className="flex-1 overflow-hidden flex flex-col">
+                  <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
+                </div>
+              )}
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

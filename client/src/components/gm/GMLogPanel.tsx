@@ -59,7 +59,7 @@ export function GMLogPanel({ gmLog, lootQueue, characters, send }: GMLogPanelPro
   const getCharName = (id: string) => characters.find(c => c.id === id)?.crawlerName ?? '???'
 
   return (
-    <div className="w-72 border-l border-hud-border bg-hud-panel flex flex-col overflow-hidden flex-shrink-0">
+    <div className="flex-1 border-l border-hud-border bg-hud-panel flex flex-col overflow-hidden min-h-0">
 
       {/* ── EVENT LOG — top, gets most space ─────────────── */}
       <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
