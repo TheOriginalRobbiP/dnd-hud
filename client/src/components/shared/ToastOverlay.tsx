@@ -20,10 +20,10 @@ const ICONS: Record<Toast['type'], string> = {
 }
 
 const BORDER_COLOURS: Record<Toast['type'], string> = {
-  announcement: 'border-hud-accent',
-  achievement: 'border-yellow-400',
-  loot: 'border-tier-platinum',
-  warning: 'border-hp-low',
+  announcement: 'border-t-hud-accent',
+  achievement: 'border-t-yellow-400',
+  loot: 'border-t-tier-platinum',
+  warning: 'border-t-hp-low',
 }
 
 export function ToastOverlay({ toasts, onDismiss }: ToastOverlayProps) {
@@ -42,7 +42,7 @@ export function ToastOverlay({ toasts, onDismiss }: ToastOverlayProps) {
     <div className="fixed bottom-4 right-4 flex flex-col gap-2 z-50 max-w-xs w-full pointer-events-none">
       {toasts.map(toast => (
         <div key={toast.id}
-          className={`bg-hud-panel border-l-4 ${BORDER_COLOURS[toast.type]} px-4 py-3 
+          className={`bg-hud-panel border border-hud-border border-t-2 ${BORDER_COLOURS[toast.type]} px-4 py-3 
                      flex gap-3 items-start shadow-lg animate-slide-in pointer-events-auto`}
           onClick={() => onDismiss(toast.id)}
           role="status"

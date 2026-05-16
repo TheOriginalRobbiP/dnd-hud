@@ -168,14 +168,14 @@ export function DisplayScreen() {
           <>
             {/* Top-left: theme name */}
             <div className="p-6">
-              <span className="font-hud text-sm text-hud-muted tracking-widest uppercase">
+              <span className="font-hud text-xs text-hud-muted tracking-widest uppercase">
                 {room.theme}
               </span>
             </div>
 
             {/* Centre: room name */}
             <div className="flex-1 flex items-center justify-center px-8">
-              <h1 className="text-5xl font-hud text-hud-accent tracking-widest text-center uppercase">
+              <h1 className="text-6xl font-hud text-hud-accent tracking-widest text-center uppercase">
                 {room.roomName}
               </h1>
             </div>
@@ -194,7 +194,7 @@ export function DisplayScreen() {
               </div>
 
               {/* Target — bottom-right */}
-              <div className="font-hud text-sm text-hud-muted tracking-widest text-right">
+              <div className="font-hud text-xs text-hud-muted tracking-widest text-right">
                 TARGET: {room.roomTarget}
               </div>
             </div>
