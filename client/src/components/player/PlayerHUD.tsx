@@ -10,12 +10,15 @@ import { SkillsTab } from './SkillsTab'
 import { InventoryTab } from './InventoryTab'
 import { FameTab } from './FameTab'
 
-type Tab = 'status' | 'skills' | 'inventory' | 'fame'
+import { RulesTab } from './RulesTab'
+
+type Tab = 'status' | 'skills' | 'inventory' | 'fame' | 'rules'
 const TABS: { id: Tab; label: string }[] = [
   { id: 'status', label: 'STATUS' },
   { id: 'skills', label: 'SKILLS' },
   { id: 'inventory', label: 'INVENTORY' },
   { id: 'fame', label: 'FAME' },
+  { id: 'rules', label: 'RULES' },
 ]
 
 interface PlayerHUDProps {
@@ -84,6 +87,7 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead }: Play
           onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)}
         />}
         {tab === 'fame' && <FameTab character={character} floorNumber={state.floor.floorNumber} />}
+        {tab === 'rules' && <RulesTab />}
       </div>
       <ToastOverlay toasts={toasts} onDismiss={dismiss} />
       {inspectChar && <InspectModal character={inspectChar} onClose={() => setInspectCharId(null)} hideNotes />}

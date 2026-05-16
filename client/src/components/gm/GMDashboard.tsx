@@ -8,6 +8,7 @@ import { SessionLog } from './SessionLog'
 import { SessionManager } from './SessionManager'
 import { FloorPlanner } from './FloorPlanner'
 import { FloorRunnerPanel } from './FloorRunnerPanel'
+import { GMRulesPanel } from './GMRulesPanel'
 import { SoundboardPanel } from './SoundboardPanel'
 
 interface GMDashboardProps {
@@ -15,7 +16,7 @@ interface GMDashboardProps {
   send: (msg: WSMessage) => void
 }
 
-type GmMode = 'plan' | 'session' | 'sound'
+type GmMode = 'plan' | 'session' | 'sound' | 'rules'
 type NotesSize = 'sm' | 'md' | 'lg'
 type SessionMobileTab = 'map' | 'room' | 'log'
 
@@ -115,6 +116,12 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
           >
             🔊 SOUND
           </button>
+          <button
+            onClick={() => setGmMode('rules')}
+            className={`font-hud text-xs border px-2 py-1 transition-colors ${gmMode === 'rules' ? 'border-blue-400 text-blue-400' : 'border-hud-border text-hud-muted hover:border-blue-400 hover:text-blue-400'}`}
+          >
+            📖 RULES
+          </button>
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -209,6 +216,13 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
         {gmMode === 'sound' && (
           <div className="flex-1 overflow-y-auto">
             <SoundboardPanel send={send} />
+          </div>
+        )}
+
+        {/* ── RULES mode: GM reference full-width ────── */}
+        {gmMode === 'rules' && (
+          <div className="flex-1 overflow-y-auto">
+            <GMRulesPanel />
           </div>
         )}
 
