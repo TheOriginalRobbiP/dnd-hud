@@ -146,6 +146,7 @@ export interface Mob {
 
 // ── Floor State ──────────────────────────────────────────────
 export interface FloorState {
+  sessionActive: boolean
   floorNumber: number
   neighbourhoodName: string
   roomNumber: number
@@ -195,6 +196,8 @@ export type WSMessage =
   | { type: 'full_state_sync_request' }
   | { type: 'ai_favour_update'; charId: string; delta: number }
   | { type: 'session_reset' }
+  | { type: 'session_start' }
+  | { type: 'session_stop' }
   | { type: 'session_snapshot_save'; name: string }
   | { type: 'session_snapshot_load'; snapshotId: string }
   | { type: 'display_room_enter'; roomId: string; roomName: string; flavourArt: string | null; roomTarget: number; theme: string; themeColour: string }

@@ -189,6 +189,22 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
       }
       break
     }
+    case 'session_start': {
+      await db.update(floorState)
+        .set({ sessionActive: true, updatedAt: new Date() })
+        .where(eq(floorState.id, 1))
+      await db.insert(gmLog).values({ message: '[System] Session started — crawlers can now join.' })
+      break
+    }
+    case 'session_stop': {
+      // Deactivate all characters (clear joined slots)
+      await db.update(characters).set({ isActive: false, updatedAt: new Date() })
+      await db.update(floorState)
+        .set({ sessionActive: false, updatedAt: new Date() })
+        .where(eq(floorState.id, 1))
+      await db.insert(gmLog).values({ message: '[System] Session stopped — all crawlers deregistered.' })
+      break
+    }
     case 'session_reset': {
       // Reset all characters: HP to max, clear status effects, revive dead
       const allChars = await db.select().from(characters)

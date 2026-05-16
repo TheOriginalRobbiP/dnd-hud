@@ -27,6 +27,7 @@ export function DisplayScreen() {
   const [timer, setTimer] = useState<TimerState>({ active: false, seconds: null, startedAt: null })
   const [connected, setConnected] = useState(false)
   const [countdown, setCountdown] = useState<number | null>(null)
+  const [sessionActive, setSessionActive] = useState(false)
   const wsRef = useRef<WebSocket | null>(null)
 
   // ── WebSocket connection ──────────────────────────────────
@@ -71,6 +72,7 @@ export function DisplayScreen() {
             case 'full_state_sync': {
               const state = (msg as { type: 'full_state_sync'; state: AppState }).state
               const floor = state.floor
+              setSessionActive(floor.sessionActive ?? false)
               setTimer({
                 active: floor.collapseTimerActive,
                 seconds: floor.collapseTimerSeconds,
@@ -129,6 +131,16 @@ export function DisplayScreen() {
   const timerCritical = countdown !== null && countdown < 30
 
   // ── Render ────────────────────────────────────────────────
+  if (!sessionActive) {
+    return (
+      <div className="h-screen w-screen bg-hud-bg flex flex-col items-center justify-center gap-6">
+        <div className="font-hud text-hud-accent text-4xl tracking-widest animate-pulse">THE HUD</div>
+        <div className="font-hud text-hud-muted text-sm tracking-wider">DUNGEON CRAWLER CARL — COMPANION SYSTEM</div>
+        <div className="font-hud text-hud-muted text-xs opacity-50 mt-8 tracking-widest animate-pulse">AWAITING SESSION START</div>
+      </div>
+    )
+  }
+
   return (
     <div
       className="relative h-screen w-screen overflow-hidden bg-hud-bg flex flex-col"

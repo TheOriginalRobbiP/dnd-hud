@@ -31,6 +31,7 @@ export const characters = pgTable('characters', {
 // ── Floor State ──────────────────────────────────────────────
 export const floorState = pgTable('floor_state', {
   id: integer('id').primaryKey().default(1), // singleton row
+  sessionActive: boolean('session_active').notNull().default(false),
   floorNumber: integer('floor_number').notNull().default(1),
   neighbourhoodName: text('neighbourhood_name').notNull().default('The Commons'),
   roomNumber: integer('room_number').notNull().default(1),

@@ -81,6 +81,7 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
   }, [gmMode])
 
   const activeCharacters = state.characters.filter(c => c.isActive !== false)
+  const sessionActive = state.floor?.sessionActive ?? false
 
   return (
     <div className="h-screen flex flex-col bg-hud-bg overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
@@ -110,6 +111,17 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
+          {/* SESSION START / STOP — prominent */}
+          <button
+            onClick={() => send({ type: sessionActive ? 'session_stop' : 'session_start' })}
+            className={`font-hud text-xs border px-3 py-1 tracking-wider transition-colors ${
+              sessionActive
+                ? 'border-red-700 text-red-400 hover:bg-red-950'
+                : 'border-green-700 text-green-400 hover:bg-green-950'
+            }`}
+          >
+            {sessionActive ? '⏹ STOP' : '▶ START'}
+          </button>
           {/* Notes size toggle — only in SESSION mode */}
           {gmMode === 'session' && (
             <div className="flex gap-1 flex-shrink-0">

@@ -152,6 +152,7 @@ export interface Mob {
 
 // ── Floor State ──────────────────────────────────────────────
 export interface FloorState {
+  sessionActive: boolean
   floorNumber: number
   neighbourhoodName: string
   roomNumber: number
@@ -201,6 +202,8 @@ export type WSMessage =
   | { type: 'full_state_sync_request' }
   | { type: 'ai_favour_update'; charId: string; delta: number }   // +N grant, -N spend
   | { type: 'session_reset' }                                     // GM: reset HP/status/mobs/loot
+  | { type: 'session_start' }                                     // GM: open session — crawlers can join, display activates
+  | { type: 'session_stop' }                                      // GM: close session — kick all crawlers, blank display
   | { type: 'session_snapshot_save'; name: string }               // GM: save named snapshot
   | { type: 'session_snapshot_load'; snapshotId: string }         // GM: restore snapshot
   | { type: 'display_room_enter'; roomId: string; roomName: string; flavourArt: string | null; roomTarget: number; theme: string; themeColour: string }

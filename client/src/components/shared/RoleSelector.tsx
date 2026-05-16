@@ -5,6 +5,7 @@ import { PREGENS } from '../../data/pregens'
 
 interface RoleSelectorProps {
   characters: Character[]
+  sessionActive: boolean
   onSelect: (role: UserRole) => void
   onCharacterCreated?: () => void
 }
@@ -17,7 +18,7 @@ type Stage =
 
 const SLOT_LABELS = ['PLAYER 1', 'PLAYER 2', 'PLAYER 3', 'PLAYER 4']
 
-export function RoleSelector({ characters, onSelect, onCharacterCreated }: RoleSelectorProps) {
+export function RoleSelector({ characters, sessionActive, onSelect, onCharacterCreated }: RoleSelectorProps) {
   const [stage, setStage] = useState<Stage>({ type: 'home' })
   const [playerName, setPlayerName] = useState('')
   const [saving, setSaving] = useState(false)
@@ -233,15 +234,20 @@ export function RoleSelector({ characters, onSelect, onCharacterCreated }: RoleS
       <div className="w-full max-w-xs flex flex-col gap-2">
         {SLOT_LABELS.map((label, i) => {
           const char = characters[i]
+          const isDisabled = !sessionActive
           return (
             <button
               key={i}
-              onClick={() => setStage({ type: 'slot', slot: i + 1 })}
-              className="py-3 px-4 border border-hud-border font-hud text-left transition-colors
-                         hover:border-hud-accent hover:text-hud-accent text-hud-text tracking-wider flex flex-col"
+              onClick={() => !isDisabled && setStage({ type: 'slot', slot: i + 1 })}
+              disabled={isDisabled}
+              className={`py-3 px-4 border font-hud text-left transition-colors flex flex-col ${
+                isDisabled
+                  ? 'border-hud-border text-hud-muted opacity-40 cursor-not-allowed'
+                  : 'border-hud-border hover:border-hud-accent hover:text-hud-accent text-hud-text'
+              } tracking-wider`}
             >
               <span>{label}</span>
-              {char ? (
+              {char && char.isActive ? (
                 <span className="text-xs text-hud-muted mt-1">{char.crawlerName} {!char.isAlive && '☠'}</span>
               ) : (
                 <span className="text-xs text-hud-muted italic mt-1">VACANT</span>
@@ -249,6 +255,11 @@ export function RoleSelector({ characters, onSelect, onCharacterCreated }: RoleS
             </button>
           )
         })}
+        {!sessionActive && (
+          <p className="font-hud text-xs text-hud-muted italic text-center mt-2 opacity-60">
+            Waiting for GM to start the session...
+          </p>
+        )}
       </div>
 
       <p className="font-hud text-hud-muted text-sm mt-12 opacity-40">

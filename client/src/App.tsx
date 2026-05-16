@@ -60,7 +60,7 @@ function App() {
   }, [send])
 
   if (!role) return (
-    <>{connBadge}<RoleSelector characters={state?.characters ?? []} onSelect={handleRoleSelect} onCharacterCreated={handleCharacterCreated} /></>
+    <>{connBadge}<RoleSelector characters={state?.characters ?? []} sessionActive={state?.floor?.sessionActive ?? false} onSelect={handleRoleSelect} onCharacterCreated={handleCharacterCreated} /></>
   )
 
   if (role === 'gm') {
