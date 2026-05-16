@@ -35,8 +35,15 @@ interface FloorRoom {
   tags: string[]
   roomTarget: number
   flavourArt: string | null
+  mobTemplateIds: string
+  lootTier: string | null
   posX: number
   posY: number
+}
+
+interface MobTemplate {
+  id: string
+  name: string
 }
 
 interface RoomConnection {
@@ -144,7 +151,17 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
   const [tags, setTags] = useState(room.tags.join(', '))
   const [roomTarget, setRoomTarget] = useState(String(room.roomTarget))
   const [flavourArt, setFlavourArt] = useState(room.flavourArt ?? '')
+  const [lootTier, setLootTier] = useState(room.lootTier ?? '')
+  const [selectedMobs, setSelectedMobs] = useState<string[]>(
+    room.mobTemplateIds ? room.mobTemplateIds.split(',').map(s => s.trim()).filter(Boolean) : []
+  )
+  const [mobTemplates, setMobTemplates] = useState<MobTemplate[]>([])
   const [deleting, setDeleting] = useState(false)
+
+  // Fetch mob templates once on mount
+  useEffect(() => {
+    fetch('/api/mobs').then(r => r.json()).then((data: MobTemplate[]) => setMobTemplates(data)).catch(() => {})
+  }, [])
 
   // Keep local state in sync if room prop changes (different node selected)
   useEffect(() => {
@@ -153,8 +170,18 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
     setTags(room.tags.join(', '))
     setRoomTarget(String(room.roomTarget))
     setFlavourArt(room.flavourArt ?? '')
+    setLootTier(room.lootTier ?? '')
+    setSelectedMobs(room.mobTemplateIds ? room.mobTemplateIds.split(',').map(s => s.trim()).filter(Boolean) : [])
     setDeleting(false)
   }, [room.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const toggleMob = (id: string) => {
+    const next = selectedMobs.includes(id)
+      ? selectedMobs.filter(m => m !== id)
+      : [...selectedMobs, id]
+    setSelectedMobs(next)
+    save({ mobTemplateIds: next.join(',') })
+  }
 
   const save = useCallback(async (patch: Partial<FloorRoom>) => {
     const res = await fetch(`/api/floor-plans/${planId}/rooms/${room.id}`, {
@@ -244,8 +271,50 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
             onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
             placeholder="https://..."
             className="bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2 focus:border-hud-accent outline-none"
-          />
+          />\n        </label>
+
+        {/* Loot Tier */}
+        <label className="flex flex-col gap-1">
+          <span className="font-hud text-[10px] text-hud-muted tracking-wider">LOOT TIER</span>
+          <select
+            value={lootTier}
+            onChange={e => { setLootTier(e.target.value); save({ lootTier: e.target.value || null }) }}
+            className="bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2 focus:border-hud-accent outline-none"
+          >
+            <option value="">— none —</option>
+            {['bronze', 'silver', 'gold', 'platinum', 'legendary', 'celestial'].map(t => (
+              <option key={t} value={t}>{t.toUpperCase()}</option>
+            ))}
+          </select>
         </label>
+
+        {/* Mob Templates */}
+        {mobTemplates.length > 0 && (
+          <div className="flex flex-col gap-1">
+            <span className="font-hud text-[10px] text-hud-muted tracking-wider">PRE-ASSIGNED MOBS</span>
+            <div className="flex flex-col gap-1 max-h-36 overflow-y-auto border border-hud-border p-2 bg-hud-bg">
+              {mobTemplates.map(mob => {
+                const active = selectedMobs.includes(mob.id)
+                return (
+                  <button
+                    key={mob.id}
+                    onClick={() => toggleMob(mob.id)}
+                    className={`text-left font-hud text-xs px-2 py-1 border transition-colors ${
+                      active
+                        ? 'border-hud-accent text-hud-accent bg-hud-accent/10'
+                        : 'border-transparent text-hud-muted hover:border-hud-border hover:text-hud-text'
+                    }`}
+                  >
+                    {active ? '✓ ' : '+ '}{mob.name}
+                  </button>
+                )
+              })}
+            </div>
+            {selectedMobs.length > 0 && (
+              <span className="font-hud text-[10px] text-hud-muted">{selectedMobs.length} mob{selectedMobs.length !== 1 ? 's' : ''} assigned</span>
+            )}
+          </div>
+        )}
 
         {/* Delete */}
         <button
