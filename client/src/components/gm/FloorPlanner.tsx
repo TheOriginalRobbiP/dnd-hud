@@ -113,7 +113,7 @@ function roomToNode(room: FloorRoom): Node {
     id: room.id,
     type: 'room',
     position: { x: room.posX, y: room.posY },
-    data: { label: room.name, tags: room.tags } as RoomNodeData,
+    data: { label: room.name, tags: normaliseTags(room.tags) } as RoomNodeData,
   }
 }
 
@@ -411,7 +411,7 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
     setNodes(prev => prev.map(n => {
       const room = rooms.find(r => r.id === n.id)
       if (!room) return n
-      return { ...n, data: { label: room.name, tags: room.tags } }
+      return { ...n, data: { label: room.name, tags: normaliseTags(room.tags) } }
     }))
   }, [rooms, setNodes])
 
