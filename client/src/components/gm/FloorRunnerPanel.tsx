@@ -71,6 +71,15 @@ function tagBorderClass(tags: string[]): string {
   return 'border-hud-border'
 }
 
+function tagPillClass(tag: string): string {
+  if (tag === 'boss')      return 'border-red-600 text-red-400'
+  if (tag === 'trap')      return 'border-amber-500 text-amber-400'
+  if (tag === 'narrative') return 'border-blue-500 text-blue-400'
+  if (tag === 'loot-room') return 'border-green-600 text-green-400'
+  if (tag === 'safe')      return 'border-teal-500 text-teal-400'
+  return 'border-hud-border text-hud-muted'
+}
+
 function parseTags(tags: string[] | string): string[] {
   if (Array.isArray(tags)) return tags
   if (!tags) return []
@@ -145,67 +154,170 @@ function connectionToEdge(conn: RoomConnection): Edge {
   }
 }
 
-// ── GM Notes Sidebar ───────────────────────────────────────────
+// ── Description section parser ─────────────────────────────────
+
+interface DescSection {
+  header: string | null
+  body: string
+}
+
+const SECTION_RE = /^([A-Z][A-Z\s/]+):?\s*$/
+
+function parseDescriptionSections(text: string): DescSection[] {
+  if (!text) return []
+  const lines = text.split('\n')
+  const sections: DescSection[] = []
+  let currentHeader: string | null = null
+  let currentLines: string[] = []
+
+  for (const line of lines) {
+    if (SECTION_RE.test(line.trim())) {
+      if (currentLines.join('').trim()) {
+        sections.push({ header: currentHeader, body: currentLines.join('\n').trim() })
+      }
+      currentHeader = line.trim().replace(/:$/, '')
+      currentLines = []
+    } else {
+      currentLines.push(line)
+    }
+  }
+  if (currentLines.join('').trim()) {
+    sections.push({ header: currentHeader, body: currentLines.join('\n').trim() })
+  }
+
+  return sections
+}
+
+// ── GM Notes Panel ─────────────────────────────────────────────
+
+type NotesTextSize = 'sm' | 'md' | 'lg'
 
 interface RoomNotesPanelProps {
   room: FloorRoom
   onClose: () => void
+  onEnterRoom: (roomId: string) => void
+  entering: string | null
+  notesTextSize?: NotesTextSize
 }
 
-function RoomNotesPanel({ room, onClose }: RoomNotesPanelProps) {
+function textSizeClass(size: NotesTextSize): string {
+  if (size === 'sm') return 'text-sm leading-normal'
+  if (size === 'lg') return 'text-lg leading-relaxed'
+  return 'text-base leading-relaxed'
+}
+
+function RoomNotesPanel({ room, onClose, onEnterRoom, entering, notesTextSize = 'md' }: RoomNotesPanelProps) {
   const tagList = parseTags(room.tags)
+  const descSections = parseDescriptionSections(room.description)
+  const bodyTextClass = textSizeClass(notesTextSize)
+  const isEntering = entering === room.id
+
   return (
-    <div className="w-72 flex-shrink-0 border-l border-hud-border bg-hud-panel flex flex-col overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-hud-border flex-shrink-0">
-        <span className="font-hud text-xs text-hud-accent tracking-wider">ROOM INFO</span>
-        <button onClick={onClose} className="font-hud text-hud-muted hover:text-hp-low transition-colors text-xs">✕</button>
-      </div>
-      <div className="flex-1 overflow-y-auto flex flex-col gap-3 p-4">
-        <div className="flex flex-col gap-1">
-          <span className="font-hud text-[10px] text-hud-muted tracking-wider">ROOM NAME</span>
-          <span className="font-hud text-sm text-hud-text">{room.name}</span>
-        </div>
+    <div className="flex flex-col h-full overflow-hidden border-l border-hud-border bg-hud-panel w-full">
 
-        {room.description && (
-          <div className="flex flex-col gap-1">
-            <span className="font-hud text-[10px] text-hud-muted tracking-wider">GM NOTES</span>
-            <p className="font-hud text-sm text-hud-text whitespace-pre-wrap">{room.description}</p>
+      {/* HEADER */}
+      <div className="flex-shrink-0 border-b border-hud-border px-5 py-3 flex flex-col gap-2">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-1 min-w-0">
+            <h2 className="font-hud text-xl text-hud-text leading-tight truncate">{room.name}</h2>
+            {tagList.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {tagList.map(tag => (
+                  <span
+                    key={tag}
+                    className={`font-hud text-[10px] border px-1.5 py-0.5 tracking-wider ${tagPillClass(tag)}`}
+                  >
+                    {tag.toUpperCase()}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-
-        {tagList.length > 0 && (
-          <div className="flex flex-col gap-1">
-            <span className="font-hud text-[10px] text-hud-muted tracking-wider">TAGS</span>
-            <div className="flex flex-wrap gap-1">
-              {tagList.map(tag => (
-                <span key={tag} className="font-hud text-[10px] border border-hud-border text-hud-muted px-1">
-                  {tag}
-                </span>
-              ))}
+          <div className="flex items-start gap-3 flex-shrink-0">
+            <div className="font-hud text-2xl font-bold text-hud-accent leading-none">
+              TARGET: {room.roomTarget}
             </div>
+            <button
+              onClick={onClose}
+              className="font-hud text-hud-muted hover:text-hp-low transition-colors text-sm leading-none mt-0.5"
+            >
+              ✕
+            </button>
           </div>
-        )}
-
-        <div className="flex flex-col gap-1">
-          <span className="font-hud text-[10px] text-hud-muted tracking-wider">ROOM TARGET</span>
-          <span className="font-hud text-sm text-hud-accent">{room.roomTarget}</span>
         </div>
 
-        {room.flavourArt && (
-          <div className="flex flex-col gap-1">
-            <span className="font-hud text-[10px] text-hud-muted tracking-wider">FLAVOUR ART</span>
-            <img src={room.flavourArt} alt={room.name} className="w-full object-cover border border-hud-border" />
-          </div>
-        )}
-
-        <div className="flex flex-col gap-1">
-          <span className="font-hud text-[10px] text-hud-muted tracking-wider">STATUS</span>
+        {/* Status badges in header */}
+        {(room.isCurrentRoom || room.isVisited) && (
           <div className="flex gap-2">
-            {room.isCurrentRoom && <span className="font-hud text-[10px] text-hud-accent border border-hud-accent px-1">CURRENT</span>}
-            {room.isVisited && <span className="font-hud text-[10px] text-hud-muted border border-hud-border px-1">VISITED</span>}
+            {room.isCurrentRoom && (
+              <span className="font-hud text-xs text-hud-accent border border-hud-accent px-2 py-0.5 tracking-wider">CURRENT</span>
+            )}
+            {room.isVisited && (
+              <span className="font-hud text-xs text-hud-muted border border-hud-border px-2 py-0.5 tracking-wider">VISITED</span>
+            )}
           </div>
-        </div>
+        )}
       </div>
+
+      {/* BODY */}
+      <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-5">
+
+        {/* GM Notes / Description */}
+        {room.description && (
+          <div className="flex flex-col gap-0">
+            <div className="font-hud text-[11px] text-hud-accent tracking-widest uppercase border-b border-hud-border pb-1 mb-3">
+              GM NOTES
+            </div>
+            {descSections.length <= 1 && descSections[0]?.header === null ? (
+              <p className={`font-hud ${bodyTextClass} text-hud-text whitespace-pre-wrap`}>
+                {room.description}
+              </p>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {descSections.map((section, i) => (
+                  <div key={i} className="flex flex-col gap-1">
+                    {section.header && (
+                      <div className="font-hud text-[11px] text-hud-muted tracking-wider uppercase">
+                        {section.header}
+                      </div>
+                    )}
+                    <p className={`font-hud ${bodyTextClass} text-hud-text whitespace-pre-wrap`}>
+                      {section.body}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Flavour Art */}
+        {room.flavourArt && (
+          <div className="flex flex-col gap-2">
+            <div className="font-hud text-[11px] text-hud-accent tracking-widest uppercase border-b border-hud-border pb-1">
+              FLAVOUR ART
+            </div>
+            <img
+              src={room.flavourArt}
+              alt={room.name}
+              className="w-full object-cover border border-hud-border"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* FOOTER */}
+      {!room.isCurrentRoom && (
+        <div className="flex-shrink-0 border-t border-hud-border px-5 py-3">
+          <button
+            onClick={() => onEnterRoom(room.id)}
+            disabled={!!entering}
+            className="w-full font-hud tracking-widest py-2 bg-hud-accent text-white transition-opacity disabled:opacity-50"
+          >
+            {isEntering ? 'ENTERING...' : 'ENTER ROOM'}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -214,9 +326,10 @@ function RoomNotesPanel({ room, onClose }: RoomNotesPanelProps) {
 
 interface FloorRunnerPanelProps {
   send: (msg: WSMessage) => void
+  notesTextSize?: NotesTextSize
 }
 
-export function FloorRunnerPanel({ send }: FloorRunnerPanelProps) {
+export function FloorRunnerPanel({ send, notesTextSize = 'md' }: FloorRunnerPanelProps) {
   const [activePlan, setActivePlan] = useState<FloorPlan | null>(null)
   const [rooms, setRooms] = useState<FloorRoom[]>([])
   const [connections, setConnections] = useState<RoomConnection[]>([])
@@ -374,11 +487,10 @@ export function FloorRunnerPanel({ send }: FloorRunnerPanelProps) {
     }
   }, [rooms, entering, send])
 
-  // ── Node click ────────────────────────────────────────────────
+  // ── Node click — select room (don't auto-enter) ───────────────
   const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
-    setSelectedRoomId(node.id)
-    void enterRoom(node.id)
-  }, [enterRoom])
+    setSelectedRoomId(prev => prev === node.id ? null : node.id)
+  }, [])
 
   const selectedRoom = rooms.find(r => r.id === selectedRoomId) ?? null
 
@@ -416,36 +528,41 @@ export function FloorRunnerPanel({ send }: FloorRunnerPanelProps) {
         </div>
       </div>
 
-      {/* Body: canvas with overlay GM notes panel */}
-      <div className="flex flex-1 overflow-hidden min-h-0 relative">
+      {/* Body: dynamic split — map + notes panel */}
+      <div className="flex flex-1 overflow-hidden min-h-0">
 
-        {/* React Flow canvas — read-only, fills all space */}
-        <div className="absolute inset-0">
-          <ReactFlow
-            nodes={nodes}
-            edges={edgeList}
-            onNodesChange={onNodesChange}
-            onNodeClick={onNodeClick}
-            nodeTypes={nodeTypes}
-            nodesDraggable={false}
-            nodesConnectable={false}
-            panOnScroll={true}
-            zoomOnScroll={true}
-            fitView
-            colorMode="dark"
-            style={{ background: 'oklch(8% 0.015 265)' }}
-          >
-            <Background color="oklch(22% 0.02 265)" gap={24} />
-            <Controls />
-          </ReactFlow>
+        {/* React Flow canvas — fills 100% when no room selected, 38% when selected */}
+        <div className={`flex flex-col overflow-hidden transition-all duration-300 ${selectedRoom ? 'flex-[38] min-w-0' : 'flex-1'}`}>
+          <div className="flex-1 relative">
+            <ReactFlow
+              nodes={nodes}
+              edges={edgeList}
+              onNodesChange={onNodesChange}
+              onNodeClick={onNodeClick}
+              nodeTypes={nodeTypes}
+              nodesDraggable={false}
+              nodesConnectable={false}
+              panOnScroll={true}
+              zoomOnScroll={true}
+              fitView
+              colorMode="dark"
+              style={{ background: 'oklch(8% 0.015 265)' }}
+            >
+              <Background color="oklch(22% 0.02 265)" gap={24} />
+              <Controls />
+            </ReactFlow>
+          </div>
         </div>
 
-        {/* GM notes sidebar — overlay on top of map, slides in from right */}
+        {/* GM notes panel — 62% when a room is selected */}
         {selectedRoom && (
-          <div className="absolute top-0 right-0 bottom-0 z-10 shadow-2xl">
+          <div className="flex-[62] min-w-0 overflow-hidden flex flex-col">
             <RoomNotesPanel
               room={selectedRoom}
               onClose={() => setSelectedRoomId(null)}
+              onEnterRoom={enterRoom}
+              entering={entering}
+              notesTextSize={notesTextSize}
             />
           </div>
         )}

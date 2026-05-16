@@ -15,6 +15,7 @@ interface GMDashboardProps {
 }
 
 type GmMode = 'live' | 'plan' | 'run'
+type NotesSize = 'sm' | 'md' | 'lg'
 
 // ── HP dot colour helper ───────────────────────────────────────
 function hpDotClass(hp: number, maxHp: number): string {
@@ -69,6 +70,7 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
   const [dmMessages, setDmMessages] = useState<DirectMessage[]>([])
   const [sessionMgrOpen, setSessionMgrOpen] = useState(false)
   const [gmMode, setGmMode] = useState<GmMode>('live')
+  const [notesSize, setNotesSize] = useState<NotesSize>('md')
   const [charBarCollapsed, setCharBarCollapsed] = useState(false)
   const handleDMRead = useCallback(() => setDmMessages(prev => prev.map(m => ({ ...m, read: true }))), [])
 
@@ -117,6 +119,20 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Notes size toggle — only in RUN mode */}
+          {gmMode === 'run' && (
+            <div className="flex gap-1 flex-shrink-0">
+              {(['sm', 'md', 'lg'] as NotesSize[]).map(size => (
+                <button
+                  key={size}
+                  onClick={() => setNotesSize(size)}
+                  className={`font-hud text-xs border px-2 py-1 transition-colors ${notesSize === size ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'}`}
+                >
+                  {size.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          )}
           <SessionLog state={state} />
           <button onClick={() => setSessionMgrOpen(true)}
             className="font-hud text-xs border border-hud-border text-hud-muted px-2 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider">
@@ -198,7 +214,7 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
           <div className="flex flex-1 overflow-hidden">
             {/* Runner canvas — 55% */}
             <div className="flex-[55] min-w-0 overflow-hidden flex flex-col border-r border-hud-border">
-              <FloorRunnerPanel send={send} />
+              <FloorRunnerPanel send={send} notesTextSize={notesSize} />
             </div>
             {/* Room panel — 45% */}
             <div className="flex-[45] min-w-0 overflow-hidden">
