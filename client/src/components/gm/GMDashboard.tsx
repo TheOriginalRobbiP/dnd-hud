@@ -8,13 +8,14 @@ import { SessionLog } from './SessionLog'
 import { SessionManager } from './SessionManager'
 import { FloorPlanner } from './FloorPlanner'
 import { FloorRunnerPanel } from './FloorRunnerPanel'
+import { SoundboardPanel } from './SoundboardPanel'
 
 interface GMDashboardProps {
   state: AppState
   send: (msg: WSMessage) => void
 }
 
-type GmMode = 'plan' | 'session'
+type GmMode = 'plan' | 'session' | 'sound'
 type NotesSize = 'sm' | 'md' | 'lg'
 type SessionMobileTab = 'map' | 'room' | 'log'
 
@@ -108,6 +109,12 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
           >
             SESSION
           </button>
+          <button
+            onClick={() => setGmMode('sound')}
+            className={`font-hud text-xs border px-2 py-1 transition-colors ${gmMode === 'sound' ? 'border-purple-400 text-purple-400' : 'border-hud-border text-hud-muted hover:border-purple-400 hover:text-purple-400'}`}
+          >
+            🔊 SOUND
+          </button>
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -195,6 +202,13 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
         {gmMode === 'plan' && (
           <div className="flex-1 overflow-hidden">
             <FloorPlanner send={send} />
+          </div>
+        )}
+
+        {/* ── SOUND mode: Soundboard full-width ────── */}
+        {gmMode === 'sound' && (
+          <div className="flex-1 overflow-y-auto">
+            <SoundboardPanel send={send} />
           </div>
         )}
 

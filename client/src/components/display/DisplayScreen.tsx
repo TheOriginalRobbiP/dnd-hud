@@ -62,6 +62,12 @@ export function DisplayScreen() {
             case 'display_clear':
               setRoom(null)
               break
+            case 'play_sound': {
+              const audio = new Audio(`/audio/${msg.soundId}.mp3`)
+              audio.volume = 0.85
+              audio.play().catch(() => {/* autoplay blocked — user hasn't interacted yet */})
+              break
+            }
             case 'collapse_timer_start':
               setTimer({ active: true, seconds: msg.seconds, startedAt: Date.now() })
               break

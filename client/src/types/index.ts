@@ -208,3 +208,4 @@ export type WSMessage =
   | { type: 'session_snapshot_load'; snapshotId: string }         // GM: restore snapshot
   | { type: 'display_room_enter'; roomId: string; roomName: string; flavourArt: string | null; roomTarget: number; theme: string; themeColour: string }
   | { type: 'display_clear' }
+  | { type: 'play_sound'; soundId: string }

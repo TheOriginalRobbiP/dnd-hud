@@ -103,6 +103,9 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
         .set({ currentRoomData: null, updatedAt: new Date() })
         .where(eq(floorState.id, 1))
       break
+    case 'play_sound':
+      // No DB state — just broadcast to all clients (display screen picks it up)
+      break
     case 'collapse_timer_start':
       await db.update(floorState)
         .set({ collapseTimerSeconds: msg.seconds, collapseTimerActive: true, collapseTimerStartedAt: new Date(), updatedAt: new Date() })
