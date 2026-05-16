@@ -251,9 +251,10 @@ export function FloorRunnerPanel({ send }: FloorRunnerPanelProps) {
           connections: RoomConnection[]
         }
         if (cancelled) return
-        setRooms(detail.rooms)
+        const normRooms = detail.rooms.map((r: FloorRoom) => ({ ...r, tags: parseTags(r.tags) }))
+        setRooms(normRooms)
         setConnections(detail.connections)
-        setNodes(detail.rooms.map(roomToNode))
+        setNodes(normRooms.map(roomToNode))
       })
       .catch(() => setLoading(false))
       .finally(() => { if (!cancelled) setLoading(false) })

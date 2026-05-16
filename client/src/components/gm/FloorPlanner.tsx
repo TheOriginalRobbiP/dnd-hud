@@ -47,6 +47,13 @@ interface RoomConnection {
   isContingency: boolean
 }
 
+// ── Normalise tags from API (DB returns comma string, UI wants array) ──
+function normaliseTags(tags: unknown): string[] {
+  if (Array.isArray(tags)) return tags as string[]
+  if (typeof tags === 'string') return tags.split(',').map(t => t.trim()).filter(Boolean)
+  return []
+}
+
 // ── Theme options ──────────────────────────────────────────────
 
 const THEMES = [
@@ -388,9 +395,10 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
     fetch(`/api/floor-plans/${activePlanId}`)
       .then(r => r.json())
       .then((data: { rooms: FloorRoom[]; connections: RoomConnection[] }) => {
-        setRooms(data.rooms)
+        const normRooms = data.rooms.map(r => ({ ...r, tags: normaliseTags(r.tags) }))
+        setRooms(normRooms)
         setConnections(data.connections)
-        setNodes(data.rooms.map(roomToNode))
+        setNodes(normRooms.map(roomToNode))
         setEdges(data.connections.map(connectionToEdge))
         setSelectedRoomId(null)
       })
@@ -438,8 +446,9 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
     })
     if (res.ok) {
       const room: FloorRoom = await res.json()
-      setRooms(prev => [...prev, room])
-      setNodes(prev => [...prev, roomToNode(room)])
+      const normRoom = { ...room, tags: normaliseTags(room.tags) }
+      setRooms(prev => [...prev, normRoom])
+      setNodes(prev => [...prev, roomToNode(normRoom)])
     }
   }
 
