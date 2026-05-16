@@ -546,8 +546,14 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
         {/* React Flow canvas */}
         <div className="flex-1 relative">
           {!activePlanId ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="font-hud text-sm text-hud-muted italic">Select or create a floor plan to begin.</span>
+            <div className="absolute inset-0 flex flex-col items-center justify-center h-full gap-4 opacity-60">
+              <div className="text-6xl">🗺️</div>
+              <div className="font-hud text-hud-muted tracking-widest text-sm">SELECT A FLOOR PLAN ABOVE OR CREATE A NEW ONE</div>
+              <div className="flex flex-col gap-1 text-xs text-hud-muted">
+                <div>→ Drag rooms to arrange your dungeon layout</div>
+                <div>→ Click any room to edit its name, mobs, and GM notes</div>
+                <div>→ Dashed edges are contingency paths — solid edges are the main route</div>
+              </div>
             </div>
           ) : (
             <ReactFlow

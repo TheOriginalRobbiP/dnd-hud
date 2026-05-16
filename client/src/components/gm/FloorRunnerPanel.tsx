@@ -416,11 +416,11 @@ export function FloorRunnerPanel({ send }: FloorRunnerPanelProps) {
         </div>
       </div>
 
-      {/* Body: canvas + optional GM notes sidebar */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* Body: canvas with overlay GM notes panel */}
+      <div className="flex flex-1 overflow-hidden min-h-0 relative">
 
-        {/* React Flow canvas — read-only */}
-        <div className="flex-1 relative">
+        {/* React Flow canvas — read-only, fills all space */}
+        <div className="absolute inset-0">
           <ReactFlow
             nodes={nodes}
             edges={edgeList}
@@ -440,12 +440,14 @@ export function FloorRunnerPanel({ send }: FloorRunnerPanelProps) {
           </ReactFlow>
         </div>
 
-        {/* GM notes sidebar — slides in when a node is selected */}
+        {/* GM notes sidebar — overlay on top of map, slides in from right */}
         {selectedRoom && (
-          <RoomNotesPanel
-            room={selectedRoom}
-            onClose={() => setSelectedRoomId(null)}
-          />
+          <div className="absolute top-0 right-0 bottom-0 z-10 shadow-2xl">
+            <RoomNotesPanel
+              room={selectedRoom}
+              onClose={() => setSelectedRoomId(null)}
+            />
+          </div>
         )}
       </div>
     </div>

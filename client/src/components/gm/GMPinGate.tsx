@@ -79,13 +79,13 @@ export function GMPinGate({ onVerified }: GMPinGateProps) {
         <div className="font-hud text-hud-muted text-sm tracking-wider">RESTRICTED ACCESS</div>
       </div>
 
-      <div className="border border-hud-border bg-hud-panel w-full max-w-xs p-5 flex flex-col gap-4">
+      <div className="border border-hud-border bg-hud-panel w-full max-w-sm p-8 flex flex-col gap-4">
         <div className="font-hud text-xs text-hud-muted tracking-widest text-center">
           ENTER GM PIN
         </div>
 
         {/* PIN display — no actual input, just dots */}
-        <div className={`border font-hud text-2xl tracking-[0.5em] text-center py-3 select-none transition-colors ${
+        <div className={`border font-hud text-3xl tracking-widest text-center py-3 select-none transition-colors ${
           error ? 'border-red-800 text-red-400' : 'border-hud-border text-hud-accent'
         }`}>
           {pin ? '●'.repeat(pin.length) : <span className="text-hud-border text-base tracking-widest">_ _ _ _</span>}
@@ -102,11 +102,11 @@ export function GMPinGate({ onVerified }: GMPinGateProps) {
               key={key}
               onClick={() => handlePad(key)}
               disabled={locked}
-              className={`font-hud py-3 text-xl border transition-colors disabled:opacity-30 ${
+              className={`font-hud h-14 w-full text-xl border transition-colors disabled:opacity-30 flex items-center justify-center ${
                 key === '✓'
-                  ? 'border-hud-accent text-hud-accent hover:bg-hud-accent hover:text-hud-bg'
+                  ? 'bg-hud-accent border-hud-accent text-white font-bold'
                   : key === '⌫'
-                  ? 'border-hud-border text-hud-muted hover:border-hp-low hover:text-hp-low'
+                  ? 'border-hud-border text-hud-muted'
                   : 'border-hud-border text-hud-text hover:border-hud-accent hover:text-hud-accent'
               } ${loading && key === '✓' ? 'opacity-50' : ''}`}
             >

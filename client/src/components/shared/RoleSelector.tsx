@@ -137,14 +137,15 @@ export function RoleSelector({ characters, onSelect, onCharacterCreated }: RoleS
       {/* GM button */}
       <button
         onClick={() => onSelect('gm')}
-        className="w-full max-w-xs mb-4 py-4 border border-hud-accent text-hud-accent font-hud tracking-widest text-lg
-                   hover:bg-hud-accent hover:text-hud-bg transition-colors duration-150"
+        className="w-full max-w-xs mb-4 py-4 border border-hud-accent bg-hud-panel text-hud-accent font-hud tracking-widest text-lg
+                   hover:bg-hud-accent hover:text-hud-bg transition-colors duration-150 flex items-center justify-center gap-2"
       >
         GAME MASTER
+        <span className="text-[10px] border border-current px-1 py-0.5 leading-none flex items-center">🔒 GM</span>
       </button>
 
       {/* Divider */}
-      <div className="w-full max-w-xs flex items-center gap-3 my-4">
+      <div className="w-full max-w-xs flex items-center gap-3 my-6">
         <div className="flex-1 h-px bg-hud-border" />
         <span className="font-hud text-hud-muted text-sm tracking-widest">OR</span>
         <div className="flex-1 h-px bg-hud-border" />
@@ -152,16 +153,24 @@ export function RoleSelector({ characters, onSelect, onCharacterCreated }: RoleS
 
       {/* Player slots */}
       <div className="w-full max-w-xs flex flex-col gap-2">
-        {SLOT_LABELS.map((label, i) => (
-          <button
-            key={i}
-            onClick={() => setStage({ type: 'slot', slot: i + 1 })}
-            className="py-4 px-4 border border-hud-border font-hud text-left transition-colors duration-150
-                       hover:border-hud-accent hover:text-hud-accent text-hud-text tracking-wider"
-          >
-            {label}
-          </button>
-        ))}
+        {SLOT_LABELS.map((label, i) => {
+          const char = characters[i]
+          return (
+            <button
+              key={i}
+              onClick={() => setStage({ type: 'slot', slot: i + 1 })}
+              className="py-3 px-4 border border-hud-border font-hud text-left transition-colors duration-150
+                         hover:border-hud-accent hover:text-hud-accent text-hud-text tracking-wider flex flex-col"
+            >
+              <span>{label}</span>
+              {char ? (
+                <span className="text-xs text-hud-muted mt-1">{char.crawlerName} {!char.isAlive && '☠'}</span>
+              ) : (
+                <span className="text-xs text-hud-muted italic mt-1">VACANT</span>
+              )}
+            </button>
+          )
+        })}
       </div>
 
       <p className="font-hud text-hud-muted text-sm mt-12 opacity-40">

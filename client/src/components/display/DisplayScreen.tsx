@@ -201,9 +201,12 @@ export function DisplayScreen() {
           </>
         ) : (
           /* Idle state */
-          <div className="flex-1 flex items-center justify-center">
-            <span className="font-hud text-hud-muted text-lg tracking-widest animate-pulse">
+          <div className="h-screen flex items-center justify-center flex-col gap-4 animate-pulse">
+            <span className="font-hud text-hud-muted text-5xl tracking-widest">
               AWAITING SESSION START
+            </span>
+            <span className="font-hud text-sm text-hud-muted tracking-widest">
+              STAND BY FOR SESSION INITIALISATION
             </span>
           </div>
         )}

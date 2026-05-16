@@ -8,6 +8,7 @@ interface RoomPanelProps {
 }
 
 function formatTime(secs: number) {
+  if (isNaN(secs) || secs <= 0) return '--:--'
   const m = Math.floor(secs / 60).toString().padStart(2,'0')
   const s = (secs % 60).toString().padStart(2,'0')
   return `${m}:${s}`
@@ -96,7 +97,7 @@ export function RoomPanel({ floor, send }: RoomPanelProps) {
         {floor.collapseTimerActive ? (
           <div className={`flex items-center gap-2 border px-3 py-1 ${isCritical ? 'border-red-800 animate-pulse' : 'border-hud-border'}`}>
             <span className="font-hud text-xs text-hud-muted">⏱</span>
-            <span className={`font-hud text-sm ${isCritical ? 'text-red-500' : 'text-hud-text'}`}>{formatTime(timerSecs)}</span>
+            <span className={`font-hud text-sm ${isCritical ? 'text-red-500' : 'text-hud-text'}`}>{!floor.collapseTimerActive ? '--:--' : formatTime(timerSecs)}</span>
             <button onClick={() => send({ type: 'collapse_timer_stop' })}
               className="font-hud text-xs text-hud-muted hover:text-red-400 transition-colors ml-1">✕</button>
           </div>
