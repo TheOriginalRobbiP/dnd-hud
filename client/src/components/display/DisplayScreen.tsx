@@ -145,11 +145,13 @@ export function DisplayScreen() {
       {/* Flavour art background */}
       {room?.flavourArt && (
         <>
-          <div
-            className="absolute inset-0 bg-cover bg-center z-0"
-            style={{ backgroundImage: `url(${room.flavourArt})` }}
+          <img
+            src={room.flavourArt}
+            alt=""
+            className="absolute inset-0 w-full h-full z-0"
+            style={{ objectFit: 'cover', objectPosition: 'center top' }}
           />
-          <div className="absolute inset-0 bg-hud-bg z-0" style={{ opacity: 0.6 }} />
+          <div className="absolute inset-0 bg-hud-bg z-0" style={{ opacity: 0.55 }} />
         </>
       )}
 
