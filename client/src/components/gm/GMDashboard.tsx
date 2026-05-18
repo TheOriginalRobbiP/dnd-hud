@@ -76,6 +76,7 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
   const [notesSize, setNotesSize] = useState<NotesSize>('md')
   const [charBarCollapsed, setCharBarCollapsed] = useState(false)
   const handleDMRead = useCallback(() => setDmMessages(prev => prev.map(m => ({ ...m, read: true }))), [])
+  const handleDMEcho = useCallback((dm: DirectMessage) => setDmMessages(prev => [...prev, dm]), [])
 
   // Auto-collapse char bar in both modes; restore never (manual toggle only resets on mode change)
   useEffect(() => {
@@ -199,6 +200,7 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
             send={send}
             dmMessages={dmMessages}
             onDMRead={handleDMRead}
+            onDMEcho={handleDMEcho}
           />
       }
 

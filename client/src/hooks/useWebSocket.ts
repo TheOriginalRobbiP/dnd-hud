@@ -148,6 +148,16 @@ function applyPatch(state: AppState, msg: WSMessage): AppState {
       return { ...state, floor: { ...state.floor, sessionActive: true } }
     case 'session_stop':
       return { ...state, floor: { ...state.floor, sessionActive: false } }
+    case 'session_reset':
+      // Optimistically restore all characters to full HP/MP, clear mobs + loot queue + log.
+      // The server will follow up with a full_state_sync broadcast which will reconcile.
+      return {
+        ...state,
+        characters: state.characters.map(c => ({ ...c, hp: c.maxHp, mp: c.maxMp, isAlive: true, statusEffects: [] })),
+        floor: { ...state.floor, activeMobs: [], collapseTimerActive: false, collapseTimerSeconds: null, collapseTimerStartedAt: null, roomNumber: 1 },
+        lootQueue: [],
+        gmLog: ['[System] Session reset — HP/MP restored, status cleared, mobs removed.'],
+      }
     default:
       return state
   }

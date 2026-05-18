@@ -27,9 +27,10 @@ interface PlayerHUDProps {
   send: (msg: WSMessage) => void
   dmMessages: DirectMessage[]
   onDMRead: () => void
+  onDMEcho: (dm: DirectMessage) => void
 }
 
-export function PlayerHUD({ character, state, send, dmMessages, onDMRead }: PlayerHUDProps) {
+export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEcho }: PlayerHUDProps) {
   const [tab, setTab] = useState<Tab>('status')
   const [inspectCharId, setInspectCharId] = useState<string | null>(null)
   const { toasts, addToast, dismiss } = useToasts()
@@ -59,7 +60,7 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead }: Play
           {character.isAlive ? character.crawlerName.toUpperCase() : `☠ ${character.crawlerName.toUpperCase()}`}
         </div>
         <div className="flex items-center gap-3">
-          <DMPanel mode="player" myCharId={character.id} myName={character.crawlerName} messages={dmMessages} send={send} onRead={onDMRead} />
+          <DMPanel mode="player" myCharId={character.id} myName={character.crawlerName} messages={dmMessages} send={send} onRead={onDMRead} onEcho={onDMEcho} />
           <div className="font-hud text-sm text-hud-muted">
             HP {character.hp}/{character.maxHp} · TARGET {state.floor.roomTarget}
           </div>
