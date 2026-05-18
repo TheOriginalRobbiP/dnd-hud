@@ -9,6 +9,7 @@ interface DMPanelProps {
   messages: DirectMessage[]
   send: (msg: WSMessage) => void
   onRead: () => void
+  onEcho: (dm: DirectMessage) => void
 }
 
 interface PlayerDMPanelProps {
@@ -19,6 +20,7 @@ interface PlayerDMPanelProps {
   messages: DirectMessage[]
   send: (msg: WSMessage) => void
   onRead: () => void
+  onEcho: (dm: DirectMessage) => void
 }
 
 type Props = DMPanelProps | PlayerDMPanelProps
@@ -51,8 +53,8 @@ export function DMPanel(props: Props) {
       text: text.trim(),
       timestamp: Date.now(),
     })
-    // Echo into local messages immediately
-    props.messages.push({ fromCharId, fromName, text: text.trim(), timestamp: Date.now(), read: true })
+    // Echo into local messages via state setter — never mutate props directly
+    props.onEcho({ fromCharId, fromName, text: text.trim(), timestamp: Date.now(), read: true })
     setText('')
   }
 

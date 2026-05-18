@@ -35,6 +35,8 @@ export function handleWsConnection(ws: WebSocket) {
         const { toCharId } = message
         if (toCharId === 'gm') {
           sendToGM(message)
+        } else if (toCharId === 'all') {
+          broadcast(message, undefined)
         } else {
           sendToRole(`player:${toCharId}`, message)
         }
@@ -54,6 +56,13 @@ export function handleWsConnection(ws: WebSocket) {
 
       await applyMessage(message)
       broadcast(message, ws)
+
+      // After a session_reset, broadcast a full_state_sync so all clients get the
+      // authoritative DB state (avoids optimistic drift on non-GM clients)
+      if (message.type === 'session_reset') {
+        const freshState = await getFullState()
+        broadcast({ type: 'full_state_sync', state: freshState } as any, undefined)
+      }
     } catch (err) {
       console.error('[WS] Message error:', err)
     }
