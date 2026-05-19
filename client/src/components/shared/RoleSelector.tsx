@@ -218,11 +218,11 @@ export function RoleSelector({ characters, sessionActive, onSelect, onCharacterC
 
       <button
         onClick={() => onSelect('gm')}
-        className="w-full max-w-xs mb-4 py-4 border border-hud-accent bg-hud-panel text-hud-accent font-hud tracking-widest text-lg
-                   hover:bg-hud-accent hover:text-hud-bg transition-colors flex items-center justify-center gap-2"
+        className="w-full max-w-xs mb-4 py-4 border border-hud-accent bg-hud-panel text-hud-accent font-hud tracking-widest text-base sm:text-lg
+                   hover:bg-hud-accent hover:text-hud-bg transition-colors flex items-center justify-center gap-1 sm:gap-2"
       >
-        GAME MASTER
-        <span className="text-[10px] border border-current px-1 py-0.5 leading-none flex items-center">🔒 GM</span>
+        <span>GAME MASTER</span>
+        <span className="text-[9px] sm:text-[10px] border border-current px-1 py-0.5 leading-none flex items-center flex-shrink-0">🔒 GM</span>
       </button>
 
       <div className="w-full max-w-xs flex items-center gap-3 my-6">
