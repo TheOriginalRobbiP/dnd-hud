@@ -35,7 +35,7 @@ function App() {
     setToasts(prev => [...prev, { id: crypto.randomUUID(), label, text, ts: Date.now() }].slice(-3))
   }, [])
 
-  const { state, connected, send } = useWebSocket({ role: role ?? undefined, onAnnouncement, onDirectMessage: onDM })
+  const { state, connected, send, activeCharIds } = useWebSocket({ role: role ?? undefined, onAnnouncement, onDirectMessage: onDM })
 
   const dismissToast = useCallback((id: string) => setToasts(p => p.filter(t => t.id !== id)), [])
   const handleRoleSelect = useCallback((r: UserRole) => {
@@ -66,7 +66,7 @@ function App() {
   if (role === 'gm') {
     if (!gmVerified) return <GMPinGate onVerified={() => setGmVerified(true)} />
     if (!state) return <div className="h-screen bg-hud-bg flex items-center justify-center font-hud text-hud-muted animate-pulse">SYNCING STATE...</div>
-    return <>{connBadge}<GMDashboard state={state} send={send} /><ToastFeed toasts={toasts} onDismiss={dismissToast} /></>
+    return <>{connBadge}<GMDashboard state={state} send={send} activeCharIds={activeCharIds} /><ToastFeed toasts={toasts} onDismiss={dismissToast} /></>
   }
 
   const charId = role.replace('player:', '')

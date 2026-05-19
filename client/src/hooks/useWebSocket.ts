@@ -22,6 +22,7 @@ export function useWebSocket({ role, onAnnouncement, onDirectMessage }: UseWebSo
   const wsRef = useRef<WebSocket | null>(null)
   const [state, setState] = useState<AppState | null>(null)
   const [connected, setConnected] = useState(false)
+  const [activeCharIds, setActiveCharIds] = useState<string[]>([])
   const announcementRef = useRef(onAnnouncement)
   const dmRef = useRef(onDirectMessage)
   const roleRef = useRef(role)
@@ -45,6 +46,7 @@ export function useWebSocket({ role, onAnnouncement, onDirectMessage }: UseWebSo
       try {
         const msg = JSON.parse(evt.data) as WSMessage
         if (msg.type === 'full_state_sync') { setState(msg.state); return }
+        if (msg.type === 'presence_sync') { setActiveCharIds(msg.activeCharIds); return }
         if (msg.type === 'pong') return
         if (msg.type === 'announcement') { announcementRef.current?.(msg.label, msg.text) }
         if (msg.type === 'direct_message') {
@@ -81,7 +83,7 @@ export function useWebSocket({ role, onAnnouncement, onDirectMessage }: UseWebSo
     }
   }, [])
 
-  return { state, connected, send }
+  return { state, connected, send, activeCharIds }
 }
 
 function applyPatch(state: AppState, msg: WSMessage): AppState {

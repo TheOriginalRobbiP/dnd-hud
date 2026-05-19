@@ -202,4 +202,5 @@ export type WSMessage =
   | { type: 'session_snapshot_load'; snapshotId: string }
   | { type: 'display_room_enter'; roomId: string; roomName: string; flavourArt: string | null; roomTarget: number; theme: string; themeColour: string }
   | { type: 'display_clear' }
+  | { type: 'presence_sync'; activeCharIds: string[] }
   | { type: 'play_sound'; soundId: string }

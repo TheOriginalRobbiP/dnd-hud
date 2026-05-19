@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { AppState, WSMessage, Character } from '../../types'
 import { RoomPanel } from './RoomPanel'
 import { GMLogPanel } from './GMLogPanel'
@@ -11,6 +11,7 @@ import { SoundboardPanel } from './SoundboardPanel'
 interface GMDashboardProps {
   state: AppState
   send: (msg: WSMessage) => void
+  activeCharIds: string[]
 }
 
 type GmMode = 'plan' | 'session' | 'sound' | 'rules'
@@ -29,29 +30,33 @@ function hpDotClass(hp: number, maxHp: number): string {
 // ── Collapsed character strip ──────────────────────────────────
 interface CollapsedCharStripProps {
   characters: Character[]
+  activeCharIds: string[]
   onExpand: () => void
 }
 
-function CollapsedCharStrip({ characters, onExpand }: CollapsedCharStripProps) {
+function CollapsedCharStrip({ characters, activeCharIds, onExpand }: CollapsedCharStripProps) {
   const activeChars = characters.filter(c => c.isActive !== false)
   return (
     <div className="border-b border-hud-border bg-hud-panel flex items-center gap-2 px-3 flex-shrink-0 h-10 overflow-x-auto">
       <div className="flex items-center gap-1.5 flex-1 overflow-x-auto">
         {activeChars.length === 0
           ? <span className="font-hud text-xs text-hud-muted italic">No active crawlers</span>
-          : activeChars.map(c => (
+          : activeChars.map(c => {
+              const isOnline = activeCharIds.includes(c.id)
+              return (
               <div
                 key={c.id}
-                className="flex items-center gap-1 border border-hud-border px-2 py-0.5 flex-shrink-0"
-                title={`${c.crawlerName} — ${c.hp}/${c.maxHp} HP`}
+                className={`flex items-center gap-1 border px-2 py-0.5 flex-shrink-0 ${isOnline ? 'border-hud-border' : 'border-red-900/50 opacity-60'}`}
+                title={`${c.crawlerName} — ${c.hp}/${c.maxHp} HP${isOnline ? '' : ' (OFFLINE)'}`}
               >
-                <span
-                  className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${hpDotClass(c.hp, c.maxHp)}`}
-                />
+                {isOnline ? (
+                  <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${hpDotClass(c.hp, c.maxHp)}`} />
+                ) : (
+                  <span className="font-hud text-[8px] text-red-500 font-bold leading-none tracking-widest">[OFFLINE]</span>
+                )}
                 <span className="font-hud text-[10px] text-hud-text leading-none">{c.crawlerName}</span>
               </div>
-            ))
-        }
+            )})}
       </div>
       <button
         onClick={onExpand}
@@ -65,14 +70,32 @@ function CollapsedCharStrip({ characters, onExpand }: CollapsedCharStripProps) {
 
 // ── Main GMDashboard ───────────────────────────────────────────
 
-export function GMDashboard({ state, send }: GMDashboardProps) {
+export function GMDashboard({ state, send, activeCharIds }: GMDashboardProps) {
   const [mobileTab, setMobileTab] = useState<SessionMobileTab>('map')
   const [sessionMgrOpen, setSessionMgrOpen] = useState(false)
   const [gmMode, setGmMode] = useState<GmMode>('session')
   const [notesSize] = useState<NotesSize>('md')
   
-  const activeCharacters = state.characters.filter(c => c.isActive !== false)
   const sessionActive = state.floor?.sessionActive ?? false
+
+  const [seenCharIds, setSeenCharIds] = useState<string[]>([])
+
+  // Accumulate seen characters during active sessions.
+  // When session is stopped, only show currently connected characters.
+  useEffect(() => {
+    if (!sessionActive) {
+      setSeenCharIds(activeCharIds)
+    } else {
+      setSeenCharIds(prev => {
+        const newIds = activeCharIds.filter(id => !prev.includes(id))
+        if (newIds.length > 0) return [...prev, ...newIds]
+        return prev
+      })
+    }
+  }, [activeCharIds, sessionActive])
+
+  // activeCharacters contains anyone currently online OR anyone seen during this active session
+  const activeCharacters = state.characters.filter(c => c.isActive !== false && seenCharIds.includes(c.id))
 
   return (
     <div className="h-screen flex flex-col bg-hud-bg overflow-hidden font-sans" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
@@ -167,7 +190,7 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
             {/* Desktop Layout — 3 columns */}
             <div className="hidden md:flex flex-1 overflow-hidden flex-col">
               <div className="flex-shrink-0 border-b border-hud-border">
-                <CollapsedCharStrip characters={state.characters} onExpand={() => {}} />
+                <CollapsedCharStrip characters={activeCharacters} activeCharIds={activeCharIds} onExpand={() => {}} />
               </div>
               <div className="flex-1 overflow-hidden grid grid-cols-[300px_1fr_400px]">
                 <div className="border-r border-hud-border flex flex-col overflow-hidden">
@@ -185,7 +208,7 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
             {/* Mobile layout — single panel at a time */}
             <div className="flex md:hidden flex-1 overflow-hidden flex-col pb-12">
               <div className="flex-shrink-0">
-                <CollapsedCharStrip characters={state.characters} onExpand={() => {}} />
+                <CollapsedCharStrip characters={activeCharacters} activeCharIds={activeCharIds} onExpand={() => {}} />
               </div>
               <div className="flex-1 flex overflow-hidden">
                 {mobileTab === 'map' && (
