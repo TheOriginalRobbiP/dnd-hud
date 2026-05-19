@@ -57,13 +57,50 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
     <div className="h-screen flex flex-col bg-hud-bg overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       {/* Mobile-only Header */}
       <div className="md:hidden border-b border-hud-border px-4 py-2 flex items-center justify-between bg-hud-panel">
-        <div className={`font-hud tracking-widest ${character.isAlive ? 'text-hud-accent' : 'text-red-500'}`}>
-          {character.isAlive ? character.crawlerName.toUpperCase() : `☠ ${character.crawlerName.toUpperCase()}`}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              localStorage.removeItem('hud:role')
+              window.location.reload()
+            }}
+            title="Switch Role / Logout"
+            className="font-hud text-xs border border-hud-border text-hud-muted px-2 py-0.5 hover:border-red-500 hover:text-red-500 transition-colors"
+          >
+            ⏏
+          </button>
+          <div className={`font-hud tracking-widest ${character.isAlive ? 'text-hud-accent' : 'text-red-500'}`}>
+            {character.isAlive ? character.crawlerName.toUpperCase() : `☠ ${character.crawlerName.toUpperCase()}`}
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <DMPanel mode="player" myCharId={character.id} myName={character.crawlerName} messages={dmMessages} send={send} onRead={onDMRead} onEcho={onDMEcho} />
           <div className="font-hud text-sm text-hud-muted">
             HP {character.hp}/{character.maxHp} · TARGET {state.floor.roomTarget}
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop-only hidden header logic would go here if we had one, but we use a distinct grid for desktop */}
+      <div className="hidden md:flex items-center justify-between p-2 border-b border-hud-border bg-hud-panel">
+        <div className="flex items-center gap-4 px-2">
+          <button
+            onClick={() => {
+              localStorage.removeItem('hud:role')
+              window.location.reload()
+            }}
+            title="Switch Role / Logout"
+            className="font-hud text-xs border border-hud-border text-hud-muted px-2 py-0.5 hover:border-red-500 hover:text-red-500 transition-colors"
+          >
+            ⏏ SWITCH CRAWLER
+          </button>
+          <div className="font-hud text-sm text-hud-accent tracking-widest">
+            {character.isAlive ? character.crawlerName.toUpperCase() : `☠ ${character.crawlerName.toUpperCase()}`}
+          </div>
+        </div>
+        <div className="flex items-center gap-3 pr-2">
+          <DMPanel mode="player" myCharId={character.id} myName={character.crawlerName} messages={dmMessages} send={send} onRead={onDMRead} onEcho={onDMEcho} />
+          <div className="font-hud text-sm text-hud-muted">
+            TARGET {state.floor.roomTarget}
           </div>
         </div>
       </div>

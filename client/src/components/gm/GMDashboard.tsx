@@ -95,7 +95,20 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
 
       {/* Header */}
       <div className="border-b border-hud-border px-3 py-2 flex items-center justify-between bg-hud-panel flex-shrink-0 gap-2">
-        <div className="font-hud text-hud-accent tracking-widest text-xs sm:text-sm flex-shrink-0">THE HUD — GM</div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={() => {
+              localStorage.removeItem('hud:role')
+              sessionStorage.removeItem('hud:gm-verified')
+              window.location.reload()
+            }}
+            title="Switch Role / Logout"
+            className="font-hud text-xs border border-hud-border text-hud-muted px-2 py-1 hover:border-red-500 hover:text-red-500 transition-colors"
+          >
+            ⏏
+          </button>
+          <div className="font-hud text-hud-accent tracking-widest text-xs sm:text-sm">THE HUD — GM</div>
+        </div>
 
         {/* PLAN / SESSION mode toggle */}
         <div className="flex gap-1 flex-shrink-0">
