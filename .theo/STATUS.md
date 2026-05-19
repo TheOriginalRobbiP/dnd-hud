@@ -83,3 +83,21 @@
 - Phase 2 features (Fog of war map, Room reveal animations)
 
 **Blockers:** None
+
+---
+
+## Session checkpoint 2026-05-19
+
+**Focus:** Mobile V2 UI migration & GM presence tracking
+
+**Done this session:**
+- **Mobile Plan & Sound Tabs Fixed:** Rewrote GM mobile routing to use single-panel full views instead of squeezing desktop 3-column components.
+- **Presence Tracking (Graceful Disconnects):** Built real-time WebSocket presence. In Planning Phase, GM only sees live connected players. In Active Session, GM sees active players + disconnected players (marked `[OFFLINE]`) so HP can still be managed.
+
+**Open / next session:**
+- Game simulation dry-run — connect multiple devices, run a mock encounter end-to-end
+- Floor 2 Plan design — viewers go live, Brindle Grub mechanic, 6-day time limit
+- Floor 3 Plan design (The Over City) — class/race selection, Manager Benefit decision
+- Phase 2 features (Fog of war map, Room reveal animations)
+
+**Blockers:** None
