@@ -9,7 +9,6 @@ import { StatusTab } from './StatusTab'
 import { SkillsTab } from './SkillsTab'
 import { InventoryTab } from './InventoryTab'
 import { FameTab } from './FameTab'
-import { RulesTab } from './RulesTab'
 import { DiceHero } from './DiceHero'
 import { PartySidebar } from './PartySidebar'
 
@@ -109,74 +108,70 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
         </div>
       </div>
 
-      {/* Main Area */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Only apply the complex desktop grid when on 'status' tab (default view) */}
-        <div className={tab === 'status' ? "md:grid md:grid-cols-[350px_1fr_350px] md:h-full" : "h-full"}>
+      <div className="flex-1 overflow-y-auto bg-hud-bg">
+        {/* Desktop Grid Layout [280px_1fr_350px] (Always active on md+ breakpoint regardless of mobile tab) */}
+        <div className="md:grid md:grid-cols-[280px_1fr_350px] md:h-full h-full">
           
-          {/* Left/Main column - Active on mobile for all tabs, acts as left rail on desktop status */}
-          <div className={tab === 'status' ? "md:border-r md:border-hud-border md:overflow-y-auto h-full" : "h-full"}>
-            {tab === 'status' && <StatusTab character={character} floor={state.floor} allCharacters={state.characters} onInspect={setInspectCharId} />}
-            {tab === 'skills' && <SkillsTab character={character} />}
-            {tab === 'inventory' && <InventoryTab character={character} lootQueue={state.lootQueue} send={send} onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} />}
-            {tab === 'fame' && <FameTab character={character} floorNumber={state.floor.floorNumber} />}
-            {tab === 'rules' && <RulesTab />}
+          {/* Left Column - Always active on mobile for all tabs, acts as left rail on desktop */}
+          <div className="md:border-r md:border-hud-border md:overflow-y-auto h-full">
+            <div className={tab === 'status' ? 'block' : 'hidden md:block'}>
+              <StatusTab character={character} floor={state.floor} allCharacters={state.characters} onInspect={setInspectCharId} />
+            </div>
+            <div className={tab === 'skills' ? 'block' : 'hidden'}>
+              <SkillsTab character={character} />
+            </div>
+            <div className={tab === 'inventory' ? 'block' : 'hidden'}>
+              <InventoryTab character={character} lootQueue={state.lootQueue} send={send} onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} />
+            </div>
+            <div className={tab === 'fame' ? 'block' : 'hidden md:hidden'}>
+              <FameTab character={character} floorNumber={state.floor.floorNumber} />
+            </div>
           </div>
           
-          {/* Desktop-only Middle Column (Hero Dice Roller) */}
-          {tab === 'status' && (
-            <div className="hidden md:flex md:flex-col md:p-8 md:gap-8 md:overflow-y-auto bg-hud-base">
-               <div className="bg-hud-panel border border-hud-border rounded-xl p-8 relative overflow-hidden" style={{ minHeight: '200px' }}>
-                  <div className="absolute inset-0 opacity-10 bg-hud-accent mix-blend-overlay"></div>
-                  <div className="relative z-10 flex justify-between items-center h-full">
-                    <div>
-                      <div className="font-hud text-4xl text-hud-accent tracking-widest uppercase mb-2">
-                        {(state.floor as any).currentRoomData?.roomName || "Floor 1: The Drop"}
-                      </div>
-                      <div className="font-hud text-sm text-hud-muted tracking-widest uppercase">
-                        {(state.floor as any).currentRoomData?.theme || "Dungeon Start"}
-                      </div>
+          {/* Desktop-only Middle Column (Hero Dice Roller & Skills) */}
+          <div className="hidden md:flex md:flex-col md:p-8 md:gap-8 md:overflow-y-auto bg-hud-bg">
+             <div className="bg-hud-panel border border-hud-border rounded-xl p-8 relative overflow-hidden" style={{ minHeight: '200px' }}>
+                <div className="absolute inset-0 opacity-10 bg-hud-accent mix-blend-overlay"></div>
+                <div className="relative z-10 flex justify-between items-center h-full">
+                  <div>
+                    <div className="font-sans font-extrabold text-3xl text-hud-text tracking-widest uppercase mb-2">
+                      {(state.floor as any).currentRoomData?.roomName || "Floor 1: The Drop"}
                     </div>
-                    <div className="text-right">
-                      <div className="font-hud text-xs text-hud-muted tracking-widest mb-1">ROOM TARGET</div>
-                      <div className="font-hud text-6xl text-hud-accent">{state.floor.roomTarget}</div>
+                    <div className="font-mono text-sm text-hud-muted tracking-[0.1em] uppercase">
+                      {(state.floor as any).currentRoomData?.theme || "Dungeon Start"}
                     </div>
                   </div>
+                </div>
+             </div>
+             
+             {/* Middle column contains the dice roller + skills on desktop */}
+             <div className="flex-1 flex flex-col gap-8">
+               <DiceHero character={character} floor={state.floor} send={send} />
+               
+               <div className="bg-hud-panel border border-hud-border rounded-xl p-6">
+                 <div className="font-mono text-xs text-hud-muted tracking-[0.2em] mb-4 uppercase border-b border-hud-border pb-2">Skills & Abilities</div>
+                 <SkillsTab character={character} />
                </div>
-               <div className="flex-1 flex flex-col justify-center">
-                 <DiceHero character={character} floor={state.floor} send={send} />
-               </div>
-            </div>
-          )}
+             </div>
+          </div>
 
-        {/* Desktop-only Right Column (Rules & Fame/Party Status) */}
-          {tab === 'status' && (
-            <div className="hidden md:flex md:flex-col md:border-l md:border-hud-border md:overflow-y-auto md:bg-hud-panel">
-               <div className="font-hud text-sm text-hud-muted tracking-widest p-4 border-b border-hud-border flex gap-4">
-                 <div className="text-hud-main border-b-2 border-hud-main pb-1 cursor-pointer">PARTY STATUS</div>
-                 <div className="text-hud-muted hover:text-hud-main cursor-pointer">RULES</div>
-               </div>
-               <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
-                 {/* Stats — compact row */}
-                 <div>
-                   <div className="font-hud text-xs text-hud-muted tracking-widest mb-2">STATS</div>
-                   <div className="grid grid-cols-5 gap-1.5">
-                     {['STR','DEX','CON','INT','CHA'].map(stat => (
-                       <div key={stat} className="border border-hud-border bg-hud-base py-2 text-center rounded">
-                         <div className="font-hud text-xs text-hud-muted">{stat}</div>
-                         <div className="font-hud text-lg text-hud-text">{(character.stats as any)[stat] ?? '—'}</div>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
+        {/* Desktop-only Right Column (Fame, Inventory, Party) */}
+          <div className="hidden md:flex md:flex-col md:border-l md:border-hud-border md:overflow-y-auto md:bg-hud-panel">
+             <div className="flex-1 overflow-y-auto flex flex-col">
+               {/* Right column handles Party, Inventory, Fame directly inline */}
+               <div className="p-4 border-b border-hud-border">
                  <PartySidebar characters={state.characters} myCharId={character.id} onInspect={setInspectCharId} />
-                 
-                 <div className="border-t border-hud-border pt-4">
-                    <RulesTab />
-                 </div>
                </div>
-            </div>
-          )}
+               
+               <div className="p-4 border-b border-hud-border">
+                 <InventoryTab character={character} lootQueue={state.lootQueue} send={send} onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} />
+               </div>
+
+               <div className="p-4">
+                 <FameTab character={character} floorNumber={state.floor.floorNumber} />
+               </div>
+             </div>
+          </div>
         </div>
       </div>
       

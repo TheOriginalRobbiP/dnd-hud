@@ -71,17 +71,6 @@ const THEMES = [
   'merchant-underbelly',
 ] as const
 
-// ── Tag → border colour helper ─────────────────────────────────
-
-function tagBorderClass(tags: string[]): string {
-  if (tags.includes('boss'))      return 'border-red-600'
-  if (tags.includes('trap'))      return 'border-amber-500'
-  if (tags.includes('narrative')) return 'border-blue-500'
-  if (tags.includes('loot-room')) return 'border-green-600'
-  if (tags.includes('safe'))      return 'border-teal-500'
-  return 'border-hud-border'
-}
-
 // ── Custom node component ──────────────────────────────────────
 
 type RoomNodeData = {
@@ -92,21 +81,13 @@ type RoomNodeData = {
 type RoomNode = Node<RoomNodeData, 'room'>
 
 function RoomNodeComponent({ data, selected }: NodeProps<RoomNode>) {
-  const borderClass = tagBorderClass(data.tags)
+  const isStart = data.tags.includes('start')
   return (
     <div
-      className={`bg-hud-panel border ${borderClass} px-3 py-2 min-w-[120px] cursor-pointer ${selected ? 'ring-1 ring-hud-accent' : ''}`}
+      className={`bg-hud-panel border-2 rounded-lg px-4 py-4 min-w-[160px] cursor-pointer ${selected ? 'border-hud-accent shadow-[0_0_0_4px_rgba(245,158,11,0.2)]' : isStart ? 'border-hud-success' : 'border-hud-border'}`}
     >
-      <div className="font-hud text-xs text-hud-text truncate">{data.label}</div>
-      {data.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-1">
-          {data.tags.map(tag => (
-            <span key={tag} className="font-hud text-[10px] border border-hud-border text-hud-muted px-1">
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
+      <div className="font-mono text-[10px] text-hud-muted mb-1 uppercase tracking-widest">{data.tags[0] || 'NODE'}</div>
+      <div className="font-sans text-sm text-hud-text font-extrabold leading-tight">{data.label}</div>
     </div>
   )
 }
@@ -203,83 +184,84 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
   }
 
   return (
-    <div className="w-72 flex-shrink-0 border-l border-hud-border bg-hud-panel flex flex-col overflow-hidden">
+    <div className="w-[340px] flex-shrink-0 border-l border-hud-border bg-hud-panel flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-hud-border flex-shrink-0">
-        <span className="font-hud text-xs text-hud-accent tracking-wider">ROOM EDIT</span>
-        <button onClick={onClose} className="font-hud text-hud-muted hover:text-hp-low transition-colors text-xs">✕</button>
+      <div className="flex items-center justify-between px-5 py-4 border-b border-hud-border flex-shrink-0">
+        <span className="font-bold text-[11px] text-hud-muted tracking-[0.1em] uppercase">ROOM INSPECTOR</span>
+        <button onClick={onClose} className="font-bold text-hud-muted hover:text-hp-low transition-colors text-xs">✕</button>
       </div>
 
-      <div className="flex-1 overflow-y-auto flex flex-col gap-3 p-4">
+      <div className="flex-1 overflow-y-auto flex flex-col gap-5 p-5">
         {/* Name */}
-        <label className="flex flex-col gap-1">
-          <span className="font-hud text-[10px] text-hud-muted tracking-wider">ROOM NAME</span>
+        <label className="flex flex-col gap-2">
+          <span className="font-mono text-[11px] font-bold text-hud-muted tracking-[0.1em]">ROOM NAME</span>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
             onBlur={() => save({ name })}
             onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
-            className="bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2 focus:border-hud-accent outline-none"
-          />
-        </label>
-
-        {/* Description */}
-        <label className="flex flex-col gap-1">
-          <span className="font-hud text-[10px] text-hud-muted tracking-wider">DESCRIPTION / GM NOTES</span>
-          <textarea
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            onBlur={() => save({ description })}
-            rows={4}
-            className="bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2 focus:border-hud-accent outline-none resize-none"
-          />
-        </label>
-
-        {/* Tags */}
-        <label className="flex flex-col gap-1">
-          <span className="font-hud text-[10px] text-hud-muted tracking-wider">TAGS (comma-separated)</span>
-          <input
-            value={tags}
-            onChange={e => setTags(e.target.value)}
-            onBlur={() => save({ tags: tags.split(',').map(t => t.trim()).filter(Boolean) })}
-            onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
-            placeholder="boss, trap, loot-room..."
-            className="bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2 focus:border-hud-accent outline-none"
+            className="bg-hud-bg border border-hud-border rounded-md text-hud-text font-sans text-sm p-3 focus:border-hud-accent outline-none"
           />
         </label>
 
         {/* Room target */}
-        <label className="flex flex-col gap-1">
-          <span className="font-hud text-[10px] text-hud-muted tracking-wider">ROOM TARGET</span>
+        <label className="flex flex-col gap-2">
+          <span className="font-mono text-[11px] font-bold text-hud-muted tracking-[0.1em]">TARGET DC</span>
           <input
             type="number"
             value={roomTarget}
             onChange={e => setRoomTarget(e.target.value)}
             onBlur={() => save({ roomTarget: parseInt(roomTarget) || 10 })}
             onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
-            className="bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2 focus:border-hud-accent outline-none"
+            className="w-20 bg-hud-bg border border-hud-border rounded-md text-hud-text font-sans text-sm p-3 focus:border-hud-accent outline-none"
+          />
+        </label>
+
+        {/* Description */}
+        <label className="flex flex-col gap-2">
+          <span className="font-mono text-[11px] font-bold text-hud-muted tracking-[0.1em]">FLAVOUR TEXT</span>
+          <textarea
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            onBlur={() => save({ description })}
+            rows={4}
+            className="h-[120px] bg-hud-bg border border-hud-border rounded-md text-hud-text font-sans text-sm p-3 focus:border-hud-accent outline-none resize-none leading-relaxed"
+          />
+        </label>
+
+        {/* Tags */}
+        <label className="flex flex-col gap-2">
+          <span className="font-mono text-[11px] font-bold text-hud-muted tracking-[0.1em]">TAGS</span>
+          <input
+            value={tags}
+            onChange={e => setTags(e.target.value)}
+            onBlur={() => save({ tags: tags.split(',').map(t => t.trim()).filter(Boolean) })}
+            onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+            placeholder="boss, trap, loot-room..."
+            className="bg-hud-bg border border-hud-border rounded-md text-hud-text font-sans text-sm p-3 focus:border-hud-accent outline-none"
           />
         </label>
 
         {/* Flavour art */}
-        <label className="flex flex-col gap-1">
-          <span className="font-hud text-[10px] text-hud-muted tracking-wider">FLAVOUR ART URL</span>
+        <label className="flex flex-col gap-2">
+          <span className="font-mono text-[11px] font-bold text-hud-muted tracking-[0.1em]">FLAVOUR ART URL</span>
           <input
             value={flavourArt}
             onChange={e => setFlavourArt(e.target.value)}
             onBlur={() => save({ flavourArt: flavourArt || null })}
             onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
             placeholder="https://..."
-            className="bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2 focus:border-hud-accent outline-none"
-          />\n        </label>
+            className="bg-hud-bg border border-hud-border rounded-md text-hud-text font-sans text-sm p-3 focus:border-hud-accent outline-none"
+          />
+        </label>
 
         {/* Loot Tier */}
-        <label className="flex flex-col gap-1">
-          <span className="font-hud text-[10px] text-hud-muted tracking-wider">LOOT TIER</span>
+        <label className="flex flex-col gap-2">
+          <span className="font-mono text-[11px] font-bold text-hud-muted tracking-[0.1em]">LOOT TIER</span>
           <select
             value={lootTier}
             onChange={e => { setLootTier(e.target.value); save({ lootTier: e.target.value || null }) }}
-            className="bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2 focus:border-hud-accent outline-none"
+            className="bg-hud-bg border border-hud-border rounded-md text-hud-text font-sans text-sm p-3 focus:border-hud-accent outline-none"
           >
             <option value="">— none —</option>
             {['bronze', 'silver', 'gold', 'platinum', 'legendary', 'celestial'].map(t => (
@@ -290,16 +272,16 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
 
         {/* Mob Templates */}
         {mobTemplates.length > 0 && (
-          <div className="flex flex-col gap-1">
-            <span className="font-hud text-[10px] text-hud-muted tracking-wider">PRE-ASSIGNED MOBS</span>
-            <div className="flex flex-col gap-1 max-h-36 overflow-y-auto border border-hud-border p-2 bg-hud-bg">
+          <div className="flex flex-col gap-2">
+            <span className="font-mono text-[11px] font-bold text-hud-muted tracking-[0.1em]">PRE-SEEDED MOBS</span>
+            <div className="flex flex-col gap-1 max-h-36 overflow-y-auto border border-hud-border rounded-md p-2 bg-hud-bg">
               {mobTemplates.map(mob => {
                 const active = selectedMobs.includes(mob.id)
                 return (
                   <button
                     key={mob.id}
                     onClick={() => toggleMob(mob.id)}
-                    className={`text-left font-hud text-xs px-2 py-1 border transition-colors ${
+                    className={`text-left font-sans font-semibold text-xs px-2 py-2 border rounded transition-colors ${
                       active
                         ? 'border-hud-accent text-hud-accent bg-hud-accent/10'
                         : 'border-transparent text-hud-muted hover:border-hud-border hover:text-hud-text'
@@ -311,7 +293,7 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
               })}
             </div>
             {selectedMobs.length > 0 && (
-              <span className="font-hud text-[10px] text-hud-muted">{selectedMobs.length} mob{selectedMobs.length !== 1 ? 's' : ''} assigned</span>
+              <span className="font-sans text-[10px] text-hud-muted">{selectedMobs.length} mob{selectedMobs.length !== 1 ? 's' : ''} assigned</span>
             )}
           </div>
         )}
@@ -319,7 +301,7 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
         {/* Delete */}
         <button
           onClick={handleDelete}
-          className={`mt-auto font-hud text-xs border py-2 transition-colors tracking-wider ${
+          className={`mt-auto font-sans font-bold text-xs border rounded-md py-3 transition-colors tracking-wider uppercase ${
             deleting
               ? 'border-red-600 text-red-400 bg-red-950'
               : 'border-hud-border text-hud-muted hover:border-red-700 hover:text-red-400'
@@ -331,7 +313,6 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
     </div>
   )
 }
-
 // ── Connection Panel ───────────────────────────────────────────
 
 interface ConnectionPanelProps {
@@ -377,50 +358,50 @@ function ConnectionPanel({ planId, rooms, connections, onConnectionAdded, onConn
   const roomName = (id: string) => rooms.find(r => r.id === id)?.name ?? id
 
   return (
-    <div className="border-t border-hud-border p-4 flex flex-col gap-3">
-      <div className="font-hud text-[10px] text-hud-muted tracking-wider">CONNECTIONS</div>
+    <div className="border-t border-hud-border p-5 flex flex-col gap-4">
+      <div className="font-mono text-[11px] font-bold text-hud-muted tracking-[0.1em]">CONNECTIONS</div>
 
       {/* Add connection controls */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         <div className="flex gap-2">
           <select value={fromId} onChange={e => setFromId(e.target.value)}
-            className="flex-1 bg-hud-bg border border-hud-border text-hud-text font-hud text-xs p-1 focus:border-hud-accent outline-none">
+            className="flex-1 bg-hud-bg border border-hud-border rounded-md text-hud-text font-sans text-sm p-2 focus:border-hud-accent outline-none">
             <option value="">From room...</option>
             {rooms.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
           <select value={toId} onChange={e => setToId(e.target.value)}
-            className="flex-1 bg-hud-bg border border-hud-border text-hud-text font-hud text-xs p-1 focus:border-hud-accent outline-none">
+            className="flex-1 bg-hud-bg border border-hud-border rounded-md text-hud-text font-sans text-sm p-2 focus:border-hud-accent outline-none">
             <option value="">To room...</option>
             {rooms.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
         </div>
         <div className="flex gap-2 items-center">
           <input value={label} onChange={e => setLabel(e.target.value)} placeholder="Label..."
-            className="flex-1 bg-hud-bg border border-hud-border text-hud-text font-hud text-xs p-1 focus:border-hud-accent outline-none" />
-          <label className="flex items-center gap-1 font-hud text-[10px] text-hud-muted cursor-pointer select-none">
+            className="flex-1 bg-hud-bg border border-hud-border rounded-md text-hud-text font-sans text-sm p-2 focus:border-hud-accent outline-none" />
+          <label className="flex items-center gap-2 font-mono text-[10px] text-hud-muted cursor-pointer select-none">
             <input type="checkbox" checked={isContingency} onChange={e => setIsContingency(e.target.checked)}
-              className="accent-purple-500" />
+              className="accent-hud-accent" />
             CONTINGENCY
           </label>
         </div>
         <button onClick={addConnection} disabled={adding || !fromId || !toId}
-          className="font-hud text-xs border border-hud-border text-hud-muted px-3 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors disabled:opacity-40 tracking-wider">
+          className="font-sans font-bold text-xs border border-hud-border rounded-md text-hud-muted px-3 py-2 hover:border-hud-accent hover:text-hud-accent transition-colors disabled:opacity-40 tracking-wider">
           ADD CONNECTION
         </button>
       </div>
 
       {/* Existing connections */}
       {connections.length > 0 && (
-        <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
+        <div className="flex flex-col gap-2 max-h-40 overflow-y-auto">
           {connections.map(conn => (
-            <div key={conn.id} className="flex items-center justify-between gap-2 border border-hud-border px-2 py-1">
-              <span className="font-hud text-[10px] text-hud-muted truncate">
+            <div key={conn.id} className="flex items-center justify-between gap-2 bg-hud-bg border border-hud-border rounded-md px-3 py-2">
+              <span className="font-sans text-xs font-semibold text-hud-muted truncate">
                 {roomName(conn.fromRoomId)} → {roomName(conn.toRoomId)}
                 {conn.label ? ` [${conn.label}]` : ''}
                 {conn.isContingency ? ' ···' : ''}
               </span>
               <button onClick={() => removeConnection(conn.id)}
-                className="font-hud text-[10px] text-hud-muted hover:text-hp-low transition-colors flex-shrink-0">✕</button>
+                className="font-bold text-hud-muted hover:text-hp-low transition-colors flex-shrink-0">✕</button>
             </div>
           ))}
         </div>
@@ -573,14 +554,14 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
     <div className="flex flex-col h-full overflow-hidden bg-hud-bg">
 
       {/* Toolbar */}
-      <div className="flex-shrink-0 border-b border-hud-border bg-hud-panel px-4 py-2 flex items-center gap-3 flex-wrap">
-        <span className="font-hud text-xs text-hud-accent tracking-widest">FLOOR PLANNER</span>
+      <div className="flex-shrink-0 border-b border-hud-border bg-hud-panel px-6 py-4 flex items-center gap-3 flex-wrap">
+        <span className="font-extrabold text-[20px] tracking-tight text-hud-text">SESSION PLANNER <span className="font-normal text-hud-muted">| MAP EDITOR</span></span>
 
         {/* Plan selector */}
         <select
           value={activePlanId ?? ''}
           onChange={e => setActivePlanId(e.target.value || null)}
-          className="bg-hud-bg border border-hud-border text-hud-text font-hud text-xs p-1 focus:border-hud-accent outline-none"
+          className="ml-auto bg-hud-bg border border-hud-border text-hud-text font-sans text-sm p-2 rounded-md focus:border-hud-accent outline-none"
         >
           <option value="">— select floor plan —</option>
           {plans.map(p => (
@@ -590,7 +571,7 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
 
         <button
           onClick={createPlan}
-          className="font-hud text-xs border border-hud-border text-hud-muted px-3 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider"
+          className="font-bold text-xs border border-hud-border rounded-md text-hud-muted px-4 py-2 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider uppercase"
         >
           + NEW FLOOR
         </button>
@@ -598,14 +579,14 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
         {activePlanId && (
           <button
             onClick={addRoom}
-            className="font-hud text-xs border border-hud-border text-hud-muted px-3 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider"
+            className="font-bold text-xs border border-hud-border rounded-md text-hud-muted px-4 py-2 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider uppercase"
           >
             + ADD ROOM
           </button>
         )}
 
         {loadingPlan && (
-          <span className="font-hud text-xs text-hud-muted animate-pulse">Loading...</span>
+          <span className="font-sans text-xs font-bold text-hud-muted animate-pulse">Loading...</span>
         )}
       </div>
 
@@ -645,8 +626,8 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
         </div>
 
         {/* Edit sidebar — slides in when a node is selected */}
-        {selectedRoom && activePlanId && (
-          <div className="flex flex-col border-l border-hud-border overflow-hidden">
+        {selectedRoom && activePlanId ? (
+          <div className="flex flex-col border-l border-hud-border overflow-hidden bg-hud-panel z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.5)]">
             <RoomEditPanel
               room={selectedRoom}
               planId={activePlanId}
@@ -661,6 +642,12 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
               onConnectionAdded={handleConnectionAdded}
               onConnectionRemoved={handleConnectionRemoved}
             />
+          </div>
+        ) : activePlanId && (
+          <div className="w-[340px] flex-shrink-0 border-l border-hud-border bg-hud-panel flex flex-col p-6 items-center justify-center text-center">
+            <span className="text-4xl mb-4">🔍</span>
+            <span className="font-sans font-bold text-hud-muted text-sm tracking-wide">Select a room node</span>
+            <span className="font-sans text-xs text-hud-muted mt-2 opacity-70">Click on any room in the graph to inspect and edit its details.</span>
           </div>
         )}
       </div>
