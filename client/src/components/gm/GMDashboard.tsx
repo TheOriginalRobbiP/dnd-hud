@@ -145,19 +145,19 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
 
       <div className="flex-1 flex overflow-hidden">
         {gmMode === 'plan' && (
-          <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-hidden flex flex-col pb-12 md:pb-0">
             <FloorPlanner send={send} />
           </div>
         )}
 
         {gmMode === 'sound' && (
-          <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-hidden flex flex-col pb-12 md:pb-0">
             <SoundboardPanel send={send} />
           </div>
         )}
 
         {gmMode === 'rules' && (
-          <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-hidden flex flex-col pb-12 md:pb-0">
             <GMRulesPanel />
           </div>
         )}
@@ -183,7 +183,7 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
             </div>
 
             {/* Mobile layout — single panel at a time */}
-            <div className="flex md:hidden flex-1 overflow-hidden flex-col">
+            <div className="flex md:hidden flex-1 overflow-hidden flex-col pb-12">
               <div className="flex-shrink-0">
                 <CollapsedCharStrip characters={state.characters} onExpand={() => {}} />
               </div>
@@ -210,7 +210,7 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
       </div>
 
       {/* Mobile-only Nav */}
-      <div className="md:hidden flex border-t border-hud-border bg-hud-bg py-4 pb-8">
+      <div className="md:hidden flex border-t border-hud-border bg-hud-bg py-4 pb-8 fixed bottom-0 left-0 right-0 z-50">
         {(['map', 'room', 'log', 'plan', 'sound'] as const).map(tab => {
           let icon = "🗺️"
           if (tab === 'room') icon = "⚔️"

@@ -59,7 +59,7 @@ export function SoundboardPanel({ send }: SoundboardPanelProps) {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 flex-1 overflow-y-auto pb-12">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="font-hud text-hud-accent tracking-widest text-sm">SYSTEM AI — SOUNDBOARD</h2>

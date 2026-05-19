@@ -554,14 +554,14 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
     <div className="flex flex-col h-full overflow-hidden bg-hud-bg">
 
       {/* Toolbar */}
-      <div className="flex-shrink-0 border-b border-hud-border bg-hud-panel px-6 py-4 flex items-center gap-3 flex-wrap">
-        <span className="font-extrabold text-[20px] tracking-tight text-hud-text">SESSION PLANNER <span className="font-normal text-hud-muted">| MAP EDITOR</span></span>
+      <div className="flex-shrink-0 border-b border-hud-border bg-hud-panel px-4 md:px-6 py-4 flex items-center gap-3 flex-wrap">
+        <span className="font-extrabold text-[16px] md:text-[20px] tracking-tight text-hud-text">SESSION PLANNER <span className="font-normal text-hud-muted hidden md:inline">| MAP EDITOR</span></span>
 
         {/* Plan selector */}
         <select
           value={activePlanId ?? ''}
           onChange={e => setActivePlanId(e.target.value || null)}
-          className="ml-auto bg-hud-bg border border-hud-border text-hud-text font-sans text-sm p-2 rounded-md focus:border-hud-accent outline-none"
+          className="ml-auto bg-hud-bg border border-hud-border text-hud-text font-sans text-xs md:text-sm p-2 rounded-md focus:border-hud-accent outline-none max-w-[140px] md:max-w-none"
         >
           <option value="">— select floor plan —</option>
           {plans.map(p => (
@@ -627,7 +627,7 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
 
         {/* Edit sidebar — slides in when a node is selected */}
         {selectedRoom && activePlanId ? (
-          <div className="flex flex-col border-l border-hud-border overflow-hidden bg-hud-panel z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.5)]">
+          <div className="hidden md:flex flex-col border-l border-hud-border overflow-hidden bg-hud-panel z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.5)]">
             <RoomEditPanel
               room={selectedRoom}
               planId={activePlanId}
@@ -644,7 +644,7 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
             />
           </div>
         ) : activePlanId && (
-          <div className="w-[340px] flex-shrink-0 border-l border-hud-border bg-hud-panel flex flex-col p-6 items-center justify-center text-center">
+          <div className="hidden md:flex w-[340px] flex-shrink-0 border-l border-hud-border bg-hud-panel flex-col p-6 items-center justify-center text-center">
             <span className="text-4xl mb-4">🔍</span>
             <span className="font-sans font-bold text-hud-muted text-sm tracking-wide">Select a room node</span>
             <span className="font-sans text-xs text-hud-muted mt-2 opacity-70">Click on any room in the graph to inspect and edit its details.</span>

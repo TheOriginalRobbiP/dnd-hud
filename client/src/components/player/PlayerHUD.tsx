@@ -107,8 +107,8 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
           </div>
         </div>
       </div>
-
-      <div className="flex-1 overflow-y-auto bg-hud-bg">
+      {/* Main Area */}
+      <div className="flex-1 overflow-y-auto bg-hud-bg pb-20 md:pb-0">
         {/* Desktop Grid Layout [280px_1fr_350px] (Always active on md+ breakpoint regardless of mobile tab) */}
         <div className="md:grid md:grid-cols-[280px_1fr_350px] md:h-full h-full">
           
@@ -176,7 +176,7 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
       </div>
       
       {/* Mobile-only Bottom Nav */}
-      <div className="md:hidden flex border-t border-hud-border bg-hud-bg py-4 pb-8">
+      <div className="md:hidden flex border-t border-hud-border bg-hud-bg py-4 pb-8 fixed bottom-0 left-0 right-0 z-50">
         {TABS.filter(t => t.id !== 'rules').map(t => {
           let icon = "📊"
           if (t.id === 'skills') icon = "⚔️"
