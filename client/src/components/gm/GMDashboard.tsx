@@ -144,56 +144,55 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Desktop Layout — 3 columns */}
-        <div className="hidden md:flex flex-1 overflow-hidden flex-col">
-          <div className="flex-shrink-0 border-b border-hud-border">
-            <CollapsedCharStrip characters={state.characters} onExpand={() => {}} />
+        {gmMode === 'plan' && (
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <FloorPlanner send={send} />
           </div>
-          
-          {gmMode === 'plan' && (
-            <div className="flex-1 overflow-hidden flex flex-col">
-              <FloorPlanner send={send} />
-            </div>
-          )}
+        )}
 
-          {gmMode === 'session' && (
-            <div className="flex-1 overflow-hidden grid grid-cols-[300px_1fr_400px]">
-              <div className="border-r border-hud-border flex flex-col overflow-hidden">
-                <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
-              </div>
-              <div className="flex flex-col overflow-hidden bg-hud-bg">
-                <FloorRunnerPanel send={send} notesTextSize={notesSize} />
-              </div>
-              <div className="border-l border-hud-border flex flex-col overflow-y-auto">
-                <RoomPanel floor={state.floor} send={send} />
-              </div>
-            </div>
-          )}
-
-          {gmMode === 'sound' && (
-            <div className="flex-1 overflow-hidden flex flex-col">
-              <SoundboardPanel send={send} />
-            </div>
-          )}
-
-          {gmMode === 'rules' && (
-            <div className="flex-1 overflow-hidden flex flex-col">
-              <GMRulesPanel />
-            </div>
-          )}
-        </div>
-
-        {/* Mobile layout — single panel at a time */}
-        <div className="flex md:hidden flex-1 overflow-hidden flex-col">
-          <div className="flex-shrink-0">
-            <CollapsedCharStrip characters={state.characters} onExpand={() => {}} />
+        {gmMode === 'sound' && (
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <SoundboardPanel send={send} />
           </div>
-          <div className="flex-1 flex overflow-hidden">
-            {mobileTab === 'map' && (
-              <div className="flex-1 overflow-hidden flex flex-col">
-                <FloorRunnerPanel send={send} notesTextSize={notesSize} />
+        )}
+
+        {gmMode === 'rules' && (
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <GMRulesPanel />
+          </div>
+        )}
+
+        {gmMode === 'session' && (
+          <>
+            {/* Desktop Layout — 3 columns */}
+            <div className="hidden md:flex flex-1 overflow-hidden flex-col">
+              <div className="flex-shrink-0 border-b border-hud-border">
+                <CollapsedCharStrip characters={state.characters} onExpand={() => {}} />
               </div>
-            )}
+              <div className="flex-1 overflow-hidden grid grid-cols-[300px_1fr_400px]">
+                <div className="border-r border-hud-border flex flex-col overflow-hidden">
+                  <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
+                </div>
+                <div className="flex flex-col overflow-hidden bg-hud-bg">
+                  <FloorRunnerPanel send={send} notesTextSize={notesSize} />
+                </div>
+                <div className="border-l border-hud-border flex flex-col overflow-y-auto">
+                  <RoomPanel floor={state.floor} send={send} />
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile layout — single panel at a time */}
+            <div className="flex md:hidden flex-1 overflow-hidden flex-col">
+              <div className="flex-shrink-0">
+                <CollapsedCharStrip characters={state.characters} onExpand={() => {}} />
+              </div>
+              <div className="flex-1 flex overflow-hidden">
+                {mobileTab === 'map' && (
+                  <div className="flex-1 overflow-hidden flex flex-col">
+                    <FloorRunnerPanel send={send} notesTextSize={notesSize} />
+                  </div>
+                )}
                 {mobileTab === 'room' && (
                   <div className="flex-1 overflow-y-auto">
                     <RoomPanel floor={state.floor} send={send} />
@@ -206,7 +205,9 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
                 )}
               </div>
             </div>
-        </div>
+          </>
+        )}
+      </div>
 
       {/* Mobile-only Nav */}
       <div className="md:hidden flex border-t border-hud-border bg-hud-bg py-4 pb-8">
