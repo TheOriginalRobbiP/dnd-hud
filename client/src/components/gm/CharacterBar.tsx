@@ -63,7 +63,7 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
   const inspectChar = inspectCharId ? displayCharacters.find(c => c.id === inspectCharId) ?? null : null
 
   return (
-    <div className="border-b border-hud-border bg-hud-panel p-3 flex-shrink-0">
+    <div className="flex-shrink-0 bg-hud-panel border-b border-hud-border p-3">
       <div className="flex justify-between items-center mb-2">
         <div className="font-hud text-sm text-hud-muted tracking-widest">CRAWLER STATUS</div>
         <div className="flex gap-2 items-center">
@@ -82,14 +82,61 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
         </div>
       </div>
 
-      {/* ── Mobile: single card with prev/next ── Desktop: horizontal scroll */}
-      {activeCharacters.length === 0
-        ? <p className="font-hud text-hud-muted text-sm italic">No active crawlers.</p>
-        : <>
-            {/* Desktop — horizontal scroll */}
-            <div className="hidden sm:flex gap-3 overflow-x-auto pb-1">
-              {activeCharacters.map(c => (
-                <div key={c.id} className="relative flex flex-col gap-1 flex-shrink-0">
+      {/* ── DESKTOP: Vertical stack (V2 Layout) ── */}
+      <div className="hidden md:flex flex-col gap-3 overflow-y-auto pr-2 pb-1" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+        {activeCharacters.length === 0 && (
+          <div className="p-4 text-hud-muted font-hud text-xs italic">
+            No crawlers active. Click START SESSION to allow players to join.
+          </div>
+        )}
+        {activeCharacters.map(c => (
+          <div key={c.id} className="relative flex flex-col gap-1 border-b border-hud-border pb-3">
+            <CharacterCard
+              character={c}
+              pendingLootBoxes={lootQueue.filter(b => b.assignedTo === c.id && b.state === 'pending')}
+              send={send}
+              onLootAssign={setLootModalCharId}
+              onStatusEffects={setStatusModalCharId}
+              onEdit={setEditCharId}
+              onInspect={setInspectCharId}
+            />
+            <button onClick={() => handleToggleActive(c.id, false)}
+              className="font-hud text-xs border border-hud-border text-hud-muted hover:border-red-800 hover:text-red-400 py-1 transition-colors">
+              HIDE
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* ── MOBILE: Single card navigator ── */}
+      <div className="flex md:hidden flex-col gap-2">
+        {activeCharacters.length === 0 ? (
+          <div className="px-4 py-3 text-hud-muted font-hud text-xs italic flex items-center justify-center w-full">
+            No crawlers active.
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-1">
+              <button
+                onClick={() => setMobileCardIdx(i => Math.max(0, i - 1))}
+                disabled={mobileCardIdx === 0}
+                className="font-hud text-sm border border-hud-border text-hud-muted px-3 py-1 disabled:opacity-30">
+                ◀
+              </button>
+              <span className="font-hud text-xs text-hud-muted tracking-wider">
+                {mobileCardIdx + 1} / {activeCharacters.length}
+              </span>
+              <button
+                onClick={() => setMobileCardIdx(i => Math.min(activeCharacters.length - 1, i + 1))}
+                disabled={mobileCardIdx >= activeCharacters.length - 1}
+                className="font-hud text-sm border border-hud-border text-hud-muted px-3 py-1 disabled:opacity-30">
+                ▶
+              </button>
+            </div>
+            {(() => {
+              const c = activeCharacters[Math.min(mobileCardIdx, activeCharacters.length - 1)]
+              return c ? (
+                <div className="flex flex-col gap-1">
                   <CharacterCard
                     character={c}
                     pendingLootBoxes={lootQueue.filter(b => b.assignedTo === c.id && b.state === 'pending')}
@@ -104,51 +151,11 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
                     HIDE
                   </button>
                 </div>
-              ))}
-            </div>
-
-            {/* Mobile — single card navigator */}
-            <div className="flex sm:hidden flex-col gap-2">
-              <div className="flex items-center justify-between mb-1">
-                <button
-                  onClick={() => setMobileCardIdx(i => Math.max(0, i - 1))}
-                  disabled={mobileCardIdx === 0}
-                  className="font-hud text-sm border border-hud-border text-hud-muted px-3 py-1 disabled:opacity-30">
-                  ◀
-                </button>
-                <span className="font-hud text-xs text-hud-muted tracking-wider">
-                  {mobileCardIdx + 1} / {activeCharacters.length}
-                </span>
-                <button
-                  onClick={() => setMobileCardIdx(i => Math.min(activeCharacters.length - 1, i + 1))}
-                  disabled={mobileCardIdx >= activeCharacters.length - 1}
-                  className="font-hud text-sm border border-hud-border text-hud-muted px-3 py-1 disabled:opacity-30">
-                  ▶
-                </button>
-              </div>
-              {(() => {
-                const c = activeCharacters[Math.min(mobileCardIdx, activeCharacters.length - 1)]
-                return c ? (
-                  <div className="flex flex-col gap-1">
-                    <CharacterCard
-                      character={c}
-                      pendingLootBoxes={lootQueue.filter(b => b.assignedTo === c.id && b.state === 'pending')}
-                      send={send}
-                      onLootAssign={setLootModalCharId}
-                      onStatusEffects={setStatusModalCharId}
-                      onEdit={setEditCharId}
-                      onInspect={setInspectCharId}
-                    />
-                    <button onClick={() => handleToggleActive(c.id, false)}
-                      className="font-hud text-xs border border-hud-border text-hud-muted hover:border-red-800 hover:text-red-400 py-1 transition-colors">
-                      HIDE (DEACTIVATE)
-                    </button>
-                  </div>
-                ) : null
-              })()}
-            </div>
+              ) : null
+            })()}
           </>
-      }
+        )}
+      </div>
 
       {inactiveCharacters.length > 0 && (
         <div className="mt-3 border-t border-hud-border pt-2">

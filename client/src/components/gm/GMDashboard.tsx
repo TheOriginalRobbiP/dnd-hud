@@ -189,20 +189,7 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
       </div>
 
       {/* Character bar — full or collapsed strip */}
-      {charBarCollapsed
-        ? <CollapsedCharStrip
-            characters={state.characters}
-            onExpand={() => setCharBarCollapsed(false)}
-          />
-        : <CharacterBar
-            characters={state.characters}
-            lootQueue={state.lootQueue}
-            send={send}
-            dmMessages={dmMessages}
-            onDMRead={handleDMRead}
-            onDMEcho={handleDMEcho}
-          />
-      }
+      {/* Moved inside the layout in V2 */}
 
       {/* Main area — switches based on gmMode */}
       <div className="flex flex-1 overflow-hidden">
@@ -228,45 +215,63 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
           </div>
         )}
 
-        {/* ── SESSION mode: FloorRunnerPanel 55% + split right column 45% ── */}
+        {/* ── SESSION mode: V2 3-column Layout ── */}
         {gmMode === 'session' && (
           <>
-            {/* Desktop layout */}
-            <div className="hidden sm:flex flex-1 overflow-hidden">
-              {/* Left column — map/runner */}
-              <div className="flex-[55] min-w-0 overflow-hidden flex flex-col border-r border-hud-border">
-                <FloorRunnerPanel send={send} notesTextSize={notesSize} />
+            {/* Desktop layout (V2 3-column) */}
+            <div className="hidden md:grid md:grid-cols-[280px_1fr_350px] flex-1 overflow-hidden">
+              
+              {/* Left column — Character Bar (vertical stack) */}
+              <div className="border-r border-hud-border bg-hud-panel overflow-y-auto flex flex-col">
+                <CharacterBar
+                  characters={state.characters}
+                  lootQueue={state.lootQueue}
+                  send={send}
+                  dmMessages={dmMessages}
+                  onDMRead={handleDMRead}
+                  onDMEcho={handleDMEcho}
+                />
               </div>
-              {/* Right column — room panel + log panel stacked */}
-              <div className="flex-[45] min-w-0 flex flex-col border-l border-hud-border overflow-hidden">
-                {/* Top half: RoomPanel */}
-                <div className="flex-[55] min-h-0 overflow-hidden border-b border-hud-border">
+
+              {/* Middle column — Map & Room */}
+              <div className="flex flex-col min-w-0 bg-hud-base overflow-hidden">
+                <div className="flex-[60] min-h-0 border-b border-hud-border flex flex-col overflow-hidden">
+                  <FloorRunnerPanel send={send} notesTextSize={notesSize} />
+                </div>
+                <div className="flex-[40] min-h-0 bg-hud-panel overflow-y-auto">
                   <RoomPanel floor={state.floor} send={send} />
                 </div>
-                {/* Bottom half: GMLogPanel */}
-                <div className="flex-[45] min-h-0 overflow-hidden flex flex-col">
-                  <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
-                </div>
               </div>
+
+              {/* Right column — Event Log */}
+              <div className="border-l border-hud-border bg-hud-panel flex flex-col overflow-hidden min-w-0">
+                <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
+              </div>
+
             </div>
 
             {/* Mobile layout — single panel at a time */}
-            <div className="flex sm:hidden flex-1 overflow-hidden">
-              {mobileTab === 'map' && (
-                <div className="flex-1 overflow-hidden flex flex-col">
-                  <FloorRunnerPanel send={send} notesTextSize={notesSize} />
-                </div>
-              )}
-              {mobileTab === 'room' && (
-                <div className="flex-1 overflow-hidden">
-                  <RoomPanel floor={state.floor} send={send} />
-                </div>
-              )}
-              {mobileTab === 'log' && (
-                <div className="flex-1 overflow-hidden flex flex-col">
-                  <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
-                </div>
-              )}
+            <div className="flex md:hidden flex-1 overflow-hidden flex-col">
+              <div className="flex-shrink-0">
+                <CollapsedCharStrip characters={state.characters} onExpand={() => {}} />
+              </div>
+              <div className="flex-1 flex overflow-hidden">
+                {mobileTab === 'map' && (
+                  <div className="flex-1 overflow-hidden flex flex-col">
+                    <FloorRunnerPanel send={send} notesTextSize={notesSize} />
+                  </div>
+                )}
+                {mobileTab === 'room' && (
+                  <div className="flex-1 overflow-y-auto">
+                    <RoomPanel floor={state.floor} send={send} />
+                  </div>
+                )}
+                {mobileTab === 'log' && (
+                  <div className="flex-1 overflow-hidden flex flex-col">
+                    <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
+                  </div>
+                )}
+              </div>
             </div>
           </>
         )}
