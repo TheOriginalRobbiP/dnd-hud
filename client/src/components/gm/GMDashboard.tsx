@@ -4,7 +4,7 @@ import { RoomPanel } from './RoomPanel'
 import { GMLogPanel } from './GMLogPanel'
 import { SessionManager } from './SessionManager'
 import { FloorPlanner } from './FloorPlanner'
-import { FloorRunnerPanel } from './FloorRunnerPanel'
+import { SessionNavigator } from './SessionNavigator'
 import { GMRulesPanel } from './GMRulesPanel'
 import { SoundboardPanel } from './SoundboardPanel'
 
@@ -197,7 +197,7 @@ export function GMDashboard({ state, send, activeCharIds }: GMDashboardProps) {
                   <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
                 </div>
                 <div className="flex flex-col overflow-hidden bg-hud-bg">
-                  <FloorRunnerPanel send={send} notesTextSize={notesSize} />
+                  <SessionNavigator send={send} notesTextSize={notesSize} />
                 </div>
                 <div className="border-l border-hud-border flex flex-col overflow-y-auto">
                   <RoomPanel floor={state.floor} send={send} />
@@ -213,7 +213,7 @@ export function GMDashboard({ state, send, activeCharIds }: GMDashboardProps) {
               <div className="flex-1 flex overflow-hidden">
                 {mobileTab === 'map' && (
                   <div className="flex-1 overflow-hidden flex flex-col">
-                    <FloorRunnerPanel send={send} notesTextSize={notesSize} />
+                    <SessionNavigator send={send} notesTextSize={notesSize} />
                   </div>
                 )}
                 {mobileTab === 'room' && (

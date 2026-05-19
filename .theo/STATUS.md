@@ -81,6 +81,7 @@
 - Floor 2 Plan design — viewers go live, Brindle Grub mechanic, 6-day time limit
 - Floor 3 Plan design (The Over City) — class/race selection, Manager Benefit decision
 - Phase 2 features (Fog of war map, Room reveal animations)
+- Session Map redesign — replacing ReactFlow canvas with vertical list/tree view for faster gameplay
 
 **Blockers:** None
 
@@ -99,5 +100,6 @@
 - Floor 2 Plan design — viewers go live, Brindle Grub mechanic, 6-day time limit
 - Floor 3 Plan design (The Over City) — class/race selection, Manager Benefit decision
 - Phase 2 features (Fog of war map, Room reveal animations)
+- Session Map redesign — replacing ReactFlow canvas with vertical list/tree view for faster gameplay
 
 **Blockers:** None
