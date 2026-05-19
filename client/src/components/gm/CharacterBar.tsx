@@ -82,15 +82,15 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
         </div>
       </div>
 
-      {/* ── DESKTOP: Vertical stack (V2 Layout) ── */}
-      <div className="hidden md:flex flex-col gap-3 overflow-y-auto pr-2 pb-1" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+      {/* ── DESKTOP: Horizontal grid (V2 Layout) ── */}
+      <div className="hidden md:grid grid-cols-4 gap-3 w-full">
         {activeCharacters.length === 0 && (
-          <div className="p-4 text-hud-muted font-hud text-xs italic">
+          <div className="p-4 text-hud-muted font-hud text-xs italic col-span-4 text-center border border-hud-border border-dashed">
             No crawlers active. Click START SESSION to allow players to join.
           </div>
         )}
         {activeCharacters.map(c => (
-          <div key={c.id} className="relative flex flex-col gap-1 border-b border-hud-border pb-3">
+          <div key={c.id} className="relative flex flex-col gap-1">
             <CharacterCard
               character={c}
               pendingLootBoxes={lootQueue.filter(b => b.assignedTo === c.id && b.state === 'pending')}
@@ -101,7 +101,7 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
               onInspect={setInspectCharId}
             />
             <button onClick={() => handleToggleActive(c.id, false)}
-              className="font-hud text-xs border border-hud-border text-hud-muted hover:border-red-800 hover:text-red-400 py-1 transition-colors">
+              className="font-hud text-[10px] border border-hud-border text-hud-muted hover:border-red-800 hover:text-red-400 py-0.5 transition-colors absolute top-0 right-0 -mt-5 bg-hud-base px-2">
               HIDE
             </button>
           </div>
