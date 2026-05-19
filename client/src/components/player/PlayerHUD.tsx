@@ -11,6 +11,7 @@ import { InventoryTab } from './InventoryTab'
 import { FameTab } from './FameTab'
 import { RulesTab } from './RulesTab'
 import { DiceHero } from './DiceHero'
+import { PartySidebar } from './PartySidebar'
 
 type Tab = 'status' | 'skills' | 'inventory' | 'fame' | 'rules'
 const TABS: { id: Tab; label: string }[] = [
@@ -119,12 +120,31 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
             </div>
           )}
 
-          {/* Desktop-only Right Column (Rules) */}
+        {/* Desktop-only Right Column (Rules & Fame/Party Status) */}
           {tab === 'status' && (
             <div className="hidden md:flex md:flex-col md:border-l md:border-hud-border md:overflow-y-auto md:bg-hud-panel">
-               <div className="font-hud text-sm text-hud-muted tracking-widest p-4 border-b border-hud-border">RULES AND REFERENCE</div>
-               <div className="flex-1 overflow-y-auto">
-                 <RulesTab />
+               <div className="font-hud text-sm text-hud-muted tracking-widest p-4 border-b border-hud-border flex gap-4">
+                 <div className="text-hud-main border-b-2 border-hud-main pb-1 cursor-pointer">PARTY STATUS</div>
+                 <div className="text-hud-muted hover:text-hud-main cursor-pointer">RULES</div>
+               </div>
+               <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
+                 {/* Stats — compact row */}
+                 <div>
+                   <div className="font-hud text-xs text-hud-muted tracking-widest mb-2">STATS</div>
+                   <div className="grid grid-cols-5 gap-1.5">
+                     {['STR','DEX','CON','INT','CHA'].map(stat => (
+                       <div key={stat} className="border border-hud-border bg-hud-base py-2 text-center rounded">
+                         <div className="font-hud text-xs text-hud-muted">{stat}</div>
+                         <div className="font-hud text-lg text-hud-text">{(character.stats as any)[stat] ?? '—'}</div>
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+                 <PartySidebar characters={state.characters} myCharId={character.id} onInspect={setInspectCharId} />
+                 
+                 <div className="border-t border-hud-border pt-4">
+                    <RulesTab />
+                 </div>
                </div>
             </div>
           )}
