@@ -13,19 +13,22 @@ export default {
         legendary: 'oklch(72% 0.18 35)',
         celestial: 'oklch(62% 0.22 300)',
         // HUD palette — OKLCH tinted neutrals (no pure #000/#fff)
-        'hud-bg':     'oklch(8% 0.015 265)',   // near-black, blue tint
-        'hud-panel':  'oklch(11% 0.015 265)',  // panels
-        'hud-border': 'oklch(22% 0.02 265)',   // visible borders
-        'hud-text':   'oklch(92% 0.01 265)',   // primary — 12.5:1 on bg
-        'hud-muted':  'oklch(68% 0.01 265)',   // secondary — 5.2:1 on bg, proper AA
-        'hud-accent': 'oklch(62% 0.22 300)',   // electric purple
-        'hud-cyan':   'oklch(80% 0.15 200)',   // cyan secondary
-        'hp-high':    'oklch(65% 0.2 145)',
-        'hp-mid':     'oklch(75% 0.18 75)',
-        'hp-low':     'oklch(58% 0.22 20)',
+        'hud-bg':     '#0d0d0f',
+        'hud-panel':  '#161619',
+        'hud-border': '#2a2a2e',
+        'hud-text':   '#ffffff',
+        'hud-muted':  '#888888',
+        'hud-accent': '#f59e0b',
+        'hud-cyan':   '#3b82f6',
+        'hud-danger': '#ef4444',
+        'hud-success': '#22c55e',
+        'hp-high':    '#22c55e',
+        'hp-mid':     '#f59e0b',
+        'hp-low':     '#ef4444',
       },
       fontFamily: {
         hud: ['JetBrains Mono', 'Courier New', 'monospace'],
+        sans: ['Inter', 'sans-serif'],
       },
       animation: {
         'slide-in': 'slideIn 0.2s ease-out',

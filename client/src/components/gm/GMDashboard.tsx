@@ -1,10 +1,7 @@
-import { useState, useCallback, useEffect } from 'react'
-import type { DirectMessage } from '../../hooks/useWebSocket'
+import { useState } from 'react'
 import type { AppState, WSMessage, Character } from '../../types'
-import { CharacterBar } from './CharacterBar'
 import { RoomPanel } from './RoomPanel'
 import { GMLogPanel } from './GMLogPanel'
-import { SessionLog } from './SessionLog'
 import { SessionManager } from './SessionManager'
 import { FloorPlanner } from './FloorPlanner'
 import { FloorRunnerPanel } from './FloorRunnerPanel'
@@ -70,32 +67,23 @@ function CollapsedCharStrip({ characters, onExpand }: CollapsedCharStripProps) {
 
 export function GMDashboard({ state, send }: GMDashboardProps) {
   const [mobileTab, setMobileTab] = useState<SessionMobileTab>('map')
-  const [dmMessages, setDmMessages] = useState<DirectMessage[]>([])
   const [sessionMgrOpen, setSessionMgrOpen] = useState(false)
   const [gmMode, setGmMode] = useState<GmMode>('session')
-  const [notesSize, setNotesSize] = useState<NotesSize>('md')
-  const [charBarCollapsed, setCharBarCollapsed] = useState(false)
-  const handleDMRead = useCallback(() => setDmMessages(prev => prev.map(m => ({ ...m, read: true }))), [])
-  const handleDMEcho = useCallback((dm: DirectMessage) => setDmMessages(prev => [...prev, dm]), [])
-
-  // Auto-collapse char bar in both modes; restore never (manual toggle only resets on mode change)
-  useEffect(() => {
-    setCharBarCollapsed(true)
-  }, [gmMode])
-
+  const [notesSize] = useState<NotesSize>('md')
+  
   const activeCharacters = state.characters.filter(c => c.isActive !== false)
   const sessionActive = state.floor?.sessionActive ?? false
 
   return (
-    <div className="h-screen flex flex-col bg-hud-bg overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div className="h-screen flex flex-col bg-hud-bg overflow-hidden font-sans" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
       {sessionMgrOpen && (
         <SessionManager send={send} onClose={() => setSessionMgrOpen(false)} />
       )}
 
       {/* Header */}
-      <div className="border-b border-hud-border px-3 py-2 flex items-center justify-between bg-hud-panel flex-shrink-0 gap-2">
-        <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="border-b border-hud-border px-4 py-4 flex items-center justify-between bg-hud-panel flex-shrink-0 gap-2">
+        <div className="flex items-center gap-3 flex-shrink-0">
           <button
             onClick={() => {
               localStorage.removeItem('hud:role')
@@ -103,15 +91,22 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
               window.location.reload()
             }}
             title="Switch Role / Logout"
-            className="font-hud text-xs border border-hud-border text-hud-muted px-2 py-1 hover:border-red-500 hover:text-red-500 transition-colors"
+            className="w-8 h-8 flex items-center justify-center border border-hud-border rounded text-hud-muted hover:border-red-500 hover:text-red-500 transition-colors"
           >
             ⏏
           </button>
-          <div className="font-hud text-hud-accent tracking-widest text-xs sm:text-sm">THE HUD — GM</div>
+          <div>
+            <div className="text-[22px] font-extrabold leading-none tracking-tight text-hud-text">
+              THE HUD
+            </div>
+            <div className="text-hud-accent text-[11px] font-bold mt-1 tracking-widest uppercase">
+              GAME MASTER
+            </div>
+          </div>
         </div>
 
-        {/* PLAN / SESSION mode toggle */}
-        <div className="flex gap-1 flex-shrink-0">
+        {/* PLAN / SESSION mode toggle (Hidden on mobile entirely) */}
+        <div className="hidden md:flex gap-1 flex-shrink-0">
           <button
             onClick={() => setGmMode('plan')}
             className={`font-hud text-xs border px-2 py-1 transition-colors ${gmMode === 'plan' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'}`}
@@ -138,150 +133,67 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
           </button>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {/* SESSION START / STOP — prominent */}
-          <button
-            onClick={() => send({ type: sessionActive ? 'session_stop' : 'session_start' })}
-            className={`font-hud text-xs border px-3 py-1 tracking-wider transition-colors ${
-              sessionActive
-                ? 'border-red-700 text-red-400 hover:bg-red-950'
-                : 'border-green-700 text-green-400 hover:bg-green-950'
-            }`}
-          >
-            {sessionActive ? '⏹ STOP' : '▶ START'}
-          </button>
-          {/* Notes size toggle — only in SESSION mode */}
-          {gmMode === 'session' && (
-            <div className="flex gap-1 flex-shrink-0">
-              {(['sm', 'md', 'lg'] as NotesSize[]).map(size => (
-                <button
-                  key={size}
-                  onClick={() => setNotesSize(size)}
-                  className={`font-hud text-xs border px-2 py-1 transition-colors ${notesSize === size ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'}`}
-                >
-                  {size.toUpperCase()}
-                </button>
-              ))}
-            </div>
+        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+          <div className="font-bold tracking-widest text-[11px] text-hud-muted">SESSION</div>
+          {sessionActive ? (
+            <button onClick={() => send({ type: 'session_stop' })} className="font-bold tracking-widest text-[11px] text-hud-success uppercase">ACTIVE</button>
+          ) : (
+            <button onClick={() => send({ type: 'session_start' })} className="font-bold tracking-widest text-[11px] text-red-500 uppercase">STOPPED</button>
           )}
-          <SessionLog state={state} />
-          <button onClick={() => setSessionMgrOpen(true)}
-            className="font-hud text-xs border border-hud-border text-hud-muted px-2 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider">
-            ⟳
-          </button>
-          {/* Char bar collapse toggle */}
-          <button
-            onClick={() => setCharBarCollapsed(c => !c)}
-            title={charBarCollapsed ? 'Expand character bar' : 'Collapse character bar'}
-            className="font-hud text-xs border border-hud-border text-hud-muted px-2 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider"
-          >
-            {charBarCollapsed ? '▾' : '▴'}
-          </button>
-          <div className="font-hud text-xs text-hud-muted hidden md:block">
-            F{state.floor.floorNumber} · {state.floor.neighbourhoodName.toUpperCase()} · R{state.floor.roomNumber} · {activeCharacters.length} CRAWLERS
-          </div>
         </div>
-
-        {/* Mobile tab switcher — only in SESSION mode */}
-        {gmMode === 'session' && (
-          <div className="flex gap-1 sm:hidden">
-            <button onClick={() => setMobileTab('map')}
-              className={`font-hud text-xs border px-2 py-1 transition-colors ${mobileTab === 'map' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
-              MAP
-            </button>
-            <button onClick={() => setMobileTab('room')}
-              className={`font-hud text-xs border px-2 py-1 transition-colors ${mobileTab === 'room' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
-              ROOM
-            </button>
-            <button onClick={() => setMobileTab('log')}
-              className={`font-hud text-xs border px-2 py-1 transition-colors ${mobileTab === 'log' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
-              LOG
-            </button>
-          </div>
-        )}
       </div>
 
-      {/* Character bar — full or collapsed strip */}
-      {/* Moved inside the layout in V2 */}
-
-      {/* Main area — switches based on gmMode */}
-      <div className="flex flex-1 overflow-hidden">
-
-        {/* ── PLAN mode: FloorPlanner full-width ────── */}
-        {gmMode === 'plan' && (
-          <div className="flex-1 overflow-hidden">
-            <FloorPlanner send={send} />
+      <div className="flex-1 flex overflow-hidden">
+        {/* Desktop Layout — 3 columns */}
+        <div className="hidden md:flex flex-1 overflow-hidden flex-col">
+          <div className="flex-shrink-0 border-b border-hud-border">
+            <CollapsedCharStrip characters={state.characters} onExpand={() => {}} />
           </div>
-        )}
+          
+          {gmMode === 'plan' && (
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <FloorPlanner send={send} />
+            </div>
+          )}
 
-        {/* ── SOUND mode: Soundboard full-width ────── */}
-        {gmMode === 'sound' && (
-          <div className="flex-1 overflow-y-auto">
-            <SoundboardPanel send={send} />
-          </div>
-        )}
-
-        {/* ── RULES mode: GM reference full-width ────── */}
-        {gmMode === 'rules' && (
-          <div className="flex-1 overflow-y-auto">
-            <GMRulesPanel />
-          </div>
-        )}
-
-        {/* ── SESSION mode: V2 Layout ── */}
-        {gmMode === 'session' && (
-          <>
-            {/* Desktop layout (V2 3-column with chars on top) */}
-            <div className="hidden md:flex flex-col flex-1 overflow-hidden">
-              
-              {/* Top row — Character Bar (horizontal grid) */}
-              {charBarCollapsed ? (
-                <CollapsedCharStrip characters={state.characters} onExpand={() => setCharBarCollapsed(false)} />
-              ) : (
-                <div className="border-b border-hud-border bg-hud-panel p-3 flex-shrink-0">
-                  <CharacterBar
-                    characters={state.characters}
-                    lootQueue={state.lootQueue}
-                    send={send}
-                    dmMessages={dmMessages}
-                    onDMRead={handleDMRead}
-                    onDMEcho={handleDMEcho}
-                  />
-                </div>
-              )}
-
-              {/* Bottom section — 3 columns */}
-              <div className="grid grid-cols-[280px_1fr_350px] flex-1 overflow-hidden min-h-0">
-                
-                {/* Left column — Map */}
-                <div className="border-r border-hud-border bg-hud-base flex flex-col overflow-hidden">
-                  <FloorRunnerPanel send={send} notesTextSize={notesSize} />
-                </div>
-
-                {/* Middle column — Room / Mobs */}
-                <div className="flex flex-col min-w-0 bg-hud-panel overflow-y-auto">
-                  <RoomPanel floor={state.floor} send={send} />
-                </div>
-
-                {/* Right column — Event Log */}
-                <div className="border-l border-hud-border bg-hud-panel flex flex-col overflow-hidden min-w-0">
-                  <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
-                </div>
-
+          {gmMode === 'session' && (
+            <div className="flex-1 overflow-hidden grid grid-cols-[300px_1fr_400px]">
+              <div className="border-r border-hud-border flex flex-col overflow-hidden">
+                <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
+              </div>
+              <div className="flex flex-col overflow-hidden bg-hud-bg">
+                <FloorRunnerPanel send={send} notesTextSize={notesSize} />
+              </div>
+              <div className="border-l border-hud-border flex flex-col overflow-y-auto">
+                <RoomPanel floor={state.floor} send={send} />
               </div>
             </div>
+          )}
 
-            {/* Mobile layout — single panel at a time */}
-            <div className="flex md:hidden flex-1 overflow-hidden flex-col">
-              <div className="flex-shrink-0">
-                <CollapsedCharStrip characters={state.characters} onExpand={() => {}} />
+          {gmMode === 'sound' && (
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <SoundboardPanel send={send} />
+            </div>
+          )}
+
+          {gmMode === 'rules' && (
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <GMRulesPanel />
+            </div>
+          )}
+        </div>
+
+        {/* Mobile layout — single panel at a time */}
+        <div className="flex md:hidden flex-1 overflow-hidden flex-col">
+          <div className="flex-shrink-0">
+            <CollapsedCharStrip characters={state.characters} onExpand={() => {}} />
+          </div>
+          <div className="flex-1 flex overflow-hidden">
+            {mobileTab === 'map' && (
+              <div className="flex-1 overflow-hidden flex flex-col">
+                <FloorRunnerPanel send={send} notesTextSize={notesSize} />
               </div>
-              <div className="flex-1 flex overflow-hidden">
-                {mobileTab === 'map' && (
-                  <div className="flex-1 overflow-hidden flex flex-col">
-                    <FloorRunnerPanel send={send} notesTextSize={notesSize} />
-                  </div>
-                )}
+            )}
                 {mobileTab === 'room' && (
                   <div className="flex-1 overflow-y-auto">
                     <RoomPanel floor={state.floor} send={send} />
@@ -294,8 +206,37 @@ export function GMDashboard({ state, send }: GMDashboardProps) {
                 )}
               </div>
             </div>
-          </>
-        )}
+        </div>
+
+      {/* Mobile-only Nav */}
+      <div className="md:hidden flex border-t border-hud-border bg-hud-bg py-4 pb-8">
+        {(['map', 'room', 'log', 'plan', 'sound'] as const).map(tab => {
+          let icon = "🗺️"
+          if (tab === 'room') icon = "⚔️"
+          if (tab === 'log') icon = "📜"
+          if (tab === 'plan') icon = "⚙️"
+          if (tab === 'sound') icon = "🔊"
+
+          return (
+            <button
+              key={tab}
+              onClick={() => {
+                if (tab === 'plan' || tab === 'sound') {
+                  setGmMode(tab as any)
+                } else {
+                  setGmMode('session')
+                  setMobileTab(tab as any)
+                }
+              }}
+              className={`flex-1 flex flex-col items-center gap-1.5 transition-colors ${
+                (gmMode === 'session' && mobileTab === tab) || (gmMode !== 'session' && gmMode === tab) ? 'text-hud-accent' : 'text-hud-muted hover:text-hud-text'
+              }`}
+            >
+              <span className="text-xl">{icon}</span>
+              <span className="text-[10px] font-bold tracking-widest">{tab.toUpperCase()}</span>
+            </button>
+          )
+        })}
       </div>
     </div>
   )

@@ -54,29 +54,33 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
   const inspectChar = inspectCharId ? state.characters.find(c => c.id === inspectCharId) ?? null : null
 
   return (
-    <div className="h-screen flex flex-col bg-hud-bg overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div className="h-screen flex flex-col bg-hud-bg overflow-hidden font-sans" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       {/* Mobile-only Header */}
-      <div className="md:hidden border-b border-hud-border px-4 py-2 flex items-center justify-between bg-hud-panel">
-        <div className="flex items-center gap-2">
+      <div className="md:hidden border-b border-hud-border px-4 py-4 flex items-center justify-between bg-hud-panel">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => {
               localStorage.removeItem('hud:role')
               window.location.reload()
             }}
             title="Switch Role / Logout"
-            className="font-hud text-xs border border-hud-border text-hud-muted px-2 py-0.5 hover:border-red-500 hover:text-red-500 transition-colors"
+            className="w-8 h-8 flex items-center justify-center border border-hud-border rounded text-hud-muted hover:border-red-500 hover:text-red-500 transition-colors"
           >
             ⏏
           </button>
-          <div className={`font-hud tracking-widest ${character.isAlive ? 'text-hud-accent' : 'text-red-500'}`}>
-            {character.isAlive ? character.crawlerName.toUpperCase() : `☠ ${character.crawlerName.toUpperCase()}`}
+          <div>
+            <div className={`text-[22px] font-extrabold leading-none tracking-tight ${character.isAlive ? 'text-hud-text' : 'text-red-500'}`}>
+              {character.isAlive ? character.crawlerName.toUpperCase() : `☠ ${character.crawlerName.toUpperCase()}`}
+            </div>
+            <div className="text-hud-accent text-[11px] font-bold mt-1 tracking-widest uppercase">
+              LVL {(character as any).level || 2} {(character as any).class || 'CRAWLER'}
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col items-end gap-1 text-[11px]">
           <DMPanel mode="player" myCharId={character.id} myName={character.crawlerName} messages={dmMessages} send={send} onRead={onDMRead} onEcho={onDMEcho} />
-          <div className="font-hud text-sm text-hud-muted">
-            HP {character.hp}/{character.maxHp} · TARGET {state.floor.roomTarget}
-          </div>
+          <div className="font-bold tracking-widest text-hud-success">HP {character.hp}/{character.maxHp}</div>
+          <div className="font-bold tracking-widest text-hud-muted">TGT {state.floor.roomTarget}</div>
         </div>
       </div>
 
@@ -103,18 +107,6 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
             TARGET {state.floor.roomTarget}
           </div>
         </div>
-      </div>
-
-      {/* Mobile-only Nav */}
-      <div className="md:hidden flex border-b border-hud-border">
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex-1 font-hud text-sm py-3 tracking-widest transition-colors border-b-2 ${
-              tab === t.id ? 'text-hud-accent border-hud-accent' : 'text-hud-muted border-transparent hover:text-hud-text'
-            }`}>
-            {t.label}
-          </button>
-        ))}
       </div>
 
       {/* Main Area */}
@@ -188,6 +180,26 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
         </div>
       </div>
       
+      {/* Mobile-only Bottom Nav */}
+      <div className="md:hidden flex border-t border-hud-border bg-hud-bg py-4 pb-8">
+        {TABS.filter(t => t.id !== 'rules').map(t => {
+          let icon = "📊"
+          if (t.id === 'skills') icon = "⚔️"
+          if (t.id === 'inventory') icon = "🎒"
+          if (t.id === 'fame') icon = "⭐"
+
+          return (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`flex-1 flex flex-col items-center gap-1.5 transition-colors ${
+                tab === t.id ? 'text-hud-accent' : 'text-hud-muted hover:text-hud-text'
+              }`}>
+              <span className="text-xl">{icon}</span>
+              <span className="text-[10px] font-bold tracking-widest">{t.label}</span>
+            </button>
+          )
+        })}
+      </div>
+
       <ToastOverlay toasts={toasts} onDismiss={dismiss} />
       {inspectChar && <InspectModal character={inspectChar} onClose={() => setInspectCharId(null)} hideNotes />}
     </div>

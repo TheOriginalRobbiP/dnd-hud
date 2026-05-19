@@ -31,10 +31,10 @@
 html { font-size: 16px; }
 
 body {
-  background-color: oklch(8% 0.015 265);
-  color: oklch(92% 0.01 265);
+  background-color: #0d0d0f;
+  color: #ffffff;
   margin: 0;
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-family: \'Inter\', sans-serif;
   font-size: 0.9375rem;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
