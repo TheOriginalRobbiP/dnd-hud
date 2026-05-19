@@ -69,11 +69,29 @@ export function GMLogPanel({ gmLog, lootQueue, characters, send }: GMLogPanelPro
         <div className="flex flex-col gap-0.5 p-2">
           {gmLog.length === 0
             ? <p className="font-hud text-sm text-hud-muted italic p-2">No events yet.</p>
-            : [...gmLog].map((entry, i) => (
-              <div key={i} className="font-hud text-xs text-hud-muted border-l-2 border-hud-border pl-2 py-1 leading-relaxed">
-                {entry}
-              </div>
-            ))
+            : [...gmLog].map((entry, i) => {
+              const type = entry.includes('Achievement') ? 'achievement'
+                : entry.includes('Loot') ? 'loot'
+                : entry.includes('WARNING') || entry.includes('collapse') ? 'warning'
+                : entry.includes('DMG') || entry.includes('damage') ? 'damage'
+                : entry.includes('Heal') || entry.includes('restored') ? 'heal'
+                : 'system'
+
+              const bgColours = {
+                achievement: 'border-yellow-500 bg-yellow-900/10',
+                loot: 'border-hud-accent bg-hud-accent/10',
+                warning: 'border-red-600 bg-red-900/10',
+                damage: 'border-red-600 bg-red-900/10',
+                heal: 'border-green-500 bg-green-900/10',
+                system: 'border-hud-border bg-hud-bg',
+              }
+
+              return (
+                <div key={i} className={`font-hud text-xs text-hud-text border-l-[4px] pl-2 py-2 leading-relaxed ${bgColours[type]} mb-1`}>
+                  {entry}
+                </div>
+              )
+            })
           }
         </div>
       </div>

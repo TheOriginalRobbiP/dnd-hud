@@ -61,3 +61,25 @@
 - Game simulation dry-run — multiple devices, mock encounter end-to-end
 
 **Blockers:** None
+
+---
+
+## Session checkpoint 2026-05-18
+
+**Focus:** Catching up with recent undocumented commits
+
+**Done this session (recorded retroactively):**
+- **Crawler join flow** — Built! RoleSelector gates player slots behind `sessionActive`.
+- **Custom portrait bank** — 15 portraits generated and placed in `client/public/images/`.
+- **GM Soundboard** — Built! 16 System AI voice lines generated and wired up.
+- **ICRPG rules reference panels** — Built! Player RULES tab + GM 📖 RULES panel.
+- **FloorPlanner mob template picker + loot tier** — Built and wired to `RoomEditPanel`.
+- **Bug Fixes (PR #1)** — Chat routing, session reset UI, DM echo mutation all fixed and merged.
+
+**Open / next session:**
+- Game simulation dry-run — connect multiple devices, run a mock encounter end-to-end
+- Floor 2 Plan design — viewers go live, Brindle Grub mechanic, 6-day time limit
+- Floor 3 Plan design (The Over City) — class/race selection, Manager Benefit decision
+- Phase 2 features (Fog of war map, Room reveal animations)
+
+**Blockers:** None

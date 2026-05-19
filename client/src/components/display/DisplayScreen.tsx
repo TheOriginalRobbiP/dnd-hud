@@ -215,29 +215,29 @@ export function DisplayScreen() {
             </div>
 
             {/* Centre: room name */}
-            <div className="flex-1 flex items-center justify-center px-8">
-              <h1 className="text-6xl font-hud text-hud-accent tracking-widest text-center uppercase">
+            <div className="flex-1 flex flex-col items-center justify-center px-8">
+              <h1 className="text-8xl font-hud text-hud-accent tracking-widest text-center uppercase" style={{ textShadow: '0 0 40px rgba(232, 169, 87, 0.4)' }}>
                 {room.roomName}
               </h1>
+              <div className="mt-8 font-hud text-2xl text-hud-muted tracking-widest uppercase">
+                TARGET: <span className="text-hud-accent font-bold text-4xl">{room.roomTarget}</span>
+              </div>
             </div>
 
             {/* Bottom row: target + timer */}
-            <div className="p-6 flex items-end justify-between">
+            <div className="p-10 flex items-end justify-between">
+              <div className="flex-1"></div>
               {/* Collapse timer — bottom-centre */}
               <div className="flex-1 flex justify-center">
                 {timer.active && countdown !== null && (
-                  <div className={`font-hud text-3xl tracking-widest ${
+                  <div className={`font-hud text-5xl tracking-widest ${
                     timerCritical ? 'text-red-400 animate-pulse' : 'text-hud-text'
                   }`}>
-                    COLLAPSE: {formatCountdown(countdown)}
+                    ⏱ {formatCountdown(countdown)}
                   </div>
                 )}
               </div>
-
-              {/* Target — bottom-right */}
-              <div className="font-hud text-xs text-hud-muted tracking-widest text-right">
-                TARGET: {room.roomTarget}
-              </div>
+              <div className="flex-1"></div>
             </div>
           </>
         ) : (

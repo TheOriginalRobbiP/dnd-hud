@@ -72,10 +72,10 @@ export function MobTracker({ mobs, currentFloor, send }: MobTrackerProps) {
               const hpCol = pct > 0.5 ? '#22c55e' : pct > 0.25 ? '#f59e0b' : '#ef4444'
               return (
                 <div key={mob.id} className={`border border-hud-border p-2 transition-opacity ${dead ? 'opacity-30' : ''}`}>
-                  <div className="flex justify-between items-center mb-1">
+                  <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-hud text-sm text-hud-text">{mob.name}</span>
-                      <span className="font-hud text-sm px-1 border"
+                      <span className="font-hud text-lg text-hud-text font-bold">{mob.name}</span>
+                      <span className="font-hud text-xs px-1 border"
                         style={{ borderColor: effortColour(mob.effortType), color: effortColour(mob.effortType) }}>
                         {mob.effortType.toUpperCase()}
                       </span>
@@ -84,19 +84,24 @@ export function MobTracker({ mobs, currentFloor, send }: MobTrackerProps) {
                     <button onClick={() => send({ type: 'mob_remove', mobId: mob.id })}
                       className="font-hud text-sm text-hud-muted hover:text-red-400 transition-colors">✕</button>
                   </div>
-                  <div className="w-full h-1.5 bg-hud-border mb-1">
+                  
+                  {/* Full width Boss HP bar (V2 Design) */}
+                  <div className="w-full h-8 bg-hud-panel border border-hud-border rounded overflow-hidden relative mb-3">
                     <div className="h-full transition-all duration-300" style={{ width: `${pct*100}%`, backgroundColor: hpCol }} />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-hud text-sm text-hud-muted">{mob.hp}/{mob.maxHp}</span>
-                    <div className="flex gap-1 ml-auto">
-                      {[-5,-1,1,5].map(d => (
-                        <button key={d} onClick={() => adjustHp(mob, d)}
-                          className="border border-hud-border font-hud text-sm px-1.5 py-0.5 hover:border-hud-accent hover:text-hud-accent transition-colors text-hud-muted">
-                          {d > 0 ? `+${d}` : d}
-                        </button>
-                      ))}
+                    <div className="absolute inset-0 flex items-center justify-center font-hud text-sm font-bold text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
+                      {mob.hp} / {mob.maxHp} HP
                     </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    {[-5,-1,1,5].map(d => (
+                      <button key={d} onClick={() => adjustHp(mob, d)}
+                        className={`flex-1 border font-hud text-base py-2 rounded transition-colors font-bold ${
+                          d < 0 ? 'border-red-900/50 text-red-400 bg-hud-bg hover:bg-red-900/20' : 'border-hud-border text-hud-text bg-hud-bg hover:border-hud-accent'
+                        }`}>
+                        {d > 0 ? `+${d}` : d}
+                      </button>
+                    ))}
                   </div>
                 </div>
               )

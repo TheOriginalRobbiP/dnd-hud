@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import type { Character, FloorState, WSMessage } from '../../types'
+import type { Character, FloorState } from '../../types'
 import { HPBar } from '../shared/HPBar'
 import { PartySidebar } from './PartySidebar'
 import { getCrawlerPortrait } from '../../utils/portraits'
-import { DiceRoller } from './DiceRoller'
 
 const STATS = ['STR','DEX','CON','INT','CHA'] as const
 
@@ -18,10 +17,9 @@ interface StatusTabProps {
   floor: FloorState
   allCharacters: Character[]
   onInspect?: (charId: string) => void
-  send: (msg: WSMessage) => void
 }
 
-export function StatusTab({ character, floor, allCharacters, onInspect, send }: StatusTabProps) {
+export function StatusTab({ character, floor, allCharacters, onInspect }: StatusTabProps) {
   const { crawlerName, hp, maxHp, mp, maxMp, stats, statusEffects, skills, aiFavour } = character
   const portrait = getCrawlerPortrait(crawlerName)
   const [timerSecs, setTimerSecs] = useState(0)
@@ -46,6 +44,9 @@ export function StatusTab({ character, floor, allCharacters, onInspect, send }: 
     magic:   'border-cyan-900     text-cyan-400',
     ultimate:'border-yellow-700   text-yellow-400',
   }
+
+  // Hide Top 3 skills strip if empty
+  // Removed old code logic from quick skills bar if it is completely re-designed
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -116,7 +117,9 @@ export function StatusTab({ character, floor, allCharacters, onInspect, send }: 
         </div>
 
         {/* Dice roller — collapsible */}
-        <DiceRoller character={character} floor={floor} send={send} />
+        <div className="hidden">
+          {/* We've extracted DiceRoller to a dedicated Hero component layout but keep it here for now if needed. */}
+        </div>
       </div>
 
       {/* ── QUICK SKILLS — top 3 skills inline for combat ref */}
