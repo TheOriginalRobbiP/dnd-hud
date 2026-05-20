@@ -36,6 +36,12 @@ floorPlansRouter.get('/:id', async (c) => {
 floorPlansRouter.put('/:id', async (c) => {
   const { id } = c.req.param()
   const body = await c.req.json()
+
+  // If setting this plan to active, deactivate all other plans first
+  if (body.isActive === true) {
+    await db.update(floorPlans).set({ isActive: false })
+  }
+
   const [updated] = await db.update(floorPlans)
     .set({ ...body, updatedAt: new Date() })
     .where(eq(floorPlans.id, id))

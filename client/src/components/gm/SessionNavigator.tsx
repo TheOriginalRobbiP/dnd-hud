@@ -179,13 +179,14 @@ export function SessionNavigator({ send, notesTextSize = 'md' }: SessionNavigato
       }
       setActivePlan(active)
 
-      const [rms, conns] = await Promise.all([
-        fetch(`/api/floor-plans/${active.id}/rooms`).then(r => r.json()),
-        fetch(`/api/floor-plans/${active.id}/connections`).then(r => r.json())
-      ])
+      const detail = await fetch(`/api/floor-plans/${active.id}`).then(r => r.json()) as {
+        rooms: FloorRoom[]
+        connections: RoomConnection[]
+      }
 
+      const rms = detail.rooms || []
       setRooms(rms)
-      setConnections(conns)
+      setConnections(detail.connections || [])
       
       // Auto-select current room if nothing is selected
       if (!selectedRoomId) {

@@ -483,6 +483,23 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
     }
   }
 
+  // ── Activate floor plan ────────────────────────────────────────
+  const activatePlan = async () => {
+    if (!activePlanId) return
+    const res = await fetch(`/api/floor-plans/${activePlanId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isActive: true }),
+    })
+    if (res.ok) {
+      // Re-fetch floor plans list to refresh active state in dropdown
+      fetch('/api/floor-plans')
+        .then(r => r.json())
+        .then((data: FloorPlan[]) => setPlans(data))
+        .catch(() => {})
+    }
+  }
+
   // ── Add room ──────────────────────────────────────────────────
   const addRoom = async () => {
     if (!activePlanId) return
@@ -565,9 +582,24 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
         >
           <option value="">— select floor plan —</option>
           {plans.map(p => (
-            <option key={p.id} value={p.id}>{p.name} [{p.theme}]</option>
+            <option key={p.id} value={p.id}>{p.name} [{p.theme}]{p.isActive ? ' ★ ACTIVE' : ''}</option>
           ))}
         </select>
+
+        {activePlanId && !plans.find(p => p.id === activePlanId)?.isActive && (
+          <button
+            onClick={activatePlan}
+            className="font-bold text-xs border border-hud-accent rounded-md text-hud-accent px-4 py-2 hover:bg-hud-accent hover:text-white transition-colors tracking-wider uppercase bg-hud-accent/10 animate-pulse"
+          >
+            ACTIVATE FLOOR
+          </button>
+        )}
+
+        {activePlanId && plans.find(p => p.id === activePlanId)?.isActive && (
+          <span className="font-hud text-xs border border-hud-success text-hud-success bg-hud-success/10 px-3 py-2 rounded-md tracking-wider uppercase font-bold">
+            ● ACTIVE
+          </span>
+        )}
 
         <button
           onClick={createPlan}
