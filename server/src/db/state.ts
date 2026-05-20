@@ -2,6 +2,7 @@ import { db } from './client.js'
 import { characters, floorState, lootBoxes, gmLog, sessionSnapshots, floorRooms } from './schema.js'
 import { desc, eq, ne } from 'drizzle-orm'
 import type { AppState, WSMessage, Character, FloorState, LootBox } from '../types/index.js'
+import crypto from 'crypto'
 
 const DEFAULT_FLOOR: FloorState = {
   sessionActive: false,
@@ -128,9 +129,41 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
     case 'loot_authorise':
       await db.update(lootBoxes).set({ state: 'authorised' }).where(eq(lootBoxes.id, msg.lootBoxId))
       break
-    case 'loot_opened':
-      await db.update(lootBoxes).set({ state: 'opened', openedAt: new Date() }).where(eq(lootBoxes.id, msg.lootBoxId))
+    case 'loot_opened': {
+      // 1. Retrieve the loot box details
+      const [box] = await db.select().from(lootBoxes).where(eq(lootBoxes.id, msg.lootBoxId))
+      if (box && box.state !== 'opened') {
+        // 2. Mark the lootbox as opened
+        await db.update(lootBoxes).set({ state: 'opened', openedAt: new Date() }).where(eq(lootBoxes.id, msg.lootBoxId))
+
+        // 3. Find the assigned character
+        const charId = box.assignedTo
+        const [char] = await db.select().from(characters).where(eq(characters.id, charId))
+        if (char) {
+          // 4. Append box contents to character's inventory
+          const boxContents = (box.contents as any[]) ?? []
+          const currentInv = (char.inventory as any[]) ?? []
+          
+          // Generate unique IDs for the new items if they don't have them
+          const newItems = boxContents.map(item => ({
+            id: item.id || crypto.randomUUID(),
+            ...item,
+            fromLootBox: true,
+            lootBoxTier: box.tier
+          }))
+
+          const updatedInv = [...currentInv, ...newItems]
+          await db.update(characters)
+            .set({ inventory: updatedInv, updatedAt: new Date() })
+            .where(eq(characters.id, charId))
+
+          // Log the event
+          const itemsList = newItems.map(i => i.name).join(', ')
+          await db.insert(gmLog).values({ message: `[Loot] ${char.crawlerName} opened a ${box.tier.toUpperCase()} box containing: ${itemsList}` })
+        }
+      }
       break
+    }
     case 'announcement':
       await db.insert(gmLog).values({ message: `[${msg.label}] ${msg.text}` })
       break

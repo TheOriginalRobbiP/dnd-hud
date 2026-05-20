@@ -55,7 +55,13 @@ export function handleWsConnection(ws: WebSocket) {
       }
 
       await applyMessage(message)
-      broadcast(message, ws)
+
+      if (message.type === 'loot_opened') {
+        const freshState = await getFullState()
+        broadcast({ type: 'full_state_sync', state: freshState } as any, undefined)
+      } else {
+        broadcast(message, ws)
+      }
 
       // After a session_reset, broadcast a full_state_sync so all clients get the
       // authoritative DB state (avoids optimistic drift on non-GM clients)
