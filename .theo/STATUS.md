@@ -1,5 +1,21 @@
 # Project Status - dnd-hud
 
+## Session checkpoint 2026-05-20T18:45:00Z
+- **Focus**: Overhauling the shared display screen (`/display` route) with a dynamic combined dashboard.
+- **Done this session**:
+  - Overhauled the `/display` shared wall TV screen. Upgraded from a simple static room title card to an immersive, full-scale combined dashboard featuring:
+    - **Header Bar**: Live floor/location panel alongside a synchronized countdown collapse timer with critical red flashing animations.
+    - **Tactical Node Map (Left)**: Integrated a custom React coordinate auto-scaling engine that takes database node coordinates (`posX`/`posY`) and dynamically auto-fits them onto an `1100` x `440` SVG canvas. Added real Fog-of-War aesthetics (explored nodes are green, active is pulsing gold, unexplored nodes are hidden with "?" labels and dashed borders).
+    - **Room Info Card (Bottom-Left)**: Displays the active room's description, tags (e.g. `BOSS`, `SAFE`), and a massive, glowing universal Room Target DC.
+    - **Encounter Tracker (Right)**: Synchronized with the websocket's active mob list, rendering vertical creature cards with HP health bars, elite/boss indicators, and description notes.
+    - **Dungeon Log Ticker (Footer)**: A smooth, marquee stock ticker at the bottom scrolling the latest 20 GM log events (healing, damage, transitions, achievements), color-coded by event type.
+    - **Achievement Overlay**: A full-screen, high-contrast, blur-backdrop popup that springs up when a player triggers an `'achievement_unlock'` event, styled by tier (celestial, gold, silver, bronze), auto-hiding after 7 seconds.
+  - Resolved client-side TypeScript compilation warnings, including handling the stale `characters` closure in the WebSocket hook via a synced `charactersRef` and fixing the `'platinum'` string type mismatch with the database's strict `AchievementTier` definition. Confirmed a 100% clean `tsc` check.
+- **Open / next**:
+  - Push the visual update to GitHub (`origin/main`) to trigger Dokploy's auto-deploy webhook on the Helsinki VPS.
+  - Smoke test the live display screen at `https://dnd.rjp.digital/display` with a connected GM Dashboard.
+- **Blockers**: None.
+
 ## Session checkpoint 2026-05-20T16:15:00Z
 - **Focus**: Fixing room sync from planning screen to session screen.
 - **Done this session**:
