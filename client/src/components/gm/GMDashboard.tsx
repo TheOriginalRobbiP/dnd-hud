@@ -156,13 +156,22 @@ export function GMDashboard({ state, send, activeCharIds }: GMDashboardProps) {
           </button>
         </div>
 
-        <div className="flex flex-col items-end gap-1 flex-shrink-0">
-          <div className="font-bold tracking-widest text-[11px] text-hud-muted">SESSION</div>
-          {sessionActive ? (
-            <button onClick={() => send({ type: 'session_stop' })} className="font-bold tracking-widest text-[11px] text-hud-success uppercase">ACTIVE</button>
-          ) : (
-            <button onClick={() => send({ type: 'session_start' })} className="font-bold tracking-widest text-[11px] text-red-500 uppercase">STOPPED</button>
-          )}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <button
+            onClick={() => setSessionMgrOpen(true)}
+            title="Session Manager (Reset, Save/Load Snapshots)"
+            className="w-8 h-8 flex items-center justify-center border border-hud-border rounded text-hud-muted hover:border-hud-accent hover:text-hud-accent transition-colors"
+          >
+            ⚙️
+          </button>
+          <div className="flex flex-col items-end gap-1">
+            <div className="font-bold tracking-widest text-[11px] text-hud-muted">SESSION</div>
+            {sessionActive ? (
+              <button onClick={() => send({ type: 'session_stop' })} className="font-bold tracking-widest text-[11px] text-hud-success uppercase">ACTIVE</button>
+            ) : (
+              <button onClick={() => send({ type: 'session_start' })} className="font-bold tracking-widest text-[11px] text-red-500 uppercase">STOPPED</button>
+            )}
+          </div>
         </div>
       </div>
 
