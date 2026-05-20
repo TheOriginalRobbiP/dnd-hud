@@ -13,6 +13,9 @@
   - Extended the server-side `session_reset` WebSocket transaction to completely clear out the GM Event Log table (`gmLog`) and reset the `isVisited = false` and `isCurrentRoom = false` states of all floor plan rooms in Postgres, restoring full session reset functionality across the entire dashboard and connected player HUDs.
   - Added a symmetrical gear settings button (`⚙️`) in the top-right header of `GMDashboard.tsx` (next to the ACTIVE/STOPPED button, matching the design of the logout button on the far-left). This finally provides the GM with an easily accessible, cross-platform (desktop + mobile) trigger to open the `SessionManager` modal (Reset Session, Save Snapshots, and Restore Snapshots).
   - Fixed GM-to-Player messaging (Direct Messages / DMPanel) by passing websocket DM props (`dmMessages`, `onDMRead`, `onDMEcho`) down to `GMDashboard`, importing the unused `CharacterBar` component, and rendering it conditionally in place of the static `CollapsedCharStrip` with smooth, toggleable expand/collapse triggers. This restores full player DM capability on both desktop and mobile layouts!
+  - Cleaned up direct messaging thread scoping and routing inside `DMPanel.tsx` so that GMs and players only see message threads matching their selected recipient (rather than scrambling all chats from all players into a single scrolling thread).
+  - Filtered the GM's recipient button selector in `DMPanel.tsx` by the live list of connected crawlers (`activeCharIds` passed down from the top-level websocket), ensuring GMs only see and can select currently connected players for direct private messaging.
+  - Resolved dynamic placeholder messaging bug in the DM panel to show the actual recipient crawler's name instead of a hardcoded ellipsis (`...`).
 - **Open / next**:
   - Perform visual and manual verification of floor plan activation.
 - **Blockers**: None.
