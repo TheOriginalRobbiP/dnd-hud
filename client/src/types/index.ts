@@ -162,6 +162,7 @@ export interface FloorState {
   collapseTimerActive: boolean
   collapseTimerStartedAt: number | null  // timestamp for client-side countdown
   activeMobs: Mob[]
+  showRoomTarget: boolean
 }
 
 // ── App State (full sync payload on connect) ─────────────────

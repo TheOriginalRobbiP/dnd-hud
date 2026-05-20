@@ -74,6 +74,7 @@ export function DisplayScreen() {
   const [gmLog, setGmLog] = useState<string[]>([])
   const [characters, setCharacters] = useState<any[]>([])
   const [achievementUnlock, setAchievementUnlock] = useState<{ characterName: string; achievement: Achievement } | null>(null)
+  const [showRoomTarget, setShowRoomTarget] = useState(true)
   
   const wsRef = useRef<WebSocket | null>(null)
   const charactersRef = useRef<any[]>([])
@@ -161,6 +162,9 @@ export function DisplayScreen() {
               setActiveMobs(floor.activeMobs || [])
               setGmLog(state.gmLog || [])
               setCharacters(state.characters || [])
+              if (floor.showRoomTarget !== undefined) {
+                setShowRoomTarget(floor.showRoomTarget)
+              }
               
               const rd = (floor as any).currentRoomData
               if (rd) {
@@ -178,6 +182,11 @@ export function DisplayScreen() {
               loadPlansAndDetails()
               break
             }
+            case 'floor_update':
+              if (msg.floor.showRoomTarget !== undefined) {
+                setShowRoomTarget(msg.floor.showRoomTarget)
+              }
+              break;
             case 'room_target_update':
               setRoom(prev => prev ? { ...prev, roomTarget: msg.target } : prev)
               break
@@ -316,7 +325,17 @@ export function DisplayScreen() {
   }
 
   const currentRoom = rooms.find(r => r.isCurrentRoom)
-  const roomTags = currentRoom ? normaliseTags(currentRoom.tags) : []
+  
+  const getPublicDescription = (desc: string): string => {
+    if (!desc) return ''
+    const parts = desc.split(/(?:\n### |\nGM NOTES|\nGARRETT|\nMOBS|\nCENTAMINOTAURTAUR|\nNIMBUS|\nTHEY ALL CHOOSE)/i)
+    return parts[0].trim()
+  }
+
+  const secretTags = ['trap', 'boss', 'hazard', 'puzzle', 'loot-room']
+  const roomTags = currentRoom 
+    ? normaliseTags(currentRoom.tags).filter(t => !secretTags.includes(t.toLowerCase()))
+    : []
 
   return (
     <div
@@ -588,15 +607,15 @@ export function DisplayScreen() {
                       </div>
                     )}
                     <p className="text-sm line-clamp-3 text-[#71717a] leading-relaxed font-sans pr-4">
-                      {currentRoom?.description || 'No description found for this sector. Keep your alert telemetry open.'}
+                      {currentRoom ? getPublicDescription(currentRoom.description) : 'No description found for this sector. Keep your alert telemetry open.'}
                     </p>
                   </div>
                   <div className="w-[180px] h-full border-l border-[#1f1f23] flex flex-col items-center justify-center gap-1 bg-white/[0.005] flex-shrink-0">
                     <span className="font-mono-dcc text-[9px] font-bold tracking-[0.25em] text-[#71717a] uppercase">
-                      ROOM TARGET
+                      {showRoomTarget ? 'ROOM TARGET' : 'TARGET'}
                     </span>
                     <span className="font-serif-dcc text-[90px] font-normal text-[#f59e0b] leading-none" style={{ textShadow: '0 0 30px rgba(245, 158, 11, 0.25)' }}>
-                      {room.roomTarget}
+                      {showRoomTarget ? room.roomTarget : '🔒'}
                     </span>
                   </div>
                 </>

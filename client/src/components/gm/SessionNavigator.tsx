@@ -233,31 +233,39 @@ export function SessionNavigator({ send, notesTextSize = 'md' }: SessionNavigato
         theme: plan.theme,
         themeColour: plan.themeColour,
       })
-
-      const templateIds = room.mobTemplateIds.split(',').map(s => s.trim()).filter(Boolean)
-      if (templateIds.length > 0) {
-        const allTemplates: MobTemplate[] = await fetch('/api/mobs').then(r => r.json())
-        for (const tId of templateIds) {
-          const template = allTemplates.find(t => t.name === tId || t.id === tId)
-          if (template) {
-            send({
-              type: 'mob_add',
-              mob: {
-                id: crypto.randomUUID(),
-                name: template.name,
-                hp: template.hpMax,
-                maxHp: template.hpMax,
-                effortType: template.effortType,
-                notes: template.abilities,
-              },
-            })
-          }
-        }
-      }
     } finally {
       setEntering(null)
     }
   }, [rooms, activePlan, entering, send])
+
+  // ── Spawn room encounter manually ───────────────────────────
+  const spawnEncounter = useCallback(async (room: FloorRoom) => {
+    const templateIds = room.mobTemplateIds.split(',').map(s => s.trim()).filter(Boolean)
+    if (templateIds.length === 0) return
+    
+    try {
+      const allTemplates: MobTemplate[] = await fetch('/api/mobs').then(r => r.json())
+      for (const tId of templateIds) {
+        const template = allTemplates.find(t => t.name === tId || t.id === tId)
+        if (template) {
+          send({
+            type: 'mob_add',
+            mob: {
+              id: crypto.randomUUID(),
+              name: template.name,
+              hp: template.hpMax,
+              maxHp: template.hpMax,
+              effortType: template.effortType as 'basic' | 'weapon' | 'magic',
+              notes: template.abilities,
+            },
+          })
+        }
+      }
+      send({ type: 'announcement', text: `Encounter spawned in ${room.name}!`, label: 'SYSTEM' })
+    } catch (err) {
+      console.error('Failed to spawn encounter', err)
+    }
+  }, [send])
 
   if (loading) {
     return <div className="flex-1 flex items-center justify-center bg-hud-bg"><span className="font-hud text-sm text-hud-muted animate-pulse">Loading active floor plan...</span></div>
@@ -381,8 +389,17 @@ export function SessionNavigator({ send, notesTextSize = 'md' }: SessionNavigato
                       </div>
                     )}
                   </div>
-                  <div className="flex items-start gap-3 flex-shrink-0">
-                    <div className="font-hud text-2xl font-bold text-hud-accent leading-none">
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {selectedRoom.isCurrentRoom && selectedRoom.mobTemplateIds && (
+                      <button
+                        onClick={() => spawnEncounter(selectedRoom)}
+                        className="font-hud text-[10px] border border-red-500 text-red-500 bg-red-500/5 px-2.5 py-1.5 tracking-wider hover:bg-red-500 hover:text-black transition-colors rounded-[2px] font-bold uppercase animate-pulse"
+                        title="Spawn this room's mobs onto the Display Screen"
+                      >
+                        ⚡ Spawn Encounter
+                      </button>
+                    )}
+                    <div className="font-hud text-2xl font-bold text-hud-accent leading-none border border-hud-border px-2 py-1">
                       T:{selectedRoom.roomTarget}
                     </div>
                   </div>

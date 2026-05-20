@@ -14,6 +14,7 @@ const DEFAULT_FLOOR: FloorState = {
   collapseTimerActive: false,
   collapseTimerStartedAt: null,
   activeMobs: [],
+  showRoomTarget: true,
 }
 
 async function ensureFloorState() {
@@ -94,6 +95,7 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
             theme: msg.theme,
             themeColour: msg.themeColour,
           } as any,
+          activeMobs: [], // Clear active mobs upon entering a new room!
           updatedAt: new Date(),
         })
         .where(eq(floorState.id, 1))

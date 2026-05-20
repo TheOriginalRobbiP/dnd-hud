@@ -93,6 +93,19 @@ export function RoomPanel({ floor, send }: RoomPanelProps) {
           }
         </div>
 
+        {/* Toggle Target Visibility on Shared Display Screen */}
+        <button
+          onClick={() => send({ type: 'floor_update', floor: { showRoomTarget: !floor.showRoomTarget } })}
+          className={`font-hud text-[10px] border px-2 py-1 tracking-wider transition-colors rounded-[2px] ${
+            floor.showRoomTarget 
+              ? 'border-hud-accent text-hud-accent bg-hud-accent/5 hover:bg-hud-accent/15' 
+              : 'border-hud-border text-hud-muted hover:border-hud-muted'
+          }`}
+          title="Toggle Room Target Visibility on Display Screen"
+        >
+          {floor.showRoomTarget ? 'TARGET: PUBLIC' : 'TARGET: HIDDEN'}
+        </button>
+
         {/* Collapse timer — compact */}
         {floor.collapseTimerActive ? (
           <div className={`flex items-center gap-2 border px-3 py-1 ${isCritical ? 'border-red-800 animate-pulse' : 'border-hud-border'}`}>
