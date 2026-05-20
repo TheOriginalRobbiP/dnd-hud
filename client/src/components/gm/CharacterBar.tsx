@@ -65,7 +65,7 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
   const inspectChar = inspectCharId ? displayCharacters.find(c => c.id === inspectCharId) ?? null : null
 
   return (
-    <div className="flex-shrink-0 bg-hud-panel border-b border-hud-border p-3">
+    <div className="flex-shrink-0 bg-hud-panel border-b border-hud-border p-3 max-h-[40vh] md:max-h-none overflow-y-auto">
       <div className="flex justify-between items-center mb-2">
         <div className="font-hud text-sm text-hud-muted tracking-widest">CRAWLER STATUS</div>
         <div className="flex gap-2 items-center">
@@ -166,38 +166,7 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
         )}
       </div>
 
-      {inactiveCharacters.length > 0 && (
-        <div className="mt-3 border-t border-hud-border pt-2">
-          <button
-            onClick={() => setShowInactive(p => !p)}
-            className="font-hud text-xs text-hud-muted tracking-widest opacity-50 hover:opacity-100 transition-opacity flex items-center gap-2"
-          >
-            <span>{showInactive ? '▾' : '▸'}</span>
-            <span>INACTIVE CRAWLERS ({inactiveCharacters.length})</span>
-          </button>
-          {showInactive && (
-            <div className="flex gap-3 overflow-x-auto pb-1 flex-wrap sm:flex-nowrap mt-2 opacity-50 hover:opacity-100 transition-opacity">
-              {inactiveCharacters.map(c => (
-                <div key={c.id} className="relative group flex flex-col gap-1 grayscale scale-95 origin-top">
-                  <CharacterCard
-                    character={c}
-                    pendingLootBoxes={lootQueue.filter(b => b.assignedTo === c.id && b.state === 'pending')}
-                    send={send}
-                    onLootAssign={setLootModalCharId}
-                    onStatusEffects={setStatusModalCharId}
-                    onEdit={setEditCharId}
-                    onInspect={setInspectCharId}
-                  />
-                  <button onClick={() => handleToggleActive(c.id, true)}
-                    className="font-hud text-xs border border-hud-border text-hud-muted hover:border-green-800 hover:text-green-400 py-1 transition-colors">
-                    SHOW (ACTIVATE)
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+
 
       {lootModalCharId && lootChar && (
         <LootAssignModal
