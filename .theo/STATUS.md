@@ -18,6 +18,7 @@
   - Resolved dynamic placeholder messaging bug in the DM panel to show the actual recipient crawler's name instead of a hardcoded ellipsis (`...`).
   - Patched client-side TypeScript typing gaps in `useWebSocket.ts` (added `toCharId` to the `DirectMessage` interface) and fixed rendering compilation parameters inside `GMDashboard.tsx` to properly propagate `activeCharIds` down to `<CharacterBar>` and `<DMPanel>`, ensuring a 100% clean TypeScript build on Dokploy!
   - Fully cleaned up unused states (`showInactive`, `setShowInactive`) and variables (`inactiveCharacters`) inside `CharacterBar.tsx` following the removal of the Inactive Crawlers accordion, satisfying strict compile rules on subsequent builds.
+  - Redesigned the viewport responsiveness inside `GMDashboard.tsx` to handle small screens (mobile/tablets). Replaced the rigid, clipping `h-screen overflow-hidden` wrapper layout on mobile with a dynamic `min-h-screen overflow-y-auto` schema, relaxed child height and scrolling constraints on the single-tab viewports, and pushed mobile navigation paddings, allowing the entire page layout to scroll smoothly and naturally underneath the fixed bottom navigation bar!
 - **Open / next**:
   - Perform visual and manual verification of floor plan activation.
 - **Blockers**: None.
