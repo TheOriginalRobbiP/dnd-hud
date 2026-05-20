@@ -1,5 +1,5 @@
 import { db } from './client.js'
-import { characters, floorState, lootBoxes, gmLog, sessionSnapshots } from './schema.js'
+import { characters, floorState, lootBoxes, gmLog, sessionSnapshots, floorRooms } from './schema.js'
 import { desc, eq, ne } from 'drizzle-orm'
 import type { AppState, WSMessage, Character, FloorState, LootBox } from '../types/index.js'
 
@@ -237,7 +237,15 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
         .set({ activeMobs: [], collapseTimerActive: false, collapseTimerSeconds: null, collapseTimerStartedAt: null, roomNumber: 1, currentRoomData: null, updatedAt: new Date() })
         .where(eq(floorState.id, 1))
       await db.delete(lootBoxes).where(ne(lootBoxes.state, 'opened'))
-      await db.insert(gmLog).values({ message: '[System] Session reset — HP/MP restored, status cleared, mobs removed.' })
+      
+      // Wipe the GM event log completely
+      await db.delete(gmLog)
+      
+      // Reset visited and current room flags for all floor plan rooms
+      await db.update(floorRooms).set({ isVisited: false, isCurrentRoom: false })
+
+      // Seed the fresh reset event into the log
+      await db.insert(gmLog).values({ message: '[System] Session reset — HP/MP restored, status cleared, mobs removed, maps reset.' })
       break
     }
     case 'session_snapshot_save': {
