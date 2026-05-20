@@ -86,6 +86,25 @@ floorPlansRouter.put('/:id/rooms/:roomId', async (c) => {
   return c.json(updated)
 })
 
+// POST /:id/rooms/:roomId/enter — set this room as current & visited, and unset other current rooms
+floorPlansRouter.post('/:id/rooms/:roomId/enter', async (c) => {
+  const { id, roomId } = c.req.param()
+
+  // 1. Mark all other rooms in this floor plan as not current
+  await db.update(floorRooms)
+    .set({ isCurrentRoom: false })
+    .where(eq(floorRooms.floorPlanId, id))
+
+  // 2. Mark this room as current and visited
+  const [updated] = await db.update(floorRooms)
+    .set({ isCurrentRoom: true, isVisited: true })
+    .where(eq(floorRooms.id, roomId))
+    .returning()
+
+  if (!updated) return c.json({ error: 'Room not found' }, 404)
+  return c.json(updated)
+})
+
 // DELETE /:id/rooms/:roomId — delete a room (cascade handles its connections)
 floorPlansRouter.delete('/:id/rooms/:roomId', async (c) => {
   const { roomId } = c.req.param()

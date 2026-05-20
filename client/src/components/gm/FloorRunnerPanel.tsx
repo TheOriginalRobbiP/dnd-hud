@@ -403,22 +403,8 @@ export function FloorRunnerPanel({ send, notesTextSize = 'md' }: FloorRunnerPane
     setEntering(roomId)
 
     try {
-      // 1. Mark the clicked room as current + visited
-      await fetch(`/api/floor-plans/${plan.id}/rooms/${roomId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isCurrentRoom: true, isVisited: true }),
-      })
-
-      // 2. Unset isCurrentRoom on all other rooms that were current
-      const prevCurrentRooms = rooms.filter(r => r.isCurrentRoom && r.id !== roomId)
-      await Promise.all(prevCurrentRooms.map(r =>
-        fetch(`/api/floor-plans/${plan.id}/rooms/${r.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ isCurrentRoom: false }),
-        })
-      ))
+      // 1. Set this room as current & visited (server unsets others)
+      await fetch(`/api/floor-plans/${plan.id}/rooms/${roomId}/enter`, { method: 'POST' })
 
       // Update local state
       setRooms(prev => prev.map(r => ({
