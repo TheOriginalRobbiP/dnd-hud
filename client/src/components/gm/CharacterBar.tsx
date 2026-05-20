@@ -56,8 +56,8 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
     return c
   })
 
-  const activeCharacters = displayCharacters.filter(c => c.isActive !== false)
-  const inactiveCharacters = displayCharacters.filter(c => c.isActive === false)
+  const activeCharacters = displayCharacters.filter(c => c.isActive !== false && activeCharIds.includes(c.id))
+  const inactiveCharacters = displayCharacters.filter(c => c.isActive === false || !activeCharIds.includes(c.id))
 
   const lootChar = displayCharacters.find(c => c.id === lootModalCharId)
   const editChar = displayCharacters.find(c => c.id === editCharId)
