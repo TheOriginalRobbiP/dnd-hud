@@ -26,7 +26,6 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
   const [showCreate, setShowCreate] = useState(false)
   const [editCharId, setEditCharId] = useState<string | null>(null)
   const [inspectCharId, setInspectCharId] = useState<string | null>(null)
-  const [showInactive, setShowInactive] = useState(false)
   const [optimisticActive, setOptimisticActive] = useState<Record<string, boolean>>({})
   const [mobileCardIdx, setMobileCardIdx] = useState(0)
 
@@ -57,7 +56,6 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
   })
 
   const activeCharacters = displayCharacters.filter(c => c.isActive !== false && activeCharIds.includes(c.id))
-  const inactiveCharacters = displayCharacters.filter(c => c.isActive === false || !activeCharIds.includes(c.id))
 
   const lootChar = displayCharacters.find(c => c.id === lootModalCharId)
   const editChar = displayCharacters.find(c => c.id === editCharId)
