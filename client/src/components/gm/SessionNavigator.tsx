@@ -267,6 +267,30 @@ export function SessionNavigator({ send, notesTextSize = 'md' }: SessionNavigato
     }
   }, [send])
 
+  // ── Spawn individual mob manually ───────────────────────────
+  const spawnIndividualMob = useCallback(async (templateName: string) => {
+    try {
+      const allTemplates: MobTemplate[] = await fetch('/api/mobs').then(r => r.json())
+      const template = allTemplates.find(t => t.name === templateName || t.id === templateName)
+      if (template) {
+        send({
+          type: 'mob_add',
+          mob: {
+            id: crypto.randomUUID(),
+            name: template.name,
+            hp: template.hpMax,
+            maxHp: template.hpMax,
+            effortType: template.effortType as 'basic' | 'weapon' | 'magic',
+            notes: template.abilities,
+          },
+        })
+        send({ type: 'announcement', text: `${template.name} spawned in this area!`, label: 'SYSTEM' })
+      }
+    } catch (err) {
+      console.error('Failed to spawn individual mob', err)
+    }
+  }, [send])
+
   if (loading) {
     return <div className="flex-1 flex items-center justify-center bg-hud-bg"><span className="font-hud text-sm text-hud-muted animate-pulse">Loading active floor plan...</span></div>
   }
@@ -404,6 +428,22 @@ export function SessionNavigator({ send, notesTextSize = 'md' }: SessionNavigato
                     </div>
                   </div>
                 </div>
+
+                {selectedRoom.isCurrentRoom && selectedRoom.mobTemplateIds && (
+                  <div className="flex items-center gap-2 flex-wrap pt-1.5 border-t border-hud-border/20">
+                    <span className="font-hud text-[9px] text-hud-muted tracking-widest uppercase mr-1">Spawn Individual:</span>
+                    {selectedRoom.mobTemplateIds.split(',').map(s => s.trim()).filter(Boolean).map(mName => (
+                      <button
+                        key={mName}
+                        onClick={() => spawnIndividualMob(mName)}
+                        className="font-hud text-[9px] border border-red-900/40 text-red-400 bg-red-950/10 px-2 py-0.5 hover:border-red-500 hover:text-red-500 transition-colors rounded-[2px] font-semibold"
+                        title={`Spawn one ${mName}`}
+                      >
+                        + {mName.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div className="flex-1 overflow-y-auto p-5 pb-24 prose prose-invert max-w-none">

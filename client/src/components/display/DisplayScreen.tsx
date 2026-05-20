@@ -157,7 +157,7 @@ export function DisplayScreen() {
               setTimer({
                 active: floor.collapseTimerActive,
                 seconds: floor.collapseTimerSeconds,
-                startedAt: floor.collapseTimerStartedAt,
+                startedAt: floor.collapseTimerStartedAt ? new Date(floor.collapseTimerStartedAt).getTime() : null,
               })
               setActiveMobs(floor.activeMobs || [])
               setGmLog(state.gmLog || [])
@@ -467,15 +467,6 @@ export function DisplayScreen() {
         </>
       )}
 
-      {/* Connection / Connection state badge */}
-      <div className={`absolute top-4 right-4 text-[10px] tracking-widest font-mono-dcc px-2.5 py-1 z-50 ${
-        connected
-          ? 'bg-green-950/80 text-green-400 border border-green-900/60'
-          : 'bg-red-950/80 text-red-400 border border-red-900/60 animate-pulse'
-      }`}>
-        {connected ? '● SYSTEM SYNCD' : '● RECONNECTING'}
-      </div>
-
       <div className="relative z-10 flex flex-col h-full w-full viewport-style">
         
         {/* ── HEADER ── */}
@@ -483,6 +474,13 @@ export function DisplayScreen() {
           <div className="flex items-center gap-4">
             <span className="font-mono-dcc text-[10px] font-bold text-[#10b981] border border-[#10b981]/25 bg-[#10b981]/5 px-3 py-1 rounded-[2px] tracking-widest">
               ● SYSTEM STABLE
+            </span>
+            <span className={`font-mono-dcc text-[10px] font-bold px-2.5 py-1 rounded-[2px] border tracking-widest ${
+              connected
+                ? 'bg-green-950/40 text-green-400 border-green-900/30'
+                : 'bg-red-950/40 text-red-400 border-red-900/30 animate-pulse'
+            }`}>
+              {connected ? '● SYNCED' : '● RECONNECTING'}
             </span>
             <h2 className="font-mono-dcc text-lg font-bold tracking-widest text-[#f4eee2] uppercase">
               <span className="text-[#71717a] font-normal mr-2">FLOOR {timer.active ? '1' : activePlan?.name.split(' ')[1] || '1'} —</span> 

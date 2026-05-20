@@ -27,7 +27,10 @@ export function RoomPanel({ floor, send }: RoomPanelProps) {
 
   useEffect(() => {
     if (floor.collapseTimerActive && floor.collapseTimerStartedAt && floor.collapseTimerSeconds) {
-      const elapsed = Math.floor((Date.now() - floor.collapseTimerStartedAt) / 1000)
+      const startedAtMs = typeof floor.collapseTimerStartedAt === 'string'
+        ? new Date(floor.collapseTimerStartedAt).getTime()
+        : Number(floor.collapseTimerStartedAt);
+      const elapsed = Math.floor((Date.now() - startedAtMs) / 1000)
       setTimerSecs(Math.max(0, floor.collapseTimerSeconds - elapsed))
       timerRef.current = setInterval(() => setTimerSecs(p => Math.max(0, p - 1)), 1000)
     } else {
