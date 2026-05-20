@@ -7,11 +7,16 @@ import { FloorPlanner } from './FloorPlanner'
 import { SessionNavigator } from './SessionNavigator'
 import { GMRulesPanel } from './GMRulesPanel'
 import { SoundboardPanel } from './SoundboardPanel'
+import { CharacterBar } from './CharacterBar'
+import type { DirectMessage } from '../../hooks/useWebSocket'
 
 interface GMDashboardProps {
   state: AppState
   send: (msg: WSMessage) => void
   activeCharIds: string[]
+  dmMessages: DirectMessage[]
+  onDMRead: () => void
+  onDMEcho: (dm: DirectMessage) => void
 }
 
 type GmMode = 'plan' | 'session' | 'sound' | 'rules'
@@ -70,11 +75,19 @@ function CollapsedCharStrip({ characters, activeCharIds, onExpand }: CollapsedCh
 
 // ── Main GMDashboard ───────────────────────────────────────────
 
-export function GMDashboard({ state, send, activeCharIds }: GMDashboardProps) {
+export function GMDashboard({
+  state,
+  send,
+  activeCharIds,
+  dmMessages,
+  onDMRead,
+  onDMEcho
+}: GMDashboardProps) {
   const [mobileTab, setMobileTab] = useState<SessionMobileTab>('map')
   const [sessionMgrOpen, setSessionMgrOpen] = useState(false)
   const [gmMode, setGmMode] = useState<GmMode>('session')
   const [notesSize] = useState<NotesSize>('md')
+  const [charBarExpanded, setCharBarExpanded] = useState(true)
   
   const sessionActive = state.floor?.sessionActive ?? false
 
@@ -199,7 +212,23 @@ export function GMDashboard({ state, send, activeCharIds }: GMDashboardProps) {
             {/* Desktop Layout — 3 columns */}
             <div className="hidden md:flex flex-1 overflow-hidden flex-col">
               <div className="flex-shrink-0 border-b border-hud-border">
-                <CollapsedCharStrip characters={activeCharacters} activeCharIds={activeCharIds} onExpand={() => {}} />
+                {charBarExpanded ? (
+                  <CharacterBar
+                    characters={state.characters}
+                    lootQueue={state.lootQueue}
+                    send={send}
+                    dmMessages={dmMessages}
+                    onDMRead={onDMRead}
+                    onDMEcho={onDMEcho}
+                    onCollapse={() => setCharBarExpanded(false)}
+                  />
+                ) : (
+                  <CollapsedCharStrip
+                    characters={activeCharacters}
+                    activeCharIds={activeCharIds}
+                    onExpand={() => setCharBarExpanded(true)}
+                  />
+                )}
               </div>
               <div className="flex-1 overflow-hidden grid grid-cols-[300px_1fr_400px]">
                 <div className="border-r border-hud-border flex flex-col overflow-hidden">
@@ -217,7 +246,23 @@ export function GMDashboard({ state, send, activeCharIds }: GMDashboardProps) {
             {/* Mobile layout — single panel at a time */}
             <div className="flex md:hidden flex-1 overflow-hidden flex-col pb-12">
               <div className="flex-shrink-0">
-                <CollapsedCharStrip characters={activeCharacters} activeCharIds={activeCharIds} onExpand={() => {}} />
+                {charBarExpanded ? (
+                  <CharacterBar
+                    characters={state.characters}
+                    lootQueue={state.lootQueue}
+                    send={send}
+                    dmMessages={dmMessages}
+                    onDMRead={onDMRead}
+                    onDMEcho={onDMEcho}
+                    onCollapse={() => setCharBarExpanded(false)}
+                  />
+                ) : (
+                  <CollapsedCharStrip
+                    characters={activeCharacters}
+                    activeCharIds={activeCharIds}
+                    onExpand={() => setCharBarExpanded(true)}
+                  />
+                )}
               </div>
               <div className="flex-1 flex overflow-hidden">
                 {mobileTab === 'map' && (

@@ -66,7 +66,20 @@ function App() {
   if (role === 'gm') {
     if (!gmVerified) return <GMPinGate onVerified={() => setGmVerified(true)} />
     if (!state) return <div className="h-screen bg-hud-bg flex items-center justify-center font-hud text-hud-muted animate-pulse">SYNCING STATE...</div>
-    return <>{connBadge}<GMDashboard state={state} send={send} activeCharIds={activeCharIds} /><ToastFeed toasts={toasts} onDismiss={dismissToast} /></>
+    return (
+      <>
+        {connBadge}
+        <GMDashboard
+          state={state}
+          send={send}
+          activeCharIds={activeCharIds}
+          dmMessages={dmMessages}
+          onDMRead={onDMRead}
+          onDMEcho={onDM}
+        />
+        <ToastFeed toasts={toasts} onDismiss={dismissToast} />
+      </>
+    )
   }
 
   const charId = role.replace('player:', '')

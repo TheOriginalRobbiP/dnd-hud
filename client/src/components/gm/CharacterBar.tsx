@@ -16,9 +16,10 @@ interface CharacterBarProps {
   dmMessages: DirectMessage[]
   onDMRead: () => void
   onDMEcho: (dm: DirectMessage) => void
+  onCollapse?: () => void
 }
 
-export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead, onDMEcho }: CharacterBarProps) {
+export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead, onDMEcho, onCollapse }: CharacterBarProps) {
   const [lootModalCharId, setLootModalCharId] = useState<string | null>(null)
   const [statusModalCharId, setStatusModalCharId] = useState<string | null>(null)
   const [showCreate, setShowCreate] = useState(false)
@@ -79,6 +80,12 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
             className="font-hud text-xs border border-hud-border text-hud-muted px-3 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider">
             + ADD
           </button>
+          {onCollapse && (
+            <button onClick={onCollapse}
+              className="font-hud text-xs border border-hud-border text-hud-muted px-3 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider uppercase">
+              COLLAPSE ▴
+            </button>
+          )}
         </div>
       </div>
 
