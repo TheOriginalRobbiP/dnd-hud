@@ -111,7 +111,7 @@ export function GMDashboard({
   const activeCharacters = state.characters.filter(c => c.isActive !== false && seenCharIds.includes(c.id))
 
   return (
-    <div className="h-screen flex flex-col bg-hud-bg overflow-hidden font-sans" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div className="min-h-screen md:h-screen flex flex-col bg-hud-bg overflow-y-auto md:overflow-hidden font-sans" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
       {sessionMgrOpen && (
         <SessionManager send={send} onClose={() => setSessionMgrOpen(false)} />
@@ -245,7 +245,7 @@ export function GMDashboard({
             </div>
 
             {/* Mobile layout — single panel at a time */}
-            <div className="flex md:hidden flex-1 overflow-hidden flex-col pb-12">
+            <div className="flex md:hidden flex-1 flex-col pb-24">
               <div className="flex-shrink-0">
                 {charBarExpanded ? (
                   <CharacterBar
@@ -266,19 +266,19 @@ export function GMDashboard({
                   />
                 )}
               </div>
-              <div className="flex-1 flex overflow-hidden">
+              <div className="flex-1 flex flex-col gap-4 mt-2">
                 {mobileTab === 'map' && (
-                  <div className="flex-1 overflow-hidden flex flex-col">
+                  <div className="flex-1 min-h-[400px] flex flex-col">
                     <SessionNavigator send={send} notesTextSize={notesSize} />
                   </div>
                 )}
                 {mobileTab === 'room' && (
-                  <div className="flex-1 overflow-y-auto">
+                  <div className="flex-1">
                     <RoomPanel floor={state.floor} send={send} />
                   </div>
                 )}
                 {mobileTab === 'log' && (
-                  <div className="flex-1 overflow-hidden flex flex-col">
+                  <div className="flex-1 min-h-[400px] flex flex-col">
                     <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
                   </div>
                 )}
