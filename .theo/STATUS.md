@@ -16,6 +16,7 @@
   - Cleaned up direct messaging thread scoping and routing inside `DMPanel.tsx` so that GMs and players only see message threads matching their selected recipient (rather than scrambling all chats from all players into a single scrolling thread).
   - Filtered the GM's recipient button selector in `DMPanel.tsx` by the live list of connected crawlers (`activeCharIds` passed down from the top-level websocket), ensuring GMs only see and can select currently connected players for direct private messaging.
   - Resolved dynamic placeholder messaging bug in the DM panel to show the actual recipient crawler's name instead of a hardcoded ellipsis (`...`).
+  - Patched client-side TypeScript typing gaps in `useWebSocket.ts` (added `toCharId` to the `DirectMessage` interface) and fixed rendering compilation parameters inside `GMDashboard.tsx` to properly propagate `activeCharIds` down to `<CharacterBar>` and `<DMPanel>`, ensuring a 100% clean TypeScript build on Dokploy!
 - **Open / next**:
   - Perform visual and manual verification of floor plan activation.
 - **Blockers**: None.
