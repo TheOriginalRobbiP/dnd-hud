@@ -25,6 +25,8 @@ interface FloorPlan {
   id: string
   name: string
   theme: string
+  themeColour?: string
+  isActive: boolean
 }
 
 interface FloorRoom {
