@@ -10,6 +10,7 @@
   - Added UI elements in `FloorPlanner.tsx` to display active state next to floor plan names in the dropdown, display an "ACTIVE" badge if the selected plan is active, and show an "ACTIVATE FLOOR" button if the selected plan is inactive.
   - Fixed TypeScript compilation error in `FloorPlanner.tsx` by declaring the `isActive` and `themeColour` properties on its local `FloorPlan` interface.
   - Implemented POST `/api/floor-plans/:id/rooms/:roomId/enter` endpoint on the server to atomically handle room entries (making target current/visited, deactivating others) and migrated all frontend components (`SessionNavigator`, `FloorRunnerPanel`) to use this unified, atomic, database-backed endpoint. This resolves the bug where entered rooms were not persisted on the server, causing polling cycles to continuously revert the selection back to "The Arrival".
+  - Extended the server-side `session_reset` WebSocket transaction to completely clear out the GM Event Log table (`gmLog`) and reset the `isVisited = false` and `isCurrentRoom = false` states of all floor plan rooms in Postgres, restoring full session reset functionality across the entire dashboard and connected player HUDs.
 - **Open / next**:
   - Perform visual and manual verification of floor plan activation.
 - **Blockers**: None.
