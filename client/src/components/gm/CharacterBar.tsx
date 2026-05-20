@@ -16,10 +16,11 @@ interface CharacterBarProps {
   dmMessages: DirectMessage[]
   onDMRead: () => void
   onDMEcho: (dm: DirectMessage) => void
+  activeCharIds: string[]
   onCollapse?: () => void
 }
 
-export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead, onDMEcho, onCollapse }: CharacterBarProps) {
+export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead, onDMEcho, activeCharIds, onCollapse }: CharacterBarProps) {
   const [lootModalCharId, setLootModalCharId] = useState<string | null>(null)
   const [statusModalCharId, setStatusModalCharId] = useState<string | null>(null)
   const [showCreate, setShowCreate] = useState(false)
@@ -75,6 +76,7 @@ export function CharacterBar({ characters, lootQueue, send, dmMessages, onDMRead
             send={send}
             onRead={onDMRead}
             onEcho={onDMEcho}
+            connectedCharIds={activeCharIds}
           />
           <button onClick={() => setShowCreate(true)}
             className="font-hud text-xs border border-hud-border text-hud-muted px-3 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider">

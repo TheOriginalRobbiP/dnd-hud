@@ -10,6 +10,7 @@ interface DMPanelProps {
   send: (msg: WSMessage) => void
   onRead: () => void
   onEcho: (dm: DirectMessage) => void
+  connectedCharIds?: string[]
 }
 
 interface PlayerDMPanelProps {
@@ -28,13 +29,33 @@ type Props = DMPanelProps | PlayerDMPanelProps
 export function DMPanel(props: Props) {
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
-  const [toCharId, setToCharId] = useState<string>('gm')
+  const [toCharId, setToCharId] = useState<string>(() => {
+    return props.mode === 'gm' ? 'all' : 'gm'
+  })
   const bottomRef = useRef<HTMLDivElement>(null)
+  
+  // Filter messages for current thread
+  const filteredMessages = props.messages.filter(m => {
+    if (props.mode === 'gm') {
+      if (toCharId === 'all') {
+        return m.toCharId === 'all'
+      } else {
+        return (m.fromCharId === 'gm' && m.toCharId === toCharId) ||
+               (m.fromCharId === toCharId && m.toCharId === 'gm')
+      }
+    } else {
+      const myCharId = props.myCharId
+      return (m.toCharId === 'all') ||
+             (m.fromCharId === 'gm' && m.toCharId === myCharId) ||
+             (m.fromCharId === myCharId && m.toCharId === 'gm')
+    }
+  })
+
   const unread = props.messages.filter(m => !m.read).length
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [props.messages, open])
+  }, [filteredMessages, open])
 
   const handleOpen = () => {
     setOpen(true)
@@ -99,23 +120,25 @@ export function DMPanel(props: Props) {
                   className={`font-hud text-xs border px-2 py-1 whitespace-nowrap transition-colors ${toCharId === 'all' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
                   ALL
                 </button>
-                {(props as DMPanelProps).characters.map(c => (
-                  <button key={c.id} onClick={() => setToCharId(c.id)}
-                    className={`font-hud text-xs border px-2 py-1 whitespace-nowrap transition-colors ${toCharId === c.id ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
-                    {c.crawlerName}
-                  </button>
-                ))}
+                {((props as DMPanelProps).characters || [])
+                  .filter(c => (props as DMPanelProps).connectedCharIds?.includes(c.id))
+                  .map(c => (
+                    <button key={c.id} onClick={() => setToCharId(c.id)}
+                      className={`font-hud text-xs border px-2 py-1 whitespace-nowrap transition-colors ${toCharId === c.id ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted'}`}>
+                      {c.crawlerName}
+                    </button>
+                  ))}
               </div>
             )}
 
             {/* Message thread */}
             <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-2 min-h-0">
-              {props.messages.length === 0 ? (
+              {filteredMessages.length === 0 ? (
                 <p className="font-hud text-sm text-hud-muted italic text-center mt-4">
                   No messages yet. The channel is open.
                 </p>
               ) : (
-                props.messages.map((m, i) => {
+                filteredMessages.map((m, i) => {
                   const isMe = props.mode === 'gm'
                     ? m.fromCharId === 'gm'
                     : m.fromCharId === (props as PlayerDMPanelProps).myCharId
@@ -142,7 +165,11 @@ export function DMPanel(props: Props) {
                 onChange={e => setText(e.target.value)}
                 onKeyDown={handleKey}
                 rows={2}
-                placeholder={props.mode === 'gm' ? `Message ${toCharId === 'all' ? 'all crawlers' : '...'}` : 'Message GM...'}
+                placeholder={
+                  props.mode === 'gm'
+                    ? `Message ${toCharId === 'all' ? 'all crawlers' : (props as DMPanelProps).characters.find(c => c.id === toCharId)?.crawlerName ?? '...'}`
+                    : 'Message GM...'
+                }
                 className="flex-1 bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2 resize-none focus:border-hud-accent outline-none"
               />
               <button onClick={sendDM}
