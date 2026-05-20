@@ -111,7 +111,7 @@ export function GMDashboard({
   const activeCharacters = state.characters.filter(c => c.isActive !== false && seenCharIds.includes(c.id))
 
   return (
-    <div className="min-h-screen md:h-screen flex flex-col bg-hud-bg overflow-y-auto md:overflow-hidden font-sans" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div className="min-h-screen flex flex-col bg-hud-bg overflow-y-auto font-sans" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
       {sessionMgrOpen && (
         <SessionManager send={send} onClose={() => setSessionMgrOpen(false)} />
@@ -210,7 +210,7 @@ export function GMDashboard({
         {gmMode === 'session' && (
           <>
             {/* Desktop Layout — 3 columns */}
-            <div className="hidden md:flex flex-1 overflow-hidden flex-col">
+            <div className="hidden md:flex flex-1 flex-col">
               <div className="flex-shrink-0 border-b border-hud-border">
                 {charBarExpanded ? (
                   <CharacterBar
@@ -231,7 +231,7 @@ export function GMDashboard({
                   />
                 )}
               </div>
-              <div className="flex-1 overflow-hidden grid grid-cols-[300px_1fr_400px]">
+              <div className="flex-1 min-h-[550px] grid grid-cols-[300px_1fr_400px]">
                 <div className="border-r border-hud-border flex flex-col overflow-hidden">
                   <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
                 </div>
