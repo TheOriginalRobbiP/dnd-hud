@@ -7,6 +7,7 @@ const RECONNECT_MS = 2000
 export interface DirectMessage {
   fromCharId: string | 'gm'
   fromName: string
+  toCharId: string
   text: string
   timestamp: number
   read: boolean

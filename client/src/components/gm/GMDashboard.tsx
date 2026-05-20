@@ -220,6 +220,7 @@ export function GMDashboard({
                     dmMessages={dmMessages}
                     onDMRead={onDMRead}
                     onDMEcho={onDMEcho}
+                    activeCharIds={activeCharIds}
                     onCollapse={() => setCharBarExpanded(false)}
                   />
                 ) : (
@@ -254,6 +255,7 @@ export function GMDashboard({
                     dmMessages={dmMessages}
                     onDMRead={onDMRead}
                     onDMEcho={onDMEcho}
+                    activeCharIds={activeCharIds}
                     onCollapse={() => setCharBarExpanded(false)}
                   />
                 ) : (

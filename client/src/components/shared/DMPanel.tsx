@@ -66,16 +66,24 @@ export function DMPanel(props: Props) {
     if (!text.trim()) return
     const fromCharId = props.mode === 'gm' ? 'gm' : props.myCharId
     const fromName = props.mode === 'gm' ? 'GM' : (props as PlayerDMPanelProps).myName
+    const targetId = props.mode === 'gm' ? toCharId : 'gm'
     props.send({
       type: 'direct_message',
-      toCharId: props.mode === 'gm' ? toCharId : 'gm',
+      toCharId: targetId,
       fromCharId,
       fromName,
       text: text.trim(),
       timestamp: Date.now(),
     })
     // Echo into local messages via state setter — never mutate props directly
-    props.onEcho({ fromCharId, fromName, text: text.trim(), timestamp: Date.now(), read: true })
+    props.onEcho({
+      fromCharId,
+      fromName,
+      toCharId: targetId,
+      text: text.trim(),
+      timestamp: Date.now(),
+      read: true
+    })
     setText('')
   }
 
