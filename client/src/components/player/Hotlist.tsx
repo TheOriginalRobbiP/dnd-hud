@@ -40,11 +40,37 @@ export function Hotlist({ character, send, onCharacterUpdate }: HotlistProps) {
   const carried = character.inventory.filter((i: any) => !i.isEquipped)
   const hotlisted = carried.filter((i: any) => i.isHotlisted)
 
-  const toggleHotlist = async (itemId: string) => {
+  // Group identical items on the hotlist
+  const stackedHotlist: { key: string; items: any[]; primary: any }[] = []
+  
+  hotlisted.forEach((item: any) => {
+    const key = `${item.name.trim().toLowerCase()}|${item.tier ?? 'common'}|${item.description ?? ''}`
+    const existing = stackedHotlist.find(s => s.key === key)
+    if (existing) {
+      existing.items.push(item)
+    } else {
+      stackedHotlist.push({
+        key,
+        items: [item],
+        primary: item
+      })
+    }
+  })
+
+  const toggleHotlist = async (targetItem: any) => {
     try {
-      const inv = character.inventory.map((i: any) =>
-        i.id === itemId ? { ...i, isHotlisted: !i.isHotlisted } : i
-      )
+      const isCurrentlyHotlisted = !targetItem.isHotlisted
+      const targetName = targetItem.name.trim().toLowerCase()
+      const targetTier = targetItem.tier ?? 'common'
+      const targetDesc = targetItem.description ?? ''
+
+      const inv = character.inventory.map((i: any) => {
+        const matches = i.name.trim().toLowerCase() === targetName &&
+                        (i.tier ?? 'common') === targetTier &&
+                        (i.description ?? '') === targetDesc;
+        return matches ? { ...i, isHotlisted: isCurrentlyHotlisted } : i;
+      })
+
       await fetch(`/api/characters/${character.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -74,17 +100,27 @@ export function Hotlist({ character, send, onCharacterUpdate }: HotlistProps) {
     <div className="border border-hud-border bg-hud-panel/25 p-2 rounded-lg flex flex-col gap-1.5">
       <div className="font-hud text-[10px] text-hud-muted tracking-widest flex justify-between items-center uppercase border-b border-hud-border/40 pb-1">
         <span>🎒 ACTIVE HOTLIST</span>
-        <span className="text-[8px] text-hud-muted normal-case italic">max 8 items</span>
+        <span className="text-[8px] text-hud-muted normal-case italic">max 8 slots</span>
       </div>
       <div className="grid grid-cols-8 gap-1">
         {Array.from({ length: 8 }).map((_, idx) => {
-          const item = hotlisted[idx]
-          if (item) {
+          const stack = stackedHotlist[idx]
+          if (stack) {
+            const item = stack.primary
+            const count = stack.items.length
             const consumable = isConsumableItem(item)
             const charges = item.charges ?? null
             return (
               <div key={item.id} className="border border-hud-accent bg-hud-panel p-1 text-center rounded flex flex-col justify-between min-h-[56px] relative overflow-hidden transition-all duration-200">
-                <div className="font-hud text-[8px] text-hud-accent font-bold truncate uppercase leading-tight" title={item.name}>{item.name}</div>
+                <div className="font-hud text-[8px] text-hud-accent font-bold truncate uppercase leading-tight pr-1.5" title={item.name}>{item.name}</div>
+                
+                {/* Badge for stacking */}
+                {count > 1 && (
+                  <div className="absolute top-0 right-0 bg-hud-accent text-hud-bg text-[7px] font-extrabold px-1 rounded-bl leading-none py-0.5">
+                    {count}
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-0.5 mt-0.5">
                   {consumable ? (
                     <button
@@ -98,7 +134,7 @@ export function Hotlist({ character, send, onCharacterUpdate }: HotlistProps) {
                     <div className="font-hud text-[7px] text-hud-muted italic leading-none">gear</div>
                   )}
                   <button
-                    onClick={() => toggleHotlist(item.id)}
+                    onClick={() => toggleHotlist(item)}
                     className="font-hud text-[7px] text-hud-muted hover:text-red-500 transition-colors leading-none mt-0.5"
                   >
                     UNPIN
