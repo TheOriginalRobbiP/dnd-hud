@@ -57,6 +57,7 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate }: 
   const [equipping, setEquipping] = useState<string | null>(null)
   const [expandedItem, setExpandedItem] = useState<string | null>(null)
   const [using, setUsing] = useState<string | null>(null)
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
 
   const myBoxes = lootQueue.filter(b => b.assignedTo === character.id)
   const carried = character.inventory.filter((i: any) => !i.isEquipped)
@@ -135,27 +136,80 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate }: 
         <div className="grid grid-cols-3 gap-2">
           {SLOTS.map(slot => {
             const item = equipped[slot]
+            const isSelected = selectedSlot === slot
+            const borderStyle = isSelected 
+              ? 'border-hud-accent ring-1 ring-hud-accent bg-hud-accent/5' 
+              : item 
+              ? 'border-hud-accent/60 hover:border-hud-accent cursor-pointer' 
+              : 'border-hud-border'
+
             return (
-              <div key={slot} className={`border p-3 bg-hud-panel ${item ? 'border-hud-accent' : 'border-hud-border'}`}>
-                <div className="font-hud text-xs text-hud-muted tracking-wider uppercase">{SLOT_LABELS[slot]}</div>
+              <div 
+                key={slot} 
+                onClick={() => item && setSelectedSlot(isSelected ? null : slot)}
+                className={`border p-3 bg-hud-panel transition-all duration-150 ${borderStyle}`}
+              >
+                <div className="font-hud text-[10px] text-hud-muted tracking-wider uppercase">{SLOT_LABELS[slot]}</div>
                 {item ? (
-                  <div>
-                    <div className="font-hud text-sm text-hud-accent mt-1 truncate">{item.name}</div>
-                    <button
-                      onClick={() => unequipItem(slot)}
-                      disabled={equipping === slot}
-                      className="font-hud text-xs text-hud-muted hover:text-hp-low transition-colors mt-1 disabled:opacity-40">
-                      {equipping === slot ? 'removing...' : 'unequip'}
-                    </button>
-                  </div>
+                  <div className="font-hud text-sm text-hud-accent mt-1 truncate font-bold">{item.name}</div>
                 ) : (
-                  <div className="font-hud text-sm text-hud-muted mt-1 italic">empty</div>
+                  <div className="font-hud text-xs text-hud-muted mt-1 italic">empty</div>
                 )}
               </div>
             )
           })}
         </div>
       </div>
+
+      {/* Selected Equipment Details Panel */}
+      {selectedSlot && equipped[selectedSlot] && (
+        <div className="border border-hud-accent bg-hud-panel/40 p-4 rounded-lg flex flex-col gap-2 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-2">
+            <button 
+              onClick={() => setSelectedSlot(null)}
+              className="text-hud-muted hover:text-red-500 font-hud text-[10px] px-1.5 py-0.5 border border-hud-border/40 hover:border-red-900 rounded"
+            >
+              ✕ CLOSE
+            </button>
+          </div>
+          {(() => {
+            const item = equipped[selectedSlot]
+            return (
+              <>
+                <div className="flex justify-between items-start pr-12">
+                  <div>
+                    <div className="font-hud text-[10px] text-hud-muted tracking-widest uppercase mb-1">
+                      {SLOT_LABELS[selectedSlot]} SLOT
+                    </div>
+                    <h3 className="font-hud text-base text-hud-text font-bold leading-none">{item.name}</h3>
+                  </div>
+                  <span className="font-hud text-[10px] px-2 py-0.5 border rounded flex-shrink-0"
+                    style={{ borderColor: TIER_COLOURS[item.tier], color: TIER_COLOURS[item.tier] }}>
+                    {item.tier?.toUpperCase()}
+                  </span>
+                </div>
+                {item.description && (
+                  <p className="font-hud text-xs text-hud-muted italic leading-relaxed border-t border-hud-border/40 pt-2 mt-1">
+                    {item.description}
+                  </p>
+                )}
+                <div className="flex gap-3 justify-end mt-2 border-t border-hud-border/40 pt-3">
+                  <button
+                    onClick={() => {
+                      unequipItem(selectedSlot)
+                      setSelectedSlot(null)
+                    }}
+                    disabled={equipping === selectedSlot}
+                    className="font-hud text-[10px] text-red-400 border border-red-900/60 bg-red-950/10 px-3 py-1.5 hover:bg-red-950/30 hover:border-red-600 transition-colors rounded disabled:opacity-40"
+                  >
+                    {equipping === selectedSlot ? 'UNEQUIPPING...' : 'UNEQUIP ITEM'}
+                  </button>
+                </div>
+              </>
+            )
+          })()}
+        </div>
+      )}
 
       {/* Carried items */}
       <div>
