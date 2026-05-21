@@ -30,6 +30,7 @@ interface PlayerHUDProps {
   onDMRead: () => void
   onDMEcho: (dm: DirectMessage) => void
   activeCharIds: string[]
+  onCharacterUpdate?: () => void
 }
 
 export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEcho, activeCharIds }: PlayerHUDProps) {
@@ -37,9 +38,17 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
   const [showRulesModal, setShowRulesModal] = useState(false)
   const [showInventoryModal, setShowInventoryModal] = useState(false)
   const [inspectCharId, setInspectCharId] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const { toasts, addToast, dismiss } = useToasts()
   const prevGmLogLen = useRef(0)
   const isFirstSync = useRef(true)
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     if (state.gmLog.length > 0) {
@@ -127,7 +136,7 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
             className="font-hud text-[10px] sm:text-xs border border-hud-border text-hud-muted px-2.5 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider flex items-center gap-1.5"
           >
             <span>🎒</span>
-            <span>INVENTORY</span>
+            <span>BACKPACK</span>
           </button>
           <button 
             onClick={() => setShowRulesModal(true)}
@@ -197,6 +206,18 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
                  </div>
                )}
 
+               {/* Equipment & Lootboxes shown on the main HUD for desktop */}
+               <div className="p-4 border-b border-hud-border">
+                 <InventoryTab 
+                   character={character} 
+                   lootQueue={state.lootQueue} 
+                   send={send} 
+                   onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} 
+                   hideSections={['backpack']}
+                   compact={true}
+                 />
+               </div>
+
                <div className="p-4">
                  <FameTab character={character} floorNumber={state.floor.floorNumber} />
                </div>
@@ -252,7 +273,7 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
             style={{ maxHeight: '90vh' }}
             onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-hud-border flex-shrink-0 bg-hud-panel/40">
-              <div className="font-hud text-xs text-hud-accent tracking-widest font-bold uppercase">🎒 CRAWLER INVENTORY</div>
+              <div className="font-hud text-xs text-hud-accent tracking-widest font-bold uppercase">🎒 {isMobile ? 'CRAWLER INVENTORY' : '🎒 HEAVY BACKPACK'}</div>
               <button onClick={() => setShowInventoryModal(false)} className="text-hud-muted hover:text-hp-low font-hud text-xs font-bold border border-hud-border/40 px-2 py-0.5 hover:border-red-900 rounded">✕ CLOSE</button>
             </div>
             <div className="flex-1 overflow-y-auto">
@@ -261,6 +282,7 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
                 lootQueue={state.lootQueue} 
                 send={send} 
                 onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} 
+                hideSections={isMobile ? [] : ['loot', 'equipment']}
               />
             </div>
           </div>

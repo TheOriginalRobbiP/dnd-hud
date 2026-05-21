@@ -71,35 +71,35 @@ export function Hotlist({ character, send, onCharacterUpdate }: HotlistProps) {
   }
 
   return (
-    <div className="border border-hud-border bg-hud-panel/25 p-3 rounded-lg flex flex-col gap-2">
-      <div className="font-hud text-xs text-hud-muted tracking-widest flex justify-between items-center uppercase border-b border-hud-border/40 pb-1.5">
-        <span>🎒 QUICK ACCESS HOTLIST</span>
-        <span className="text-[9px] text-hud-muted normal-case italic">max 4 items</span>
+    <div className="border border-hud-border bg-hud-panel/25 p-2 rounded-lg flex flex-col gap-1.5">
+      <div className="font-hud text-[10px] text-hud-muted tracking-widest flex justify-between items-center uppercase border-b border-hud-border/40 pb-1">
+        <span>🎒 ACTIVE HOTLIST</span>
+        <span className="text-[8px] text-hud-muted normal-case italic">max 8 items</span>
       </div>
-      <div className="grid grid-cols-4 gap-2">
-        {Array.from({ length: 4 }).map((_, idx) => {
+      <div className="grid grid-cols-8 gap-1">
+        {Array.from({ length: 8 }).map((_, idx) => {
           const item = hotlisted[idx]
           if (item) {
             const consumable = isConsumableItem(item)
             const charges = item.charges ?? null
             return (
-              <div key={item.id} className="border border-hud-accent bg-hud-panel p-2 text-center rounded flex flex-col justify-between min-h-[72px] relative overflow-hidden transition-all duration-200">
-                <div className="font-hud text-[10px] text-hud-accent font-bold truncate uppercase" title={item.name}>{item.name}</div>
-                <div className="flex flex-col gap-1 mt-1">
+              <div key={item.id} className="border border-hud-accent bg-hud-panel p-1 text-center rounded flex flex-col justify-between min-h-[56px] relative overflow-hidden transition-all duration-200">
+                <div className="font-hud text-[8px] text-hud-accent font-bold truncate uppercase leading-tight" title={item.name}>{item.name}</div>
+                <div className="flex flex-col gap-0.5 mt-0.5">
                   {consumable ? (
                     <button
                       onClick={() => useItem(item)}
                       disabled={using === item.id}
-                      className="font-hud text-[9px] text-hud-bg bg-amber-500 hover:bg-amber-400 font-extrabold px-1.5 py-0.5 rounded leading-none transition-colors"
+                      className="font-hud text-[8px] text-hud-bg bg-amber-500 hover:bg-amber-400 font-extrabold px-1 py-0.5 rounded leading-none transition-colors"
                     >
-                      {using === item.id ? '...' : charges != null ? `USE(${charges})` : 'USE'}
+                      {using === item.id ? '...' : charges != null ? `U(${charges})` : 'USE'}
                     </button>
                   ) : (
-                    <div className="font-hud text-[9px] text-hud-muted italic leading-none">gear</div>
+                    <div className="font-hud text-[7px] text-hud-muted italic leading-none">gear</div>
                   )}
                   <button
                     onClick={() => toggleHotlist(item.id)}
-                    className="font-hud text-[9px] text-hud-muted hover:text-red-500 transition-colors leading-none"
+                    className="font-hud text-[7px] text-hud-muted hover:text-red-500 transition-colors leading-none mt-0.5"
                   >
                     UNPIN
                   </button>
@@ -108,8 +108,8 @@ export function Hotlist({ character, send, onCharacterUpdate }: HotlistProps) {
             )
           } else {
             return (
-              <div key={idx} className="border border-hud-border border-dashed p-2 text-center rounded flex items-center justify-center min-h-[72px] bg-hud-panel/5">
-                <span className="font-hud text-[10px] text-hud-muted italic">vacant</span>
+              <div key={idx} className="border border-hud-border border-dashed p-1 text-center rounded flex items-center justify-center min-h-[56px] bg-hud-panel/5">
+                <span className="font-hud text-[8px] text-hud-muted italic leading-none">empty</span>
               </div>
             )
           }

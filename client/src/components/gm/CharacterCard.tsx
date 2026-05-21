@@ -54,25 +54,25 @@ export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign,
   const quickBtnCls = 'h-6 w-6 text-xs border border-hud-border font-hud flex items-center justify-center hover:border-hud-accent hover:text-hud-accent transition-colors text-hud-muted leading-none'
 
   return (
-    <div className={`border ${borderCol} bg-hud-panel p-4 w-full sm:min-w-[220px] sm:w-auto flex flex-col gap-2 transition-colors`}>
+    <div className={`border ${borderCol} bg-hud-panel p-4 w-full sm:min-w-[220px] sm:w-auto flex flex-col gap-2 transition-colors rounded-lg`}>
       {/* Portrait + Header */}
       <div className="flex gap-3 items-start mb-1">
         {portrait ? (
           <>
-            <div className="relative w-16 h-20 overflow-hidden border border-hud-border flex-shrink-0 bg-hud-bg">
+            <div className="relative w-12 h-14 overflow-hidden border border-hud-border flex-shrink-0 bg-hud-bg rounded">
               <img
                 src={portrait}
                 alt={crawlerName}
                 className={`w-full h-full object-cover transition-all duration-300 ${!isAlive ? 'grayscale opacity-40' : ''}`}
-                style={{ objectPosition: '50% 15%' }}
+                style={{ objectPosition: 'center' }}
               />
               {!isAlive && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded">
                   <span className="text-xl">☠</span>
                 </div>
               )}
             </div>
-            <div className="flex-1 min-w-0 flex flex-col justify-between h-20">
+            <div className="flex-1 min-w-0 flex flex-col justify-between h-14">
               <div>
                 <div className={`font-hud text-sm tracking-wider uppercase truncate ${isAlive ? 'text-hud-accent' : 'text-red-400'}`}>
                   {crawlerName}
@@ -163,81 +163,44 @@ export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign,
               <button onClick={() => setMp(mp + 1)} className={quickBtnCls}>+</button>
             </div>
           </div>
-          <div className="w-full h-1 bg-hud-border">
-            <div className="h-full bg-cyan-500 transition-all duration-300" style={{ width: `${maxMp > 0 ? (mp/maxMp)*100 : 0}%` }} />
+          <div className="w-full h-3 bg-hud-border rounded-sm overflow-hidden">
+            <div className="h-full bg-cyan-500 transition-all duration-300" style={{ width: `${(mp/maxMp)*100}%` }} />
           </div>
         </div>
       )}
 
-      {/* Status effects */}
-      {statusEffects.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {statusEffects.map((e: any) => (
-            <span key={e.id} className={`text-sm font-hud px-1 border ${e.type === 'buff' ? 'border-green-800 text-green-400' : 'border-red-900 text-red-400'}`}>
-              {e.name}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* AI Favour */}
-      <div className="border-t border-hud-border pt-2 mt-1">
-        <div className="flex justify-between items-end mb-1">
-          <span className="text-[10px] font-hud text-hud-muted uppercase">⚡ AI FAVOUR</span>
-          <span className="text-lg font-bold font-hud text-yellow-400 leading-none">{aiFavour ?? 0}</span>
-        </div>
+      {/* Conditions & AI Favour */}
+      <div className="flex items-center justify-between border-t border-hud-border/40 pt-2 mt-1">
         <div className="flex gap-1">
-          <button onClick={() => adjustFavour(-1)} disabled={(aiFavour ?? 0) <= 0}
-            className="flex-1 border border-hud-border font-hud text-sm py-1 hover:border-yellow-400 hover:text-yellow-400 transition-colors text-hud-muted disabled:opacity-30 disabled:hover:border-hud-border disabled:hover:text-hud-muted"
-          >
-            -1
+          <button onClick={() => onStatusEffects(id)}
+            className="font-hud text-[10px] border border-hud-border text-hud-muted px-2 py-0.5 hover:border-hud-accent hover:text-hud-accent transition-colors rounded">
+            CONDITIONS ({statusEffects.length})
           </button>
-          <button onClick={() => adjustFavour(1)}
-            className="flex-1 border border-hud-border font-hud text-sm py-1 hover:border-yellow-400 hover:text-yellow-400 transition-colors text-hud-muted"
-          >
-            +1
+          <button onClick={() => onLootAssign(id)}
+            className={`font-hud text-[10px] border px-2 py-0.5 transition-colors rounded ${
+              pendingLootBoxes.length > 0
+                ? 'border-yellow-600 bg-yellow-950/20 text-yellow-400 animate-pulse font-bold'
+                : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'
+            }`}>
+            LOOT{pendingLootBoxes.length > 0 ? ` (${pendingLootBoxes.length})` : ''}
           </button>
+        </div>
+        <div className="flex items-center gap-1">
+          <button onClick={() => adjustFavour(-1)} className="text-[10px] text-hud-muted hover:text-red-500 transition-colors">−</button>
+          <span className="font-hud text-xs text-yellow-400 font-bold" title="AI Favour">⚡{aiFavour ?? 0}</span>
+          <button onClick={() => adjustFavour(1)} className="text-[10px] text-hud-muted hover:text-green-500 transition-colors">+</button>
         </div>
       </div>
 
-      {/* Revive button — only shown when dead */}
-      {!isAlive && (
-        <button onClick={() => send({ type: 'revive', charId: id, hp: Math.ceil(maxHp / 2) })}
-          className="w-full border border-green-800 text-green-400 font-hud text-sm py-2 hover:border-green-600 hover:bg-green-950 transition-colors tracking-wider">
-          ↑ REVIVE ({Math.ceil(maxHp / 2)} HP)
-        </button>
-      )}
-
-      {/* Action buttons */}
-      <div className="flex gap-1 mt-1">
-        <button onClick={() => onLootAssign(id)}
-          aria-label="Assign loot box"
-          title="Assign Loot"
-          className="flex-1 border border-hud-border text-sm font-hud py-1 flex flex-col items-center justify-center hover:border-yellow-600 hover:text-yellow-400 transition-colors text-hud-muted relative">
-          <span>🎁</span>
-          <span className="text-[9px] font-hud text-hud-muted uppercase tracking-wider mt-0.5">LOOT</span>
-          {pendingLootBoxes.length > 0 && <span className="absolute -top-1 -right-1 bg-yellow-600 text-black text-sm w-4 h-4 flex items-center justify-center font-bold">{pendingLootBoxes.length}</span>}
-        </button>
-        <button onClick={() => onStatusEffects(id)}
-          aria-label="Manage status effects"
-          title="AI Favour"
-          className="flex-1 border border-hud-border text-sm font-hud py-1 flex flex-col items-center justify-center hover:border-purple-600 hover:text-purple-400 transition-colors text-hud-muted">
-          <span>⚡</span>
-          <span className="text-[9px] font-hud text-hud-muted uppercase tracking-wider mt-0.5">FAVOUR</span>
+      {/* Edit / Inspect */}
+      <div className="flex gap-1 border-t border-hud-border/40 pt-2">
+        <button onClick={() => onInspect(id)}
+          className="flex-1 font-hud text-[10px] border border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent py-1 transition-colors rounded text-center">
+          INSPECT 🔍
         </button>
         <button onClick={() => onEdit(id)}
-          aria-label="Edit character"
-          title="Edit Notes"
-          className="flex-1 border border-hud-border text-sm font-hud py-1 flex flex-col items-center justify-center hover:border-hud-accent hover:text-hud-accent transition-colors text-hud-muted">
-          <span>✎</span>
-          <span className="text-[9px] font-hud text-hud-muted uppercase tracking-wider mt-0.5">NOTES</span>
-        </button>
-        <button onClick={() => onInspect(id)}
-          aria-label="Inspect character"
-          title="Inspect Character"
-          className="flex-1 border border-hud-border text-sm font-hud py-1 flex flex-col items-center justify-center hover:border-cyan-700 hover:text-cyan-400 transition-colors text-hud-muted">
-          <span>🔍</span>
-          <span className="text-[9px] font-hud text-hud-muted uppercase tracking-wider mt-0.5">INSPECT</span>
+          className="flex-1 font-hud text-[10px] border border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent py-1 transition-colors rounded text-center">
+          EDIT ⚙️
         </button>
       </div>
     </div>

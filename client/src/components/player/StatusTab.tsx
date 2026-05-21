@@ -49,16 +49,13 @@ export function StatusTab({ character, floor, allCharacters, activeCharIds, onIn
     ultimate:'border-yellow-700   text-yellow-400',
   }
 
-  // Hide Top 3 skills strip if empty
-  // Removed old code logic from quick skills bar if it is completely re-designed
-
   return (
     <div className="flex flex-col h-full overflow-hidden">
 
       {/* ── COMBAT STRIP — always visible, no scroll ─────── */}
       <div className="flex-shrink-0 p-4 flex flex-col gap-3 border-b border-hud-border">
 
-        {/* Collapse timer if active (Room Target removed) */}
+        {/* Collapse timer if active */}
         {floor.collapseTimerActive && (
           <div className={`flex items-center justify-between gap-3 border px-3 py-2 ${isCritical ? 'border-red-800 animate-pulse bg-red-950/20' : 'border-hud-border bg-hud-panel'}`}>
             <span className="font-hud text-xs text-hud-muted tracking-widest uppercase">⏱ COLLAPSE TIMER</span>
@@ -75,10 +72,10 @@ export function StatusTab({ character, floor, allCharacters, activeCharIds, onIn
                 <span className="hidden md:inline">LIVE:</span>
                 <span className="text-hud-accent text-sm md:text-base font-extrabold">{viewerCount.toLocaleString()}</span>
               </div>
-              <div className="w-16 h-20 md:w-full md:h-auto md:aspect-[9/16] border border-hud-border overflow-hidden relative">
-                <img src={portrait} alt={crawlerName} className="w-full h-full object-cover object-top opacity-80" />
-                <div className="hidden md:block absolute bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-black to-transparent">
-                   <div className="font-hud text-3xl font-bold tracking-widest uppercase">{crawlerName}</div>
+              <div className="w-16 h-20 md:w-36 md:h-44 md:mx-auto border border-hud-border overflow-hidden relative rounded-lg">
+                <img src={portrait} alt={crawlerName} className="w-full h-full object-cover object-center opacity-80" />
+                <div className="hidden md:block absolute bottom-0 left-0 right-0 p-2 pt-8 bg-gradient-to-t from-black to-transparent">
+                   <div className="font-hud text-sm font-bold tracking-widest uppercase text-center text-hud-accent">{crawlerName}</div>
                 </div>
               </div>
             </div>
@@ -102,8 +99,6 @@ export function StatusTab({ character, floor, allCharacters, activeCharIds, onIn
         </div>
 
         <div className="md:hidden">
-          {/* MP bar — moved into portrait block above */}
-
           {/* Active status effects — inline chips */}
           {statusEffects.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-3">
@@ -129,11 +124,6 @@ export function StatusTab({ character, floor, allCharacters, activeCharIds, onIn
           <div className="mt-4">
             <Hotlist character={character} send={send} onCharacterUpdate={onCharacterUpdate} />
           </div>
-        </div>
-
-        {/* Dice roller — collapsible */}
-        <div className="hidden">
-          {/* We've extracted DiceRoller to a dedicated Hero component layout but keep it here for now if needed. */}
         </div>
       </div>
 
