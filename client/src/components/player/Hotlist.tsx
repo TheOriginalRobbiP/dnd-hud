@@ -34,7 +34,7 @@ interface HotlistProps {
   onCharacterUpdate: () => void
 }
 
-export function Hotlist({ character, send, onCharacterUpdate }: HotlistProps) {
+export function Hotlist({ character, send }: HotlistProps) {
   const [using, setUsing] = useState<string | null>(null)
   
   const carried = character.inventory.filter((i: any) => !i.isEquipped)
@@ -56,27 +56,6 @@ export function Hotlist({ character, send, onCharacterUpdate }: HotlistProps) {
       })
     }
   })
-
-  const toggleHotlist = async (targetItem: any) => {
-    try {
-      const isCurrentlyHotlisted = !targetItem.isHotlisted
-      const targetName = targetItem.name.trim().toLowerCase()
-
-      const inv = character.inventory.map((i: any) => {
-        const matches = i.name.trim().toLowerCase() === targetName;
-        return matches ? { ...i, isHotlisted: isCurrentlyHotlisted } : i;
-      })
-
-      await fetch(`/api/characters/${character.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ inventory: inv })
-      })
-      onCharacterUpdate()
-    } catch (e) {
-      console.error(e)
-    }
-  }
 
   const useItem = (item: any) => {
     setUsing(item.id)
@@ -112,29 +91,25 @@ export function Hotlist({ character, send, onCharacterUpdate }: HotlistProps) {
                 
                 {/* Badge for stacking */}
                 {count > 1 && (
-                  <div className="absolute top-0 right-0 bg-hud-accent text-hud-bg text-[8px] font-extrabold px-1 rounded-bl leading-none py-0.5">
+                  <div className="absolute top-0 right-0 bg-hud-accent text-hud-bg text-[7px] font-extrabold px-1 rounded-bl leading-none py-0.5">
                     {count}
                   </div>
                 )}
 
-                <div className="flex flex-col gap-0.5 mt-0.5">
+                <div className="flex flex-col gap-0.5 mt-auto w-full">
                   {consumable ? (
                     <button
                       onClick={() => useItem(item)}
                       disabled={using === item.id}
-                      className="font-hud text-[8px] text-hud-bg bg-amber-500 hover:bg-amber-400 font-extrabold px-1 py-0.5 rounded leading-none transition-colors"
+                      className="font-hud text-[9px] text-hud-bg bg-amber-500 hover:bg-amber-400 font-extrabold px-1.5 py-1 rounded leading-none transition-colors w-full"
                     >
-                      {using === item.id ? '...' : charges != null ? `U(${charges})` : 'USE'}
+                      {using === item.id ? '...' : charges != null ? `USE(${charges})` : 'USE'}
                     </button>
                   ) : (
-                    <div className="font-hud text-[8px] text-hud-muted italic leading-none">gear</div>
+                    <div className="font-hud text-[9px] text-hud-muted italic leading-none text-center py-1 bg-hud-panel/40 border border-hud-border/30 rounded">
+                      gear
+                    </div>
                   )}
-                  <button
-                    onClick={() => toggleHotlist(item)}
-                    className="font-hud text-[8px] text-hud-muted hover:text-red-500 transition-colors leading-none mt-0.5"
-                  >
-                    UNPIN
-                  </button>
                 </div>
               </div>
             )
