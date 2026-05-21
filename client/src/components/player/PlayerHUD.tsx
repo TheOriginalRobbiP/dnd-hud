@@ -36,19 +36,28 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
   const [inspectCharId, setInspectCharId] = useState<string | null>(null)
   const { toasts, addToast, dismiss } = useToasts()
   const prevGmLogLen = useRef(0)
+  const isFirstSync = useRef(true)
 
   useEffect(() => {
-    if (state.gmLog.length > prevGmLogLen.current) {
-      const newEntries = state.gmLog.slice(prevGmLogLen.current)
-      newEntries.forEach(entry => {
-        const type = entry.includes('Achievement') ? 'achievement'
-          : entry.includes('Loot') ? 'loot'
-          : entry.includes('WARNING') || entry.includes('collapse') ? 'warning'
-          : 'announcement'
-        addToast(entry, type)
-      })
+    if (state.gmLog.length > 0) {
+      if (isFirstSync.current) {
+        prevGmLogLen.current = state.gmLog.length
+        isFirstSync.current = false
+        return
+      }
+
+      if (state.gmLog.length > prevGmLogLen.current) {
+        const newEntries = state.gmLog.slice(prevGmLogLen.current)
+        newEntries.forEach(entry => {
+          const type = entry.includes('Achievement') ? 'achievement'
+            : entry.includes('Loot') ? 'loot'
+            : entry.includes('WARNING') || entry.includes('collapse') ? 'warning'
+            : 'announcement'
+          addToast(entry, type)
+        })
+        prevGmLogLen.current = state.gmLog.length
+      }
     }
-    prevGmLogLen.current = state.gmLog.length
   }, [state.gmLog, addToast])
 
   const inspectChar = inspectCharId ? state.characters.find(c => c.id === inspectCharId) ?? null : null
