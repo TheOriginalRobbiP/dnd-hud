@@ -22,6 +22,24 @@ charactersRouter.get('/:id', async (c) => {
 // POST /api/characters — create (GM only)
 charactersRouter.post('/', async (c) => {
   const body = await c.req.json()
+
+  const inventory = body.inventory ?? []
+  let equipment = body.equipment ?? {}
+
+  // If equipment is empty or not provided, but starting inventory exists,
+  // dynamically build the equipment slots to auto-wear equipped starting gear
+  if (Object.keys(equipment).length === 0 && inventory.length > 0) {
+    const slots = ['head', 'face', 'neck', 'chest', 'arms', 'hands', 'fingers', 'legs', 'feet', 'toes', 'nipples', 'mainHand', 'offHand']
+    for (const slot of slots) {
+      equipment[slot] = null
+    }
+    for (const item of inventory) {
+      if (item.isEquipped && item.equippedSlot && slots.includes(item.equippedSlot)) {
+        equipment[item.equippedSlot] = item
+      }
+    }
+  }
+
   const [created] = await db.insert(characters).values({
     crawlerName: body.crawlerName,
     playerName: body.playerName,
@@ -31,8 +49,8 @@ charactersRouter.post('/', async (c) => {
     maxMp: body.maxMp ?? 0,
     stats: body.stats ?? { STR: 4, DEX: 4, CON: 4, INT: 4, CHA: 4, WIS: 4 },
     skills: body.skills ?? [],
-    equipment: body.equipment ?? {},
-    inventory: body.inventory ?? [],
+    equipment,
+    inventory,
     achievements: body.achievements ?? [],
     viewerCount: body.viewerCount ?? 1000,
     sponsors: body.sponsors ?? [],

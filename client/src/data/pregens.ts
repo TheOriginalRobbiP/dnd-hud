@@ -12,6 +12,7 @@ export interface PregenCrawler {
   maxMp: number
   skills: { name: string; level: number; effortType: 'basic' | 'weapon' | 'magic' }[]
   notes: string
+  inventory?: any[]
 }
 
 export const PREGENS: PregenCrawler[] = [
@@ -30,6 +31,13 @@ export const PREGENS: PregenCrawler[] = [
       { name: 'Unarmed Combat', level: 3, effortType: 'weapon' },
       { name: 'Arcane Bolt', level: 1, effortType: 'magic' },
     ],
+    inventory: [
+      { name: "Leather Handbag", description: "Heavy. Something inside it — she won't say what. Weapon effort in melee.", tier: 'uncommon', isEquipped: true, equippedSlot: 'mainHand', fromLootBox: false, lootBoxTier: null },
+      { name: "Reading Glasses", description: "+1 INT when worn. She doesn't need them for dungeon crawling. She's keeping them on.", tier: 'common', isEquipped: true, equippedSlot: 'face', fromLootBox: false, lootBoxTier: null },
+      { name: "Werther's Original", description: "Heals 1 HP. She has several. Non-stackable (dignity reasons).", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null, isConsumable: true, hpEffect: 1, charges: null },
+      { name: "Werther's Original", description: "Heals 1 HP.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null, isConsumable: true, hpEffect: 1, charges: null },
+      { name: "Werther's Original", description: "Heals 1 HP.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null, isConsumable: true, hpEffect: 1, charges: null },
+    ],
     notes: 'Pre-dungeon: Retired librarian. Has read three books about dungeons. Insists this gives her an advantage.',
   },
   {
@@ -46,6 +54,11 @@ export const PREGENS: PregenCrawler[] = [
       { name: 'Knife Fighting', level: 3, effortType: 'weapon' },
       { name: 'Unarmed Combat', level: 3, effortType: 'weapon' },
       { name: 'Lockpicking', level: 2, effortType: 'basic' },
+    ],
+    inventory: [
+      { name: "High-Vis Vest", description: "Chest slot. +2 to being spotted (good or bad). The System has flagged this as valid equipment. No one knows why.", tier: 'common', isEquipped: true, equippedSlot: 'chest', fromLootBox: false, lootBoxTier: null },
+      { name: "Key Fob (Van, No Van)", description: "He still has the key. The van is gone. The wetware won't let him delete it.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null },
+      { name: "Thermos (Coffee, Lukewarm)", description: "3 uses. Each use: restore 1 MP or gain Focused Buff (+1 to next INT roll).", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null, isConsumable: true, mpEffect: 1, charges: 3 },
     ],
     notes: 'Pre-dungeon: Barback. Nobody knows what\'s in the glowing cyan drink. Including Miles.',
   },
@@ -64,6 +77,11 @@ export const PREGENS: PregenCrawler[] = [
       { name: 'Athletics', level: 3, effortType: 'basic' },
       { name: 'Endurance', level: 2, effortType: 'basic' },
     ],
+    inventory: [
+      { name: "Protein Shaker (Empty)", description: "Heavy plastic. Weapon (basic effort). Can be refilled from dungeon water sources for unclear benefit.", tier: 'common', isEquipped: true, equippedSlot: 'offHand', fromLootBox: false, lootBoxTier: null },
+      { name: "Resistance Band", description: "5m of latex. Utility — tie things, trip things, makeshift tourniquet.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null },
+      { name: "Gym Vest", description: "Chest slot. No armour value. +1 CHA. Impressively cut.", tier: 'common', isEquipped: true, equippedSlot: 'chest', fromLootBox: false, lootBoxTier: null },
+    ],
     notes: 'Pre-dungeon: Strongman competitor. Currently holds three regional arm-wrestling titles. Plans to win a fourth.',
   },
   {
@@ -81,6 +99,11 @@ export const PREGENS: PregenCrawler[] = [
       { name: 'First Aid', level: 2, effortType: 'basic' },
       { name: 'Charm', level: 2, effortType: 'basic' },
       { name: 'Identify', level: 1, effortType: 'magic' },
+    ],
+    inventory: [
+      { name: "Library Cardigan", description: "Chest slot. +1 INT. Smells of old books. She won't take it off.", tier: 'common', isEquipped: true, equippedSlot: 'chest', fromLootBox: false, lootBoxTier: null },
+      { name: "Notebook & Pen", description: "She's been writing everything down since the sky cracked. The wetware offers digital notes. She prefers paper.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null },
+      { name: "Reading Light (Clip-On)", description: "5-hour battery. Useful in dark rooms. She brought it for her commute book.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null },
     ],
     notes: 'Pre-dungeon: Journalist. The notebook is already half full of observations. She will not stop writing.',
   },

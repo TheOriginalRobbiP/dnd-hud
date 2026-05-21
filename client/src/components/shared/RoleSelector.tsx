@@ -58,6 +58,7 @@ export function RoleSelector({ characters, sessionActive, onSelect, onCharacterC
             maxMp: pregen.maxMp,
             stats: pregen.stats,
             skills: pregen.skills.map(s => ({ ...s, id: crypto.randomUUID(), description: '' })),
+            inventory: pregen.inventory ? pregen.inventory.map(item => ({ ...item, id: crypto.randomUUID() })) : [],
             viewerCount: 500,
             notes: pregen.notes,
           }),
