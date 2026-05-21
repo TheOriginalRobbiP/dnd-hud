@@ -239,7 +239,14 @@ export function RoleSelector({ characters, sessionActive, onSelect, onCharacterC
           return (
             <button
               key={i}
-              onClick={() => !isDisabled && setStage({ type: 'slot', slot: i + 1 })}
+              onClick={() => {
+                if (isDisabled) return
+                if (char && char.isActive) {
+                  onSelect(`player:${char.id}`)
+                } else {
+                  setStage({ type: 'slot', slot: i + 1 })
+                }
+              }}
               disabled={isDisabled}
               className={`py-3 px-4 border font-hud text-left transition-colors flex flex-col ${
                 isDisabled
