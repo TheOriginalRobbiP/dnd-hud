@@ -99,7 +99,15 @@ function App() {
   return (
     <>
       {connBadge}
-      <PlayerHUD character={character} state={state} send={send} dmMessages={dmMessages} onDMRead={onDMRead} onDMEcho={onDM} />
+      <PlayerHUD
+        character={character}
+        state={state}
+        send={send}
+        dmMessages={dmMessages}
+        onDMRead={onDMRead}
+        onDMEcho={onDM}
+        activeCharIds={activeCharIds}
+      />
       <ToastFeed toasts={toasts} onDismiss={dismissToast} />
     </>
   )

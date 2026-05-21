@@ -16,10 +16,11 @@ interface StatusTabProps {
   character: Character
   floor: FloorState
   allCharacters: Character[]
+  activeCharIds: string[]
   onInspect?: (charId: string) => void
 }
 
-export function StatusTab({ character, floor, allCharacters, onInspect }: StatusTabProps) {
+export function StatusTab({ character, floor, allCharacters, activeCharIds, onInspect }: StatusTabProps) {
   const { crawlerName, hp, maxHp, mp, maxMp, stats, statusEffects, skills, aiFavour } = character
   const portrait = getCrawlerPortrait(crawlerName)
   const [timerSecs, setTimerSecs] = useState(0)
@@ -185,7 +186,9 @@ export function StatusTab({ character, floor, allCharacters, onInspect }: Status
         </div>
 
         {/* Party status */}
-        <PartySidebar characters={allCharacters} myCharId={character.id} onInspect={onInspect} />
+        {allCharacters.some(c => c.id !== character.id && activeCharIds.includes(c.id)) && (
+          <PartySidebar characters={allCharacters} myCharId={character.id} activeCharIds={activeCharIds} onInspect={onInspect} />
+        )}
       </div>
     </div>
   )

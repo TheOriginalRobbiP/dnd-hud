@@ -1,5 +1,16 @@
 # Project Status - dnd-hud
 
+## Session checkpoint 2026-05-21T07:30:00Z
+- **Focus**: Refining the player dashboard party status.
+- **Done this session**:
+  - Filtered the Player HUD's Party Status sidebar (`PartySidebar`) to show only other crawlers who are currently online and active in the WebSocket session (`activeCharIds`).
+  - Passed `activeCharIds` from `App.tsx` down through `PlayerHUD` and `StatusTab` to `PartySidebar`.
+  - Added parent-side conditional rendering inside `PlayerHUD` and `StatusTab` to completely hide the Party Status container and border/padding elements on both mobile and desktop if there are no other connected party members online, avoiding empty layout boxes.
+  - Successfully ran a full TypeScript compiler check (`npm run build`), confirming 100% clean build.
+- **Open / next**:
+  - Refine player dashboard layout, fonts, and colors to match DCC/Bopca specifications.
+- **Blockers**: None.
+
 ## Session checkpoint 2026-05-20T18:45:00Z
 - **Focus**: Overhauling the shared display screen (`/display` route) with a dynamic combined dashboard.
 - **Done this session**:

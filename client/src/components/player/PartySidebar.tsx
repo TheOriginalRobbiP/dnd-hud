@@ -4,12 +4,13 @@ import { useState } from 'react'
 interface PartySidebarProps {
   characters: Character[]
   myCharId: string
+  activeCharIds: string[]
   onInspect?: (charId: string) => void
 }
 
-export function PartySidebar({ characters, myCharId, onInspect }: PartySidebarProps) {
+export function PartySidebar({ characters, myCharId, activeCharIds, onInspect }: PartySidebarProps) {
   const [open, setOpen] = useState(false)
-  const others = characters.filter(c => c.id !== myCharId)
+  const others = characters.filter(c => c.id !== myCharId && activeCharIds.includes(c.id))
   if (others.length === 0) return null
 
   return (

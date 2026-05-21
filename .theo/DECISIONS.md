@@ -7,4 +7,6 @@
 2026-05-20 | Integrate and expose direct messaging for GM | Connected the dmMessages, onDMRead, and onDMEcho hooks to GMDashboard, rendering the full CharacterBar (containing the DMPanel modal trigger) in place of the static CollapsedCharStrip. GMs can toggle between collapsed and expanded layouts on both desktop and mobile.
 2026-05-20 | Responsive mobile dashboard scrolling | Replaced the rigid h-screen overflow-hidden viewport constraint on mobile with a min-h-screen overflow-y-auto schema in GMDashboard.tsx. This lets the mobile layouts stretch naturally, allowing GMs to scroll down comfortably to view maps and logs beneath the expanded panels, while preserving the fixed-height layout on desktop screens.
 2026-05-20 | Combined shared display screen visual overhaul | Replaced the simple static room card display with a combined layout featuring a live auto-scaling SVG Fog-of-War Map, real-time Encounter Tracker, scrolling Dungeon Log Feed ticker, and full-screen achievement popup animation.
+2026-05-21 | WebSocket-scoped Party Status filtering | Filtered the Player HUD's Party Status sidebar by active connected WebSocket player IDs (activeCharIds) to hide inactive database-seeded pre-gens and show only real connected players.
+
 

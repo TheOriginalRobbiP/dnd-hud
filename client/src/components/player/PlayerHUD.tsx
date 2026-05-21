@@ -28,9 +28,10 @@ interface PlayerHUDProps {
   dmMessages: DirectMessage[]
   onDMRead: () => void
   onDMEcho: (dm: DirectMessage) => void
+  activeCharIds: string[]
 }
 
-export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEcho }: PlayerHUDProps) {
+export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEcho, activeCharIds }: PlayerHUDProps) {
   const [tab, setTab] = useState<Tab>('status')
   const [inspectCharId, setInspectCharId] = useState<string | null>(null)
   const { toasts, addToast, dismiss } = useToasts()
@@ -115,7 +116,7 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
           {/* Left Column - Always active on mobile for all tabs, acts as left rail on desktop */}
           <div className="md:border-r md:border-hud-border md:overflow-y-auto h-full">
             <div className={tab === 'status' ? 'block' : 'hidden md:block'}>
-              <StatusTab character={character} floor={state.floor} allCharacters={state.characters} onInspect={setInspectCharId} />
+              <StatusTab character={character} floor={state.floor} allCharacters={state.characters} activeCharIds={activeCharIds} onInspect={setInspectCharId} />
             </div>
             <div className={tab === 'skills' ? 'block' : 'hidden'}>
               <SkillsTab character={character} />
@@ -159,9 +160,11 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
           <div className="hidden md:flex md:flex-col md:border-l md:border-hud-border md:overflow-y-auto md:bg-hud-panel">
              <div className="flex-1 overflow-y-auto flex flex-col">
                {/* Right column handles Party, Inventory, Fame directly inline */}
-               <div className="p-4 border-b border-hud-border">
-                 <PartySidebar characters={state.characters} myCharId={character.id} onInspect={setInspectCharId} />
-               </div>
+               {state.characters.some(c => c.id !== character.id && activeCharIds.includes(c.id)) && (
+                 <div className="p-4 border-b border-hud-border">
+                   <PartySidebar characters={state.characters} myCharId={character.id} activeCharIds={activeCharIds} onInspect={setInspectCharId} />
+                 </div>
+               )}
                
                <div className="p-4 border-b border-hud-border">
                  <InventoryTab character={character} lootQueue={state.lootQueue} send={send} onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} />
