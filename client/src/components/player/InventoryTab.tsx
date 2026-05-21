@@ -66,8 +66,25 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
   const carried = character.inventory.filter((i: any) => !i.isEquipped)
   const equipped = character.equipment as Record<string, any>
 
-  // Filter carried items into hotlisted vs backpack
+  // Filter carried items into hotlisted vs backpack (unhotlisted general inventory)
   const backpack = carried.filter((i: any) => !i.isHotlisted)
+
+  // Group identical items in the carried inventory
+  const stackedBackpack: { key: string; items: any[]; primary: any }[] = []
+  
+  backpack.forEach((item: any) => {
+    const key = `${item.name.trim().toLowerCase()}|${item.tier ?? 'common'}|${item.description ?? ''}`
+    const existing = stackedBackpack.find(s => s.key === key)
+    if (existing) {
+      existing.items.push(item)
+    } else {
+      stackedBackpack.push({
+        key,
+        items: [item],
+        primary: item
+      })
+    }
+  })
 
   const showLoot = !hideSections.includes('loot')
   const showEquip = !hideSections.includes('equipment')
@@ -249,22 +266,24 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
         </div>
       )}
 
-      {/* Carried items (HEAVY BACKPACK) */}
+      {/* Carried items (HEAVY INVENTORY) */}
       {showBag && (
         <div>
           <button
             onClick={() => setShowBackpack(!showBackpack)}
             className="w-full font-hud text-sm text-hud-muted tracking-widest border-b border-hud-border pb-1 mb-3 flex justify-between items-center hover:text-hud-accent transition-colors"
           >
-            <span>🎒 HEAVY BACKPACK ({backpack.length} ITEMS)</span>
+            <span>🎒 HEAVY INVENTORY ({backpack.length} ITEMS)</span>
             <span>{showBackpack ? '▲' : '▼'}</span>
           </button>
           {showBackpack && (
             <div>
               {backpack.length === 0
-                ? <p className="font-hud text-sm text-hud-muted italic">Backpack empty. The System judges you.</p>
+                ? <p className="font-hud text-sm text-hud-muted italic">Inventory empty. The System judges you.</p>
                 : <div className="flex flex-col gap-2 animate-fadeIn">
-                    {backpack.map((item: any) => {
+                    {stackedBackpack.map((stack) => {
+                      const item = stack.primary
+                      const count = stack.items.length
                       const consumable = isConsumableItem(item)
                       const { hpEffect, mpEffect } = parseEffect(item)
                       const hasAutoEffect = hpEffect != null || mpEffect != null
@@ -277,6 +296,11 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
                             className="w-full flex justify-between items-center p-3 text-left gap-2 hover:bg-hud-panel/60 transition-colors">
                             <div className="flex items-center gap-2 min-w-0">
                               <span className="font-hud text-sm text-hud-text truncate font-bold">{item.name}</span>
+                              {count > 1 && (
+                                <span className="font-hud text-xs bg-hud-border/80 border border-hud-border text-hud-accent px-1.5 py-0.5 rounded-sm font-extrabold flex-shrink-0">
+                                  ×{count}
+                                </span>
+                              )}
                               {consumable && (
                                 <span className="font-hud text-xs border border-amber-800 text-amber-500 px-1 flex-shrink-0 font-bold">
                                   {charges != null ? `${charges}×` : 'USE'}
