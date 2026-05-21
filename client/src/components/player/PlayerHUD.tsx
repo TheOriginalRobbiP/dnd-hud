@@ -13,6 +13,7 @@ import { DiceHero } from './DiceHero'
 import { PartySidebar } from './PartySidebar'
 import { RulesTab } from './RulesTab'
 import { Hotlist } from './Hotlist'
+import { getModifiedCharacter } from '../../utils/modifiers'
 
 type Tab = 'status' | 'skills' | 'fame' | 'rules'
 const TABS: { id: Tab; label: string }[] = [
@@ -33,7 +34,7 @@ interface PlayerHUDProps {
   onCharacterUpdate?: () => void
 }
 
-export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEcho, activeCharIds }: PlayerHUDProps) {
+export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, onDMRead, onDMEcho, activeCharIds }: PlayerHUDProps) {
   const [tab, setTab] = useState<Tab>('status')
   const [showRulesModal, setShowRulesModal] = useState(false)
   const [showInventoryModal, setShowInventoryModal] = useState(false)
@@ -42,6 +43,8 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
   const { toasts, addToast, dismiss } = useToasts()
   const prevGmLogLen = useRef(0)
   const isFirstSync = useRef(true)
+
+  const character = getModifiedCharacter(rawCharacter)
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)

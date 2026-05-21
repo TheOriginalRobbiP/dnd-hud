@@ -1,5 +1,6 @@
 import type { Character } from '../../types'
 import { useState } from 'react'
+import { getModifiedCharacter } from '../../utils/modifiers'
 
 const EFFORT_STYLES: Record<string, { border: string; text: string; label: string }> = {
   basic:    { border: 'border-hud-border',  text: 'text-hud-muted',  label: 'BASIC'    },
@@ -28,9 +29,12 @@ function LevelPips({ level, max = 15 }: { level: number; max?: number }) {
   )
 }
 
-export function SkillsTab({ character }: { character: Character }) {
+export function SkillsTab({ character: rawCharacter }: { character: Character }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [showHandbook, setShowHandbook] = useState(false)
+  
+  const character = getModifiedCharacter(rawCharacter)
+
   const toggle = (id: string) => setExpanded(p => {
     const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n
   })
@@ -56,11 +60,27 @@ export function SkillsTab({ character }: { character: Character }) {
         <div className="grid grid-cols-5 gap-1.5">
           {STATS.map(stat => {
             const val = (character.stats as any)[stat] ?? 4
+            const baseVal = (rawCharacter.stats as any)[stat] ?? 4
+            const diff = val - baseVal
+            
             const modStr = getModStr(val)
+            
+            let valColor = 'text-hud-text'
+            let diffStr = ''
+            if (diff > 0) {
+              valColor = 'text-green-400 font-extrabold'
+              diffStr = `(+${diff})`
+            } else if (diff < 0) {
+              valColor = 'text-red-400 font-extrabold'
+              diffStr = `(${diff})`
+            }
+
             return (
-              <div key={stat} className="border border-hud-border py-2 text-center bg-hud-panel">
+              <div key={stat} className="border border-hud-border py-2 text-center bg-hud-panel rounded">
                 <div className="font-hud text-[10px] text-hud-muted uppercase" title={STAT_LABELS[stat]}>{stat}</div>
-                <div className="font-hud text-sm text-hud-text font-bold mt-0.5">{val}</div>
+                <div className={`font-hud text-sm font-bold mt-0.5 ${valColor}`}>
+                  {val} <span className="text-[10px] font-normal block sm:inline">{diffStr}</span>
+                </div>
                 <div className="font-hud text-xs text-hud-accent font-extrabold mt-0.5" title="Roll Modifier">{modStr}</div>
               </div>
             )
@@ -113,7 +133,7 @@ export function SkillsTab({ character }: { character: Character }) {
       {/* Class / Race — compact */}
       <div className="flex gap-2">
         {['class','race'].map(field => (
-          <div key={field} className="flex-1 border border-hud-border px-3 py-2 bg-hud-panel">
+          <div key={field} className="flex-1 border border-hud-border px-3 py-2 bg-hud-panel rounded">
             <div className="font-hud text-xs text-hud-muted tracking-wider">{field.toUpperCase()}</div>
             {(character as any)[field]
               ? <div className="font-hud text-sm text-hud-accent mt-0.5">{(character as any)[field]}</div>
@@ -134,67 +154,96 @@ export function SkillsTab({ character }: { character: Character }) {
                   {style.label}
                 </div>
                 <div className="flex flex-col gap-2">
-                  {skills.map((s: any) => (
-                    <div key={s.id} onClick={() => toggle(s.id)}
-                      className={`border px-3 py-2 cursor-pointer bg-hud-panel transition-colors ${expanded.has(s.id) ? style.border : 'border-hud-border hover:border-hud-accent'}`}>
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="font-hud text-sm text-hud-text leading-tight font-bold">{s.name}</span>
-                        <span className={`font-hud text-xs flex-shrink-0 mt-0.5 ${style.text}`}>Lv {s.level}</span>
-                      </div>
-                      <LevelPips level={s.level} />
-                      {s.level >= 15 && s.specialisation && (
-                        <div className="font-hud text-xs text-yellow-400 mt-1">✦ {s.specialisation}</div>
-                      )}
-                      {expanded.has(s.id) && (
-                        <div className="font-hud text-xs text-hud-muted mt-2 pt-2 border-t border-hud-border/40 leading-relaxed flex flex-col gap-2">
-                          {s.description && <p className="italic">{s.description}</p>}
-                          <div className="bg-hud-bg/50 border border-hud-border/30 p-2.5 rounded flex flex-col gap-1 text-[11px]">
-                            <div className="text-hud-accent font-bold uppercase tracking-wider text-[9px] mb-0.5">Wetware Roll Calculations:</div>
-                            {(() => {
-                              const strVal = character.stats.STR ?? 4
-                              const dexVal = character.stats.DEX ?? 4
-                              const intVal = character.stats.INT ?? 4
-                              const chaVal = character.stats.CHA ?? 4
-                              
-                              let checkStr = ""
-                              let effortStr = ""
+                  {skills.map((s: any) => {
+                    const baseSkill = rawCharacter.skills.find((bs: any) => bs.id === s.id)
+                    const baseLevel = baseSkill?.level ?? s.level
+                    const diff = s.level - baseLevel
+                    
+                    let levelColor = style.text
+                    let diffStr = ''
+                    if (diff > 0) {
+                      levelColor = 'text-green-400 font-extrabold'
+                      diffStr = ` (+${diff})`
+                    }
 
-                              if (type === 'weapon') {
-                                const higherVal = Math.max(strVal, dexVal)
-                                const higherStat = strVal >= dexVal ? 'STR' : 'DEX'
-                                const mod = higherVal - 4
-                                checkStr = `d20 + ${higherStat} (${mod >= 0 ? '+' : ''}${mod}) + Skill (${s.level}) = d20 + ${mod + s.level}`
-                                effortStr = `1d6 (Weapon Dice) + ${higherStat} (${mod >= 0 ? '+' : ''}${mod})`
-                              } else if (type === 'magic') {
-                                const mod = intVal - 4
-                                checkStr = `d20 + INT (${mod >= 0 ? '+' : ''}${mod}) + Skill (${s.level}) = d20 + ${mod + s.level}`
-                                effortStr = `1d10 (Magic Dice) + INT (${mod >= 0 ? '+' : ''}${mod})`
-                              } else {
-                                // basic / ultimate
-                                const mod = Math.max(strVal, dexVal, intVal, chaVal) - 4
-                                const bestStat = strVal - 4 === mod ? 'STR' : dexVal - 4 === mod ? 'DEX' : intVal - 4 === mod ? 'INT' : 'CHA'
-                                checkStr = `d20 + ${bestStat} (${mod >= 0 ? '+' : ''}${mod}) + Skill (${s.level}) = d20 + ${mod + s.level}`
-                                effortStr = `1d4 (Basic Dice) + ${bestStat} (${mod >= 0 ? '+' : ''}${mod})`
-                              }
-
-                              return (
-                                <div className="space-y-1 font-mono">
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-hud-muted text-[10px]">Action Check:</span>
-                                    <span className="text-hud-text font-bold">{checkStr}</span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-hud-muted text-[10px]">Effort Roll:</span>
-                                    <span className="text-hud-text font-bold">{effortStr}</span>
-                                  </div>
-                                </div>
-                              )
-                            })()}
+                    return (
+                      <div key={s.id} onClick={() => toggle(s.id)}
+                        className={`border px-3 py-2 cursor-pointer bg-hud-panel transition-colors rounded ${
+                          s.isGranted ? 'border-yellow-700/50 bg-yellow-950/5' : ''
+                        } ${expanded.has(s.id) ? style.border : 'border-hud-border hover:border-hud-accent'}`}>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="font-hud text-sm text-hud-text leading-tight font-bold truncate">{s.name}</span>
+                            {s.isGranted && (
+                              <span className="font-hud text-[8px] border border-yellow-700 text-yellow-400 px-1 font-bold bg-yellow-950/20 rounded-sm leading-none py-0.5 uppercase tracking-wider flex items-center gap-0.5 shrink-0">
+                                <span>✦</span> GEAR
+                              </span>
+                            )}
                           </div>
+                          <span className={`font-hud text-xs flex-shrink-0 mt-0.5 ${levelColor}`}>
+                            Lv {s.level}{diffStr}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                  ))}
+                        <LevelPips level={s.level} />
+                        {s.level >= 15 && s.specialisation && (
+                          <div className="font-hud text-xs text-yellow-400 mt-1">✦ {s.specialisation}</div>
+                        )}
+                        {s.isGranted && (
+                          <div className="font-hud text-[10px] text-yellow-500/80 italic mt-1.5">
+                            Granted by equipped: {s.grantedBy}
+                          </div>
+                        )}
+                        {expanded.has(s.id) && (
+                          <div className="font-hud text-xs text-hud-muted mt-2 pt-2 border-t border-hud-border/40 leading-relaxed flex flex-col gap-2">
+                            {s.description && <p className="italic">{s.description}</p>}
+                            <div className="bg-hud-bg/50 border border-hud-border/30 p-2.5 rounded flex flex-col gap-1 text-[11px]">
+                              <div className="text-hud-accent font-bold uppercase tracking-wider text-[9px] mb-0.5">Wetware Roll Calculations:</div>
+                              {(() => {
+                                const strVal = character.stats.STR ?? 4
+                                const dexVal = character.stats.DEX ?? 4
+                                const intVal = character.stats.INT ?? 4
+                                const chaVal = character.stats.CHA ?? 4
+                                
+                                let checkStr = ""
+                                let effortStr = ""
+
+                                if (type === 'weapon') {
+                                  const higherVal = Math.max(strVal, dexVal)
+                                  const higherStat = strVal >= dexVal ? 'STR' : 'DEX'
+                                  const mod = higherVal - 4
+                                  checkStr = `d20 + ${higherStat} (${mod >= 0 ? '+' : ''}${mod}) + Skill (${s.level}) = d20 + ${mod + s.level}`
+                                  effortStr = `1d6 (Weapon Dice) + ${higherStat} (${mod >= 0 ? '+' : ''}${mod})`
+                                } else if (type === 'magic') {
+                                  const mod = intVal - 4
+                                  checkStr = `d20 + INT (${mod >= 0 ? '+' : ''}${mod}) + Skill (${s.level}) = d20 + ${mod + s.level}`
+                                  effortStr = `1d10 (Magic Dice) + INT (${mod >= 0 ? '+' : ''}${mod})`
+                                } else {
+                                  // basic / ultimate
+                                  const mod = Math.max(strVal, dexVal, intVal, chaVal) - 4
+                                  const bestStat = strVal - 4 === mod ? 'STR' : dexVal - 4 === mod ? 'DEX' : intVal - 4 === mod ? 'INT' : 'CHA'
+                                  checkStr = `d20 + ${bestStat} (${mod >= 0 ? '+' : ''}${mod}) + Skill (${s.level}) = d20 + ${mod + s.level}`
+                                  effortStr = `1d4 (Basic Dice) + ${bestStat} (${mod >= 0 ? '+' : ''}${mod})`
+                                }
+
+                                return (
+                                  <div className="space-y-1 font-mono">
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-hud-muted text-[10px]">Action Check:</span>
+                                      <span className="text-hud-text font-bold">{checkStr}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-hud-muted text-[10px]">Effort Roll:</span>
+                                      <span className="text-hud-text font-bold">{effortStr}</span>
+                                    </div>
+                                  </div>
+                                )
+                              })()}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             )
