@@ -67,10 +67,10 @@ export function StatusTab({ character, floor, allCharacters, activeCharIds, onIn
         <div className="flex gap-3 items-start md:flex-col md:items-stretch">
           {portrait && (
             <div className="flex flex-col gap-1 flex-shrink-0 md:w-full">
-              <div className="font-hud text-xs text-hud-text tracking-widest uppercase leading-none flex items-center gap-2 px-2 py-2 border border-hud-border bg-hud-panel rounded justify-center font-bold">
+              <div className="font-hud text-xs text-hud-text tracking-widest uppercase leading-none flex items-center gap-1.5 px-1.5 py-1.5 border border-hud-border bg-hud-panel rounded justify-center font-bold">
                 <span className="text-red-500 animate-pulse text-sm">●</span>
-                <span>LIVE:</span>
-                <span className="text-hud-accent text-xs font-extrabold">{viewerCount.toLocaleString()}</span>
+                <span className="hidden md:inline">LIVE:</span>
+                <span className="text-hud-accent text-sm md:text-base font-extrabold">{viewerCount.toLocaleString()}</span>
               </div>
               <div className="w-16 h-20 md:w-full md:h-auto md:aspect-[9/16] border border-hud-border overflow-hidden relative">
                 <img src={portrait} alt={crawlerName} className="w-full h-full object-cover object-top opacity-80" />
