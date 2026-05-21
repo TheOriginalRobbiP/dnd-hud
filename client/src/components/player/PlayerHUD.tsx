@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import type { Character, AppState, WSMessage } from '../../types'
-import { ToastOverlay } from '../shared/ToastOverlay'
 import { DMPanel } from '../shared/DMPanel'
 import { InspectModal } from '../shared/InspectModal'
 import type { DirectMessage } from '../../hooks/useWebSocket'
-import { useToasts } from '../../hooks/useToasts'
 import { StatusTab } from './StatusTab'
 import { SkillsTab } from './SkillsTab'
 import { InventoryTab } from './InventoryTab'
@@ -48,10 +46,8 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
   const [inspectCharId, setInspectCharId] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const [actionLog, setActionLog] = useState<ActionLogEntry[]>([])
-  const { toasts, addToast, dismiss } = useToasts()
-  const prevGmLogLen = useRef(0)
-  const isFirstSync = useRef(true)
-
+  
+  const lastProcessedLog = useRef<string | null>(null)
   const character = getModifiedCharacter(rawCharacter)
 
   // 1. Persist action log to local storage keyed on character ID
@@ -88,14 +84,16 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // 3. Process incoming global logs and intercept character-specific statements
+  // 3. Process incoming global logs and intercept character-specific statements for the Crawler Log
   useEffect(() => {
     if (state.gmLog.length > 0) {
-      if (isFirstSync.current) {
-        prevGmLogLen.current = state.gmLog.length
-        isFirstSync.current = false
+      const latestLog = state.gmLog[0]
 
-        // Backfill log mentions on initial connection if they are empty
+      // Initial anchor point
+      if (lastProcessedLog.current === null) {
+        lastProcessedLog.current = latestLog
+
+        // Populate initial action log from the GM log by filtering for this character's name
         const initialLogs = state.gmLog
           .filter(entry => entry.toLowerCase().includes(character.crawlerName.toLowerCase()))
           .map(entry => ({
@@ -106,7 +104,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
           }))
         if (initialLogs.length > 0) {
           setActionLog(prev => {
-            if (prev.length > 0) return prev // do not overwrite saved cache
+            if (prev.length > 0) return prev // keep existing saved cache if loaded
             const updated = initialLogs.reverse().slice(0, 50)
             localStorage.setItem(`hud:log:${character.id}`, JSON.stringify(updated))
             return updated
@@ -115,17 +113,13 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
         return
       }
 
-      if (state.gmLog.length > prevGmLogLen.current) {
-        const newEntries = state.gmLog.slice(prevGmLogLen.current)
-        newEntries.forEach(entry => {
-          // Log to global system feed as toast
-          const type = entry.includes('Achievement') ? 'achievement'
-            : entry.includes('Loot') ? 'loot'
-            : entry.includes('WARNING') || entry.includes('collapse') ? 'warning'
-            : 'announcement'
-          addToast(entry, type)
+      // Check if a new log has arrived (independent of array length constraints)
+      if (latestLog !== lastProcessedLog.current) {
+        const lastIdx = state.gmLog.indexOf(lastProcessedLog.current)
+        const newEntries = lastIdx === -1 ? state.gmLog : state.gmLog.slice(0, lastIdx)
 
-          // Intercept and log in-character actions locally
+        // Process new entries chronologically (oldest to newest)
+        newEntries.reverse().forEach(entry => {
           if (entry.toLowerCase().includes(character.crawlerName.toLowerCase())) {
             const crawlerLogType = entry.includes('rolled') ? 'roll'
               : entry.includes('Achievement') ? 'system'
@@ -134,10 +128,11 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
             addLogEntry(entry, crawlerLogType)
           }
         })
-        prevGmLogLen.current = state.gmLog.length
+
+        lastProcessedLog.current = latestLog
       }
     }
-  }, [state.gmLog, addToast, character.crawlerName, character.id])
+  }, [state.gmLog, character.crawlerName, character.id])
 
   const inspectChar = inspectCharId ? state.characters.find(c => c.id === inspectCharId) ?? null : null
 
@@ -180,7 +175,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
         </div>
       </div>
 
-      {/* Desktop-only hidden header logic would go here if we had one, but we use a distinct grid for desktop */}
+      {/* Desktop-only Header */}
       <div className="hidden md:flex items-center justify-between p-2 border-b border-hud-border bg-hud-panel">
         <div className="flex items-center gap-4 px-2">
           <button
@@ -315,7 +310,6 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
         })}
       </div>
 
-      <ToastOverlay toasts={toasts} onDismiss={dismiss} />
       {inspectChar && <InspectModal character={inspectChar} onClose={() => setInspectCharId(null)} hideNotes />}
       
       {/* Desktop-only Rules Modal overlay */}
