@@ -273,7 +273,7 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
             style={{ maxHeight: '90vh' }}
             onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-hud-border flex-shrink-0 bg-hud-panel/40">
-              <div className="font-hud text-xs text-hud-accent tracking-widest font-bold uppercase">🎒 {isMobile ? 'CRAWLER INVENTORY' : '🎒 HEAVY INVENTORY'}</div>
+              <div className="font-hud text-xs text-hud-accent tracking-widest font-bold uppercase">🎒 {isMobile ? 'CRAWLER INVENTORY' : '🎒 INVENTORY'}</div>
               <button onClick={() => setShowInventoryModal(false)} className="text-hud-muted hover:text-hp-low font-hud text-xs font-bold border border-hud-border/40 px-2 py-0.5 hover:border-red-900 rounded">✕ CLOSE</button>
             </div>
             <div className="flex-1 overflow-y-auto">

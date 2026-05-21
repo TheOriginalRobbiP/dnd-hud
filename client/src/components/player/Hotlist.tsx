@@ -40,11 +40,11 @@ export function Hotlist({ character, send, onCharacterUpdate }: HotlistProps) {
   const carried = character.inventory.filter((i: any) => !i.isEquipped)
   const hotlisted = carried.filter((i: any) => i.isHotlisted)
 
-  // Group identical items on the hotlist
+  // Group identical items on the hotlist strictly by lowercase trimmed name
   const stackedHotlist: { key: string; items: any[]; primary: any }[] = []
   
   hotlisted.forEach((item: any) => {
-    const key = `${item.name.trim().toLowerCase()}|${item.tier ?? 'common'}|${item.description ?? ''}`
+    const key = item.name.trim().toLowerCase()
     const existing = stackedHotlist.find(s => s.key === key)
     if (existing) {
       existing.items.push(item)
@@ -61,13 +61,9 @@ export function Hotlist({ character, send, onCharacterUpdate }: HotlistProps) {
     try {
       const isCurrentlyHotlisted = !targetItem.isHotlisted
       const targetName = targetItem.name.trim().toLowerCase()
-      const targetTier = targetItem.tier ?? 'common'
-      const targetDesc = targetItem.description ?? ''
 
       const inv = character.inventory.map((i: any) => {
-        const matches = i.name.trim().toLowerCase() === targetName &&
-                        (i.tier ?? 'common') === targetTier &&
-                        (i.description ?? '') === targetDesc;
+        const matches = i.name.trim().toLowerCase() === targetName;
         return matches ? { ...i, isHotlisted: isCurrentlyHotlisted } : i;
       })
 

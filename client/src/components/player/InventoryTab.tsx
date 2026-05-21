@@ -62,6 +62,8 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
   const [showBackpack, setShowBackpack] = useState(true)
   const [rarityFilter, setRarityFilter] = useState<string | null>(null) // null = ALL
+  const [showConsumables, setShowConsumables] = useState(true)
+  const [showGear, setShowGear] = useState(true)
 
   const myBoxes = lootQueue.filter(b => b.assignedTo === character.id)
   const carried = character.inventory.filter((i: any) => !i.isEquipped)
@@ -73,11 +75,11 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
     return item.tier?.toLowerCase() === rarityFilter.toLowerCase()
   })
 
-  // Group identical items in the carried inventory
+  // Group identical items in the carried inventory strictly by lowercase trimmed name for 100% robust stacking
   const stackedBackpack: { key: string; items: any[]; primary: any }[] = []
   
   backpack.forEach((item: any) => {
-    const key = `${item.name.trim().toLowerCase()}|${item.tier ?? 'common'}|${item.description ?? ''}`
+    const key = item.name.trim().toLowerCase()
     const existing = stackedBackpack.find(s => s.key === key)
     if (existing) {
       existing.items.push(item)
@@ -139,13 +141,9 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
     try {
       const isCurrentlyHotlisted = !targetItem.isHotlisted
       const targetName = targetItem.name.trim().toLowerCase()
-      const targetTier = targetItem.tier ?? 'common'
-      const targetDesc = targetItem.description ?? ''
 
       const inv = character.inventory.map((i: any) => {
-        const matches = i.name.trim().toLowerCase() === targetName &&
-                        (i.tier ?? 'common') === targetTier &&
-                        (i.description ?? '') === targetDesc;
+        const matches = i.name.trim().toLowerCase() === targetName;
         return matches ? { ...i, isHotlisted: isCurrentlyHotlisted } : i;
       })
 
@@ -383,21 +381,21 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
         </div>
       )}
 
-      {/* Carried items (HEAVY INVENTORY) */}
+      {/* Carried items (INVENTORY) */}
       {showBag && (
         <div className="flex flex-col gap-3">
           <button
             onClick={() => setShowBackpack(!showBackpack)}
             className="w-full font-hud text-sm text-hud-muted tracking-widest border-b border-hud-border pb-1 mb-1 flex justify-between items-center hover:text-hud-accent transition-colors"
           >
-            <span>🎒 HEAVY INVENTORY ({carried.length} ITEMS)</span>
+            <span>🎒 INVENTORY ({carried.length} ITEMS)</span>
             <span>{showBackpack ? '▲' : '▼'}</span>
           </button>
           {showBackpack && (
             <div className="flex flex-col gap-4">
               
               {/* Rarity Filter Bar */}
-              <div className="flex flex-wrap gap-1.5 mb-1.5 border-b border-hud-border/20 pb-2">
+              <div className="flex flex-wrap gap-1.5 mb-1 border-b border-hud-border/20 pb-2">
                 <span className="font-hud text-[10px] text-hud-muted self-center uppercase mr-1 tracking-wider">Filter:</span>
                 {[
                   { id: null, label: 'ALL', color: 'border-hud-border/40 text-hud-muted hover:border-hud-accent' },
@@ -423,32 +421,52 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
                 })}
               </div>
 
-              {/* Consumables Section */}
+              {/* Consumables Accordion */}
               <div>
-                <div className="font-hud text-[10px] text-hud-accent/80 tracking-wider uppercase mb-2 flex items-center gap-1.5 border-b border-hud-border/10 pb-1 font-bold">
-                  <span>🧪</span>
-                  <span>CONSUMABLES ({consumables.reduce((acc, s) => acc + s.items.length, 0)})</span>
-                </div>
-                {consumables.length === 0 ? (
-                  <p className="font-hud text-xs text-hud-muted italic p-2 border border-hud-border/10 rounded bg-hud-panel/10">No consumables found.</p>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    {consumables.map(stack => renderStackedItemRow(stack))}
+                <button
+                  onClick={() => setShowConsumables(!showConsumables)}
+                  className="w-full font-hud text-[10px] text-hud-accent/80 tracking-wider uppercase mb-2 flex justify-between items-center border-b border-hud-border/10 pb-1.5 font-bold hover:text-hud-text transition-colors"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span>🧪</span>
+                    <span>CONSUMABLES ({consumables.reduce((acc, s) => acc + s.items.length, 0)})</span>
+                  </div>
+                  <span className="text-hud-muted text-[9px]">{showConsumables ? '▲' : '▼'}</span>
+                </button>
+                {showConsumables && (
+                  <div>
+                    {consumables.length === 0 ? (
+                      <p className="font-hud text-xs text-hud-muted italic p-2 border border-hud-border/10 rounded bg-hud-panel/10">No consumables found.</p>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        {consumables.map(stack => renderStackedItemRow(stack))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
 
-              {/* General Items & Gear Section */}
+              {/* General Items & Gear Accordion */}
               <div>
-                <div className="font-hud text-[10px] text-hud-accent/80 tracking-wider uppercase mb-2 flex items-center gap-1.5 border-b border-hud-border/10 pb-1 font-bold">
-                  <span>⚔️</span>
-                  <span>ITEMS & GEAR ({generalItems.reduce((acc, s) => acc + s.items.length, 0)})</span>
-                </div>
-                {generalItems.length === 0 ? (
-                  <p className="font-hud text-xs text-hud-muted italic p-2 border border-hud-border/10 rounded bg-hud-panel/10">No items or gear found.</p>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    {generalItems.map(stack => renderStackedItemRow(stack))}
+                <button
+                  onClick={() => setShowGear(!showGear)}
+                  className="w-full font-hud text-[10px] text-hud-accent/80 tracking-wider uppercase mb-2 flex justify-between items-center border-b border-hud-border/10 pb-1.5 font-bold hover:text-hud-text transition-colors"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span>⚔️</span>
+                    <span>ITEMS & GEAR ({generalItems.reduce((acc, s) => acc + s.items.length, 0)})</span>
+                  </div>
+                  <span className="text-hud-muted text-[9px]">{showGear ? '▲' : '▼'}</span>
+                </button>
+                {showGear && (
+                  <div>
+                    {generalItems.length === 0 ? (
+                      <p className="font-hud text-xs text-hud-muted italic p-2 border border-hud-border/10 rounded bg-hud-panel/10">No items or gear found.</p>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        {generalItems.map(stack => renderStackedItemRow(stack))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
