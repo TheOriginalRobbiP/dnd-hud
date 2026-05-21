@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import type { Character, FloorState } from '../../types'
+import type { Character, FloorState, WSMessage } from '../../types'
 import { HPBar } from '../shared/HPBar'
 import { PartySidebar } from './PartySidebar'
 import { getCrawlerPortrait } from '../../utils/portraits'
+import { Hotlist } from './Hotlist'
 
 const STATS = ['STR','DEX','CON','INT','CHA'] as const
 
@@ -18,9 +19,11 @@ interface StatusTabProps {
   allCharacters: Character[]
   activeCharIds: string[]
   onInspect?: (charId: string) => void
+  send: (msg: WSMessage) => void
+  onCharacterUpdate: () => void
 }
 
-export function StatusTab({ character, floor, allCharacters, activeCharIds, onInspect }: StatusTabProps) {
+export function StatusTab({ character, floor, allCharacters, activeCharIds, onInspect, send, onCharacterUpdate }: StatusTabProps) {
   const { crawlerName, hp, maxHp, mp, maxMp, stats, statusEffects, skills, aiFavour, viewerCount } = character
   const portrait = getCrawlerPortrait(crawlerName)
   const [timerSecs, setTimerSecs] = useState(0)
@@ -120,6 +123,11 @@ export function StatusTab({ character, floor, allCharacters, activeCharIds, onIn
             <span className="font-hud text-xs text-hud-muted italic ml-1">
               {(aiFavour ?? 0) === 0 ? '— earn more by being creative' : 'spend in clutch moments'}
             </span>
+          </div>
+
+          {/* Hotlist Quick Access Belt — Mobile */}
+          <div className="mt-4">
+            <Hotlist character={character} send={send} onCharacterUpdate={onCharacterUpdate} />
           </div>
         </div>
 

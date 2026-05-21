@@ -12,12 +12,12 @@ import { FameTab } from './FameTab'
 import { DiceHero } from './DiceHero'
 import { PartySidebar } from './PartySidebar'
 import { RulesTab } from './RulesTab'
+import { Hotlist } from './Hotlist'
 
-type Tab = 'status' | 'skills' | 'inventory' | 'fame' | 'rules'
+type Tab = 'status' | 'skills' | 'fame' | 'rules'
 const TABS: { id: Tab; label: string }[] = [
   { id: 'status', label: 'STATUS' },
   { id: 'skills', label: 'SKILLS' },
-  { id: 'inventory', label: 'INVENTORY' },
   { id: 'fame', label: 'FAME' },
   { id: 'rules', label: 'RULES' },
 ]
@@ -35,6 +35,7 @@ interface PlayerHUDProps {
 export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEcho, activeCharIds }: PlayerHUDProps) {
   const [tab, setTab] = useState<Tab>('status')
   const [showRulesModal, setShowRulesModal] = useState(false)
+  const [showInventoryModal, setShowInventoryModal] = useState(false)
   const [inspectCharId, setInspectCharId] = useState<string | null>(null)
   const { toasts, addToast, dismiss } = useToasts()
   const prevGmLogLen = useRef(0)
@@ -88,8 +89,17 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
             </div>
           </div>
         </div>
-        <div className="flex flex-col items-end gap-1 text-[11px]">
-          <DMPanel mode="player" myCharId={character.id} myName={character.crawlerName} messages={dmMessages} send={send} onRead={onDMRead} onEcho={onDMEcho} />
+        <div className="flex flex-col items-end gap-1.5 text-[11px]">
+          <div className="flex gap-2 items-center">
+            <button 
+              onClick={() => setShowInventoryModal(true)}
+              className="font-hud text-[10px] border border-hud-border text-hud-muted px-2 py-0.5 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider flex items-center gap-1 bg-hud-bg/50 rounded"
+            >
+              <span>🎒</span>
+              <span>INVENTORY</span>
+            </button>
+            <DMPanel mode="player" myCharId={character.id} myName={character.crawlerName} messages={dmMessages} send={send} onRead={onDMRead} onEcho={onDMEcho} />
+          </div>
           <div className="font-bold tracking-widest text-hud-success">HP {character.hp}/{character.maxHp}</div>
         </div>
       </div>
@@ -113,6 +123,13 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
         </div>
         <div className="flex items-center gap-3 pr-2">
           <button 
+            onClick={() => setShowInventoryModal(true)}
+            className="font-hud text-[10px] sm:text-xs border border-hud-border text-hud-muted px-2.5 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider flex items-center gap-1.5"
+          >
+            <span>🎒</span>
+            <span>INVENTORY</span>
+          </button>
+          <button 
             onClick={() => setShowRulesModal(true)}
             className="font-hud text-[10px] sm:text-xs border border-hud-border text-hud-muted px-2.5 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider flex items-center gap-1.5"
           >
@@ -130,13 +147,18 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
           {/* Left Column - Always active on mobile for all tabs, acts as left rail on desktop */}
           <div className="md:border-r md:border-hud-border md:overflow-y-auto h-full">
             <div className={tab === 'status' ? 'block' : 'hidden md:block'}>
-              <StatusTab character={character} floor={state.floor} allCharacters={state.characters} activeCharIds={activeCharIds} onInspect={setInspectCharId} />
+              <StatusTab 
+                character={character} 
+                floor={state.floor} 
+                allCharacters={state.characters} 
+                activeCharIds={activeCharIds} 
+                onInspect={setInspectCharId} 
+                send={send}
+                onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)}
+              />
             </div>
             <div className={tab === 'skills' ? 'block' : 'hidden'}>
               <SkillsTab character={character} />
-            </div>
-            <div className={tab === 'inventory' ? 'block' : 'hidden'}>
-              <InventoryTab character={character} lootQueue={state.lootQueue} send={send} onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} />
             </div>
             <div className={tab === 'fame' ? 'block' : 'hidden md:hidden'}>
               <FameTab character={character} floorNumber={state.floor.floorNumber} />
@@ -151,6 +173,12 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
              {/* Middle column contains the dice roller + skills on desktop */}
              <div className="flex-1 flex flex-col gap-8">
                <DiceHero character={character} floor={state.floor} send={send} />
+               
+               <Hotlist 
+                 character={character} 
+                 send={send} 
+                 onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} 
+               />
                
                <div className="bg-hud-panel border border-hud-border rounded-xl p-6">
                  <div className="font-mono text-xs text-hud-muted tracking-[0.2em] mb-4 uppercase border-b border-hud-border pb-2">Skills & Abilities</div>
@@ -168,10 +196,6 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
                    <PartySidebar characters={state.characters} myCharId={character.id} activeCharIds={activeCharIds} onInspect={setInspectCharId} />
                  </div>
                )}
-               
-               <div className="p-4 border-b border-hud-border">
-                 <InventoryTab character={character} lootQueue={state.lootQueue} send={send} onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} />
-               </div>
 
                <div className="p-4">
                  <FameTab character={character} floorNumber={state.floor.floorNumber} />
@@ -186,7 +210,6 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
         {TABS.map(t => {
           let icon = "📊"
           if (t.id === 'skills') icon = "⚔️"
-          if (t.id === 'inventory') icon = "🎒"
           if (t.id === 'fame') icon = "⭐"
           if (t.id === 'rules') icon = "📜"
 
@@ -217,6 +240,28 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
             </div>
             <div className="flex-1 overflow-y-auto">
               <RulesTab />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Inventory Modal overlay */}
+      {showInventoryModal && (
+        <div className="fixed inset-0 bg-hud-bg/95 flex items-center justify-center z-50 p-4" onClick={() => setShowInventoryModal(false)}>
+          <div className="bg-hud-panel border border-hud-border w-full max-w-2xl flex flex-col overflow-hidden rounded-xl"
+            style={{ maxHeight: '90vh' }}
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-hud-border flex-shrink-0 bg-hud-panel/40">
+              <div className="font-hud text-xs text-hud-accent tracking-widest font-bold uppercase">🎒 CRAWLER INVENTORY</div>
+              <button onClick={() => setShowInventoryModal(false)} className="text-hud-muted hover:text-hp-low font-hud text-xs font-bold border border-hud-border/40 px-2 py-0.5 hover:border-red-900 rounded">✕ CLOSE</button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <InventoryTab 
+                character={character} 
+                lootQueue={state.lootQueue} 
+                send={send} 
+                onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} 
+              />
             </div>
           </div>
         </div>

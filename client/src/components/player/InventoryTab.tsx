@@ -65,7 +65,6 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate }: 
   const equipped = character.equipment as Record<string, any>
 
   // Filter carried items into hotlisted vs backpack
-  const hotlisted = carried.filter((i: any) => i.isHotlisted)
   const backpack = carried.filter((i: any) => !i.isHotlisted)
 
   const equipItem = async (itemId: string, slot: string) => {
@@ -139,52 +138,6 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate }: 
 
   return (
     <div className="p-4 flex flex-col gap-6">
-
-      {/* 🎒 QUICK ACCESS HOTLIST */}
-      <div>
-        <div className="font-hud text-sm text-hud-muted tracking-widest border-b border-hud-border pb-1 mb-3 flex justify-between items-center">
-          <span>🎒 QUICK ACCESS HOTLIST</span>
-          <span className="text-[10px] text-hud-muted normal-case italic">max 4 items</span>
-        </div>
-        <div className="grid grid-cols-4 gap-2">
-          {Array.from({ length: 4 }).map((_, idx) => {
-            const item = hotlisted[idx]
-            if (item) {
-              const consumable = isConsumableItem(item)
-              return (
-                <div key={item.id} className="border border-hud-accent bg-hud-panel/40 p-2.5 text-center rounded flex flex-col justify-between min-h-[82px] bg-hud-panel">
-                  <div className="font-hud text-[10px] text-hud-accent font-bold truncate uppercase" title={item.name}>{item.name}</div>
-                  <div className="flex flex-col gap-1 mt-1">
-                    {consumable ? (
-                      <button
-                        onClick={() => useItem(item)}
-                        disabled={using === item.id}
-                        className="font-hud text-[10px] text-hud-bg bg-amber-500 hover:bg-amber-400 font-extrabold px-1.5 py-0.5 rounded leading-none transition-colors"
-                      >
-                        {using === item.id ? '...' : 'USE'}
-                      </button>
-                    ) : (
-                      <div className="font-hud text-[9px] text-hud-muted italic leading-none">gear</div>
-                    )}
-                    <button
-                      onClick={() => toggleHotlist(item.id)}
-                      className="font-hud text-[9px] text-hud-muted hover:text-red-500 transition-colors leading-none"
-                    >
-                      UNPIN
-                    </button>
-                  </div>
-                </div>
-              )
-            } else {
-              return (
-                <div key={idx} className="border border-hud-border border-dashed p-2.5 text-center rounded flex items-center justify-center min-h-[82px] bg-hud-panel/10">
-                  <span className="font-hud text-[10px] text-hud-muted italic">vacant</span>
-                </div>
-              )
-            }
-          })}
-        </div>
-      </div>
 
       {/* Loot boxes */}
       <div>
