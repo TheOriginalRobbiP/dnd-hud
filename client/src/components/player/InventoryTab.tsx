@@ -60,7 +60,6 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
   const [expandedItem, setExpandedItem] = useState<string | null>(null)
   const [using, setUsing] = useState<string | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
-  const [showBackpack, setShowBackpack] = useState(true)
   const [rarityFilter, setRarityFilter] = useState<string | null>(null) // null = ALL
   const [showConsumables, setShowConsumables] = useState(true)
   const [showGear, setShowGear] = useState(true)
@@ -185,7 +184,7 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
     const isHotlisted = stack.items.some((i: any) => i.isHotlisted)
 
     return (
-      <div key={item.id} className="border border-hud-border bg-hud-panel rounded">
+      <div key={item.id} className="border border-hud-border bg-hud-panel rounded bg-opacity-45">
         <button
           onClick={() => setExpandedItem(expandedItem === item.id ? null : item.id)}
           className="w-full flex justify-between items-center p-2.5 text-left gap-2 hover:bg-hud-panel/60 transition-colors">
@@ -384,95 +383,90 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
       {/* Carried items (INVENTORY) */}
       {showBag && (
         <div className="flex flex-col gap-3">
-          <button
-            onClick={() => setShowBackpack(!showBackpack)}
-            className="w-full font-hud text-sm text-hud-muted tracking-widest border-b border-hud-border pb-1 mb-1 flex justify-between items-center hover:text-hud-accent transition-colors"
-          >
-            <span>🎒 INVENTORY ({carried.length} ITEMS)</span>
-            <span>{showBackpack ? '▲' : '▼'}</span>
-          </button>
-          {showBackpack && (
-            <div className="flex flex-col gap-4">
-              
-              {/* Rarity Filter Bar */}
-              <div className="flex flex-wrap gap-1.5 mb-1 border-b border-hud-border/20 pb-2">
-                <span className="font-hud text-[10px] text-hud-muted self-center uppercase mr-1 tracking-wider">Filter:</span>
-                {[
-                  { id: null, label: 'ALL', color: 'border-hud-border/40 text-hud-muted hover:border-hud-accent' },
-                  { id: 'common', label: 'COMMON', color: 'border-slate-500/40 text-slate-400 hover:border-slate-400' },
-                  { id: 'uncommon', label: 'UNCOMMON', color: 'border-green-800/40 text-green-400 hover:border-green-500' },
-                  { id: 'rare', label: 'RARE', color: 'border-blue-900/40 text-blue-400 hover:border-blue-400' },
-                  { id: 'legendary', label: 'LEGENDARY', color: 'border-purple-900/40 text-purple-400 hover:border-purple-400' },
-                ].map(f => {
-                  const isActive = rarityFilter === f.id
-                  return (
-                    <button
-                      key={f.label}
-                      onClick={() => setRarityFilter(f.id)}
-                      className={`font-hud text-[9px] border px-2 py-0.5 transition-all rounded-sm tracking-wider ${
-                        isActive 
-                          ? 'bg-hud-accent/15 border-hud-accent text-hud-accent font-extrabold ring-1 ring-hud-accent/30' 
-                          : f.color + ' bg-hud-panel/40'
-                      }`}
-                    >
-                      {f.label}
-                    </button>
-                  )
-                })}
-              </div>
-
-              {/* Consumables Accordion */}
-              <div>
-                <button
-                  onClick={() => setShowConsumables(!showConsumables)}
-                  className="w-full font-hud text-[10px] text-hud-accent/80 tracking-wider uppercase mb-2 flex justify-between items-center border-b border-hud-border/10 pb-1.5 font-bold hover:text-hud-text transition-colors"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span>🧪</span>
-                    <span>CONSUMABLES ({consumables.reduce((acc, s) => acc + s.items.length, 0)})</span>
-                  </div>
-                  <span className="text-hud-muted text-[9px]">{showConsumables ? '▲' : '▼'}</span>
-                </button>
-                {showConsumables && (
-                  <div>
-                    {consumables.length === 0 ? (
-                      <p className="font-hud text-xs text-hud-muted italic p-2 border border-hud-border/10 rounded bg-hud-panel/10">No consumables found.</p>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        {consumables.map(stack => renderStackedItemRow(stack))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* General Items & Gear Accordion */}
-              <div>
-                <button
-                  onClick={() => setShowGear(!showGear)}
-                  className="w-full font-hud text-[10px] text-hud-accent/80 tracking-wider uppercase mb-2 flex justify-between items-center border-b border-hud-border/10 pb-1.5 font-bold hover:text-hud-text transition-colors"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span>⚔️</span>
-                    <span>ITEMS & GEAR ({generalItems.reduce((acc, s) => acc + s.items.length, 0)})</span>
-                  </div>
-                  <span className="text-hud-muted text-[9px]">{showGear ? '▲' : '▼'}</span>
-                </button>
-                {showGear && (
-                  <div>
-                    {generalItems.length === 0 ? (
-                      <p className="font-hud text-xs text-hud-muted italic p-2 border border-hud-border/10 rounded bg-hud-panel/10">No items or gear found.</p>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        {generalItems.map(stack => renderStackedItemRow(stack))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
+          <div className="font-hud text-sm text-hud-muted tracking-widest border-b border-hud-border pb-1 mb-1 uppercase">
+            🎒 INVENTORY ({carried.length} ITEMS)
+          </div>
+          
+          <div className="flex flex-col gap-4">
+            
+            {/* Rarity Filter Bar */}
+            <div className="flex flex-wrap gap-1.5 mb-1 border-b border-hud-border/20 pb-2">
+              <span className="font-hud text-[10px] text-hud-muted self-center uppercase mr-1 tracking-wider">Filter:</span>
+              {[
+                { id: null, label: 'ALL', color: 'border-hud-border/40 text-hud-muted hover:border-hud-accent' },
+                { id: 'common', label: 'COMMON', color: 'border-slate-500/40 text-slate-400 hover:border-slate-400' },
+                { id: 'uncommon', label: 'UNCOMMON', color: 'border-green-800/40 text-green-400 hover:border-green-500' },
+                { id: 'rare', label: 'RARE', color: 'border-blue-900/40 text-blue-400 hover:border-blue-400' },
+                { id: 'legendary', label: 'LEGENDARY', color: 'border-purple-900/40 text-purple-400 hover:border-purple-400' },
+              ].map(f => {
+                const isActive = rarityFilter === f.id
+                return (
+                  <button
+                    key={f.label}
+                    onClick={() => setRarityFilter(f.id)}
+                    className={`font-hud text-[9px] border px-2 py-0.5 transition-all rounded-sm tracking-wider ${
+                      isActive 
+                        ? 'bg-hud-accent/15 border-hud-accent text-hud-accent font-extrabold ring-1 ring-hud-accent/30' 
+                        : f.color + ' bg-hud-panel/40'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                )
+              })}
             </div>
-          )}
+
+            {/* Consumables Accordion */}
+            <div>
+              <button
+                onClick={() => setShowConsumables(!showConsumables)}
+                className="w-full font-hud text-[10px] text-hud-accent/80 tracking-wider uppercase mb-2 flex justify-between items-center border-b border-hud-border/10 pb-1.5 font-bold hover:text-hud-text transition-colors"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span>🧪</span>
+                  <span>CONSUMABLES ({consumables.reduce((acc, s) => acc + s.items.length, 0)})</span>
+                </div>
+                <span className="text-hud-muted text-[9px]">{showConsumables ? '▲' : '▼'}</span>
+              </button>
+              {showConsumables && (
+                <div>
+                  {consumables.length === 0 ? (
+                    <p className="font-hud text-xs text-hud-muted italic p-2 border border-hud-border/10 rounded bg-hud-panel/10">No consumables found.</p>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      {consumables.map(stack => renderStackedItemRow(stack))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* General Items & Gear Accordion */}
+            <div>
+              <button
+                onClick={() => setShowGear(!showGear)}
+                className="w-full font-hud text-[10px] text-hud-accent/80 tracking-wider uppercase mb-2 flex justify-between items-center border-b border-hud-border/10 pb-1.5 font-bold hover:text-hud-text transition-colors"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span>⚔️</span>
+                  <span>ITEMS & GEAR ({generalItems.reduce((acc, s) => acc + s.items.length, 0)})</span>
+                </div>
+                <span className="text-hud-muted text-[9px]">{showGear ? '▲' : '▼'}</span>
+              </button>
+              {showGear && (
+                <div>
+                  {generalItems.length === 0 ? (
+                    <p className="font-hud text-xs text-hud-muted italic p-2 border border-hud-border/10 rounded bg-hud-panel/10">No items or gear found.</p>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      {generalItems.map(stack => renderStackedItemRow(stack))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+          </div>
         </div>
       )}
     </div>
