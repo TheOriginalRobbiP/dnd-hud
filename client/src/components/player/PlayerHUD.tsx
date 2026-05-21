@@ -11,6 +11,7 @@ import { InventoryTab } from './InventoryTab'
 import { FameTab } from './FameTab'
 import { DiceHero } from './DiceHero'
 import { PartySidebar } from './PartySidebar'
+import { RulesTab } from './RulesTab'
 
 type Tab = 'status' | 'skills' | 'inventory' | 'fame' | 'rules'
 const TABS: { id: Tab; label: string }[] = [
@@ -33,6 +34,7 @@ interface PlayerHUDProps {
 
 export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEcho, activeCharIds }: PlayerHUDProps) {
   const [tab, setTab] = useState<Tab>('status')
+  const [showRulesModal, setShowRulesModal] = useState(false)
   const [inspectCharId, setInspectCharId] = useState<string | null>(null)
   const { toasts, addToast, dismiss } = useToasts()
   const prevGmLogLen = useRef(0)
@@ -110,6 +112,13 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
           </div>
         </div>
         <div className="flex items-center gap-3 pr-2">
+          <button 
+            onClick={() => setShowRulesModal(true)}
+            className="font-hud text-[10px] sm:text-xs border border-hud-border text-hud-muted px-2.5 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider flex items-center gap-1.5"
+          >
+            <span>📜</span>
+            <span>SYSTEM RULES</span>
+          </button>
           <DMPanel mode="player" myCharId={character.id} myName={character.crawlerName} messages={dmMessages} send={send} onRead={onDMRead} onEcho={onDMEcho} />
         </div>
       </div>
@@ -131,6 +140,9 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
             </div>
             <div className={tab === 'fame' ? 'block' : 'hidden md:hidden'}>
               <FameTab character={character} floorNumber={state.floor.floorNumber} />
+            </div>
+            <div className={tab === 'rules' ? 'block' : 'hidden'}>
+              <RulesTab />
             </div>
           </div>
           
@@ -171,11 +183,12 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
       
       {/* Mobile-only Bottom Nav */}
       <div className="md:hidden flex border-t border-hud-border bg-hud-bg py-4 pb-8 fixed bottom-0 left-0 right-0 z-50">
-        {TABS.filter(t => t.id !== 'rules').map(t => {
+        {TABS.map(t => {
           let icon = "📊"
           if (t.id === 'skills') icon = "⚔️"
           if (t.id === 'inventory') icon = "🎒"
           if (t.id === 'fame') icon = "⭐"
+          if (t.id === 'rules') icon = "📜"
 
           return (
             <button key={t.id} onClick={() => setTab(t.id)}
@@ -191,6 +204,23 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
 
       <ToastOverlay toasts={toasts} onDismiss={dismiss} />
       {inspectChar && <InspectModal character={inspectChar} onClose={() => setInspectCharId(null)} hideNotes />}
+      
+      {/* Desktop-only Rules Modal overlay */}
+      {showRulesModal && (
+        <div className="fixed inset-0 bg-hud-bg/95 flex items-center justify-center z-50 p-4" onClick={() => setShowRulesModal(false)}>
+          <div className="bg-hud-panel border border-hud-border w-full max-w-lg flex flex-col overflow-hidden rounded-xl"
+            style={{ maxHeight: '85vh' }}
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-hud-border flex-shrink-0 bg-hud-panel/40">
+              <div className="font-hud text-xs text-hud-accent tracking-widest font-bold uppercase">📜 SYSTEM RULES HANDBOOK</div>
+              <button onClick={() => setShowRulesModal(false)} className="text-hud-muted hover:text-hp-low font-hud text-xs font-bold border border-hud-border/40 px-2 py-0.5 hover:border-red-900 rounded">✕ CLOSE</button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <RulesTab />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -58,10 +58,15 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate }: 
   const [expandedItem, setExpandedItem] = useState<string | null>(null)
   const [using, setUsing] = useState<string | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
+  const [showBackpack, setShowBackpack] = useState(true)
 
   const myBoxes = lootQueue.filter(b => b.assignedTo === character.id)
   const carried = character.inventory.filter((i: any) => !i.isEquipped)
   const equipped = character.equipment as Record<string, any>
+
+  // Filter carried items into hotlisted vs backpack
+  const hotlisted = carried.filter((i: any) => i.isHotlisted)
+  const backpack = carried.filter((i: any) => !i.isHotlisted)
 
   const equipItem = async (itemId: string, slot: string) => {
     setEquipping(itemId)
@@ -101,6 +106,22 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate }: 
     }
   }
 
+  const toggleHotlist = async (itemId: string) => {
+    try {
+      const inv = character.inventory.map((i: any) =>
+        i.id === itemId ? { ...i, isHotlisted: !i.isHotlisted } : i
+      )
+      await fetch(`/api/characters/${character.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inventory: inv })
+      })
+      onCharacterUpdate()
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   const useItem = (item: any) => {
     setUsing(item.id)
     const { hpEffect, mpEffect } = parseEffect(item)
@@ -118,6 +139,52 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate }: 
 
   return (
     <div className="p-4 flex flex-col gap-6">
+
+      {/* 🎒 QUICK ACCESS HOTLIST */}
+      <div>
+        <div className="font-hud text-sm text-hud-muted tracking-widest border-b border-hud-border pb-1 mb-3 flex justify-between items-center">
+          <span>🎒 QUICK ACCESS HOTLIST</span>
+          <span className="text-[10px] text-hud-muted normal-case italic">max 4 items</span>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          {Array.from({ length: 4 }).map((_, idx) => {
+            const item = hotlisted[idx]
+            if (item) {
+              const consumable = isConsumableItem(item)
+              return (
+                <div key={item.id} className="border border-hud-accent bg-hud-panel/40 p-2.5 text-center rounded flex flex-col justify-between min-h-[82px] bg-hud-panel">
+                  <div className="font-hud text-[10px] text-hud-accent font-bold truncate uppercase" title={item.name}>{item.name}</div>
+                  <div className="flex flex-col gap-1 mt-1">
+                    {consumable ? (
+                      <button
+                        onClick={() => useItem(item)}
+                        disabled={using === item.id}
+                        className="font-hud text-[10px] text-hud-bg bg-amber-500 hover:bg-amber-400 font-extrabold px-1.5 py-0.5 rounded leading-none transition-colors"
+                      >
+                        {using === item.id ? '...' : 'USE'}
+                      </button>
+                    ) : (
+                      <div className="font-hud text-[9px] text-hud-muted italic leading-none">gear</div>
+                    )}
+                    <button
+                      onClick={() => toggleHotlist(item.id)}
+                      className="font-hud text-[9px] text-hud-muted hover:text-red-500 transition-colors leading-none"
+                    >
+                      UNPIN
+                    </button>
+                  </div>
+                </div>
+              )
+            } else {
+              return (
+                <div key={idx} className="border border-hud-border border-dashed p-2.5 text-center rounded flex items-center justify-center min-h-[82px] bg-hud-panel/10">
+                  <span className="font-hud text-[10px] text-hud-muted italic">vacant</span>
+                </div>
+              )
+            }
+          })}
+        </div>
+      </div>
 
       {/* Loot boxes */}
       <div>
@@ -211,87 +278,108 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate }: 
         </div>
       )}
 
-      {/* Carried items */}
+      {/* Carried items (HEAVY BACKPACK) */}
       <div>
-        <div className="font-hud text-sm text-hud-muted tracking-widest border-b border-hud-border pb-1 mb-3">CARRIED ITEMS</div>
-        {carried.length === 0
-          ? <p className="font-hud text-sm text-hud-muted italic">Inventory empty. The System judges you.</p>
-          : <div className="flex flex-col gap-2">
-              {carried.map((item: any) => {
-                const consumable = isConsumableItem(item)
-                const { hpEffect, mpEffect } = parseEffect(item)
-                const hasAutoEffect = hpEffect != null || mpEffect != null
-                const charges = item.charges ?? null
+        <button
+          onClick={() => setShowBackpack(!showBackpack)}
+          className="w-full font-hud text-sm text-hud-muted tracking-widest border-b border-hud-border pb-1 mb-3 flex justify-between items-center hover:text-hud-accent transition-colors"
+        >
+          <span>🎒 HEAVY BACKPACK ({backpack.length} ITEMS)</span>
+          <span>{showBackpack ? '▲' : '▼'}</span>
+        </button>
+        {showBackpack && (
+          <div>
+            {backpack.length === 0
+              ? <p className="font-hud text-sm text-hud-muted italic">Backpack empty. The System judges you.</p>
+              : <div className="flex flex-col gap-2 animate-fadeIn">
+                  {backpack.map((item: any) => {
+                    const consumable = isConsumableItem(item)
+                    const { hpEffect, mpEffect } = parseEffect(item)
+                    const hasAutoEffect = hpEffect != null || mpEffect != null
+                    const charges = item.charges ?? null
 
-                return (
-                  <div key={item.id} className="border border-hud-border bg-hud-panel">
-                    <button
-                      onClick={() => setExpandedItem(expandedItem === item.id ? null : item.id)}
-                      className="w-full flex justify-between items-center p-3 text-left gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="font-hud text-sm text-hud-text truncate">{item.name}</span>
-                        {consumable && (
-                          <span className="font-hud text-xs border border-amber-800 text-amber-500 px-1 flex-shrink-0">
-                            {charges != null ? `${charges}×` : 'USE'}
+                    return (
+                      <div key={item.id} className="border border-hud-border bg-hud-panel">
+                        <button
+                          onClick={() => setExpandedItem(expandedItem === item.id ? null : item.id)}
+                          className="w-full flex justify-between items-center p-3 text-left gap-2 hover:bg-hud-panel/60 transition-colors">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="font-hud text-sm text-hud-text truncate font-bold">{item.name}</span>
+                            {consumable && (
+                              <span className="font-hud text-xs border border-amber-800 text-amber-500 px-1 flex-shrink-0 font-bold">
+                                {charges != null ? `${charges}×` : 'USE'}
+                              </span>
+                            )}
+                          </div>
+                          <span className="font-hud text-xs px-1 border flex-shrink-0"
+                            style={{ borderColor: TIER_COLOURS[item.tier], color: TIER_COLOURS[item.tier] }}>
+                            {item.tier?.toUpperCase()}
                           </span>
-                        )}
-                      </div>
-                      <span className="font-hud text-xs px-1 border flex-shrink-0"
-                        style={{ borderColor: TIER_COLOURS[item.tier], color: TIER_COLOURS[item.tier] }}>
-                        {item.tier?.toUpperCase()}
-                      </span>
-                    </button>
+                        </button>
 
-                    {expandedItem === item.id && (
-                      <div className="border-t border-hud-border p-3 flex flex-col gap-3">
-                        {item.description && (
-                          <p className="font-hud text-sm text-hud-muted italic leading-relaxed">{item.description}</p>
-                        )}
+                        {expandedItem === item.id && (
+                          <div className="border-t border-hud-border p-3 flex flex-col gap-3 bg-hud-bg/30">
+                            {item.description && (
+                              <p className="font-hud text-xs text-hud-muted italic leading-relaxed">{item.description}</p>
+                            )}
 
-                        {consumable ? (
-                          // CONSUMABLE — show USE button + effect preview
-                          <div className="flex flex-col gap-2">
-                            {hasAutoEffect && (
-                              <div className="font-hud text-xs text-hud-muted">
-                                Effect: {hpEffect != null ? `${hpEffect > 0 ? '+' : ''}${hpEffect} HP` : ''}
-                                {mpEffect != null ? `  ${mpEffect > 0 ? '+' : ''}${mpEffect} MP` : ''}
-                                {hasAutoEffect && <span className="text-green-600 ml-1">(applied automatically)</span>}
-                              </div>
-                            )}
-                            {!hasAutoEffect && (
-                              <div className="font-hud text-xs text-amber-600">
-                                Effect logged — GM will apply.
-                              </div>
-                            )}
-                            <button
-                              onClick={() => useItem(item)}
-                              disabled={using === item.id}
-                              className="border border-amber-700 text-amber-400 font-hud text-sm py-2 hover:bg-amber-950 transition-colors disabled:opacity-40 tracking-wider">
-                              {using === item.id ? 'USING...' : charges != null ? `USE (${charges} left)` : 'USE'}
-                            </button>
-                          </div>
-                        ) : (
-                          // EQUIPPABLE — show slot picker
-                          <div>
-                            <div className="font-hud text-xs text-hud-muted tracking-wider mb-2">EQUIP TO SLOT</div>
-                            <div className="flex flex-wrap gap-1">
-                              {SLOTS.filter(s => !equipped[s]).map(s => (
-                                <button key={s} onClick={() => equipItem(item.id, s)}
-                                  disabled={equipping === item.id}
-                                  className="font-hud text-xs border border-hud-border text-hud-muted px-2 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors disabled:opacity-40">
-                                  {SLOT_LABELS[s]}
-                                </button>
-                              ))}
+                            {/* Pin / Unpin to Hotlist Button */}
+                            <div className="flex justify-start border-t border-hud-border/40 pt-2.5">
+                              <button
+                                onClick={() => toggleHotlist(item.id)}
+                                className="font-hud text-[10px] border border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent px-2.5 py-1 rounded transition-colors flex items-center gap-1 bg-hud-panel"
+                              >
+                                <span>{item.isHotlisted ? '⭐' : '☆'}</span>
+                                <span>{item.isHotlisted ? 'REMOVE FROM HOTLIST' : 'PIN TO HOTLIST'}</span>
+                              </button>
                             </div>
+
+                            {consumable ? (
+                              // CONSUMABLE — show USE button + effect preview
+                              <div className="flex flex-col gap-2 border-t border-hud-border/40 pt-2.5">
+                                {hasAutoEffect && (
+                                  <div className="font-hud text-[10px] text-hud-muted">
+                                    Effect: {hpEffect != null ? `${hpEffect > 0 ? '+' : ''}${hpEffect} HP` : ''}
+                                    {mpEffect != null ? `  ${mpEffect > 0 ? '+' : ''}${mpEffect} MP` : ''}
+                                    <span className="text-green-600 ml-1">(applied automatically)</span>
+                                  </div>
+                                )}
+                                {!hasAutoEffect && (
+                                  <div className="font-hud text-[10px] text-amber-600">
+                                    Effect logged — GM will apply.
+                                  </div>
+                                )}
+                                <button
+                                  onClick={() => useItem(item)}
+                                  disabled={using === item.id}
+                                  className="border border-amber-700 text-amber-400 font-hud text-xs py-2 hover:bg-amber-950 transition-colors disabled:opacity-40 tracking-wider font-bold bg-hud-panel">
+                                  {using === item.id ? 'USING...' : charges != null ? `USE (${charges} left)` : 'USE CONSUMABLE'}
+                                </button>
+                              </div>
+                            ) : (
+                              // EQUIPPABLE — show slot picker
+                              <div className="border-t border-hud-border/40 pt-2.5">
+                                <div className="font-hud text-[10px] text-hud-muted tracking-wider mb-2 uppercase">EQUIP TO SLOT</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {SLOTS.filter(s => !equipped[s]).map(s => (
+                                    <button key={s} onClick={() => equipItem(item.id, s)}
+                                      disabled={equipping === item.id}
+                                      className="font-hud text-[10px] border border-hud-border text-hud-muted px-2 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors disabled:opacity-40 bg-hud-panel">
+                                      {SLOT_LABELS[s]}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-        }
+                    )
+                  })}
+                </div>
+            }
+          </div>
+        )}
       </div>
     </div>
   )
