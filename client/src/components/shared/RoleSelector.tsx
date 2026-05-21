@@ -15,6 +15,7 @@ type Stage =
   | { type: 'slot'; slot: number }
   | { type: 'pregen'; slot: number; pregenIdx: number }
   | { type: 'wizard'; slot: number }
+  | { type: 'occupied_slot'; slot: number; character: Character }
 
 const SLOT_LABELS = ['PLAYER 1', 'PLAYER 2', 'PLAYER 3', 'PLAYER 4']
 
@@ -33,6 +34,83 @@ export function RoleSelector({ characters, sessionActive, onSelect, onCharacterC
           onSelect(`player:${created.id}`)
         }}
       />
+    )
+  }
+
+  // ── Occupied Slot Confirmation Screen ────────────────────────
+  if (stage.type === 'occupied_slot') {
+    const { slot, character: char } = stage
+
+    const handleReset = async () => {
+      if (saving) return
+      setSaving(true)
+      try {
+        const res = await fetch(`/api/characters/${char.id}`, {
+          method: 'DELETE',
+        })
+        if (!res.ok) throw new Error('Failed to delete')
+        onCharacterCreated?.() // Refresh characters state
+        setSaving(false)
+        setStage({ type: 'slot', slot })
+      } catch {
+        setSaving(false)
+      }
+    }
+
+    return (
+      <div className="min-h-screen bg-hud-bg flex flex-col items-center justify-center p-8">
+        <button
+          onClick={() => setStage({ type: 'home' })}
+          className="absolute top-6 left-6 font-hud text-hud-muted text-sm hover:text-hud-accent transition-colors"
+        >
+          ← BACK
+        </button>
+
+        <div className="w-full max-w-sm flex flex-col items-center gap-6">
+          {/* Portrait if available */}
+          <div className="w-48 h-60 border-2 border-hud-accent overflow-hidden relative bg-hud-panel">
+            {char.portrait ? (
+              <img src={char.portrait} alt={char.crawlerName} className="w-full h-full object-cover object-top" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center font-hud text-5xl text-hud-muted">?</div>
+            )}
+            {!char.isAlive && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                <span className="text-4xl text-red-500 font-bold font-hud uppercase tracking-widest">☠ DEAD</span>
+              </div>
+            )}
+          </div>
+
+          {/* Identity */}
+          <div className="text-center">
+            <div className="font-hud text-xs text-hud-muted tracking-widest mb-1 uppercase">SLOT {slot} ACTIVE CRAWLER</div>
+            <div className="font-hud text-2xl text-hud-accent tracking-widest">{char.crawlerName}</div>
+            <div className="font-hud text-sm text-hud-muted mt-1 leading-none">{char.playerName}</div>
+            <div className="font-hud text-[11px] text-hud-muted mt-2 uppercase opacity-60">
+              HP {char.hp}/{char.maxHp} · MP {char.mp}/{char.maxMp} · 👁 {char.viewerCount.toLocaleString()}
+            </div>
+          </div>
+
+          <div className="w-full flex flex-col gap-3">
+            <button
+              onClick={() => onSelect(`player:${char.id}`)}
+              className="w-full py-4 border border-hud-accent text-hud-accent bg-hud-panel font-hud tracking-widest text-sm
+                         hover:bg-hud-accent hover:text-hud-bg transition-colors"
+            >
+              🚀 RESUME CRAWL
+            </button>
+
+            <button
+              onClick={handleReset}
+              disabled={saving}
+              className="w-full py-3.5 border border-red-950 text-red-500 font-hud tracking-widest text-xs
+                         hover:bg-red-950/20 hover:border-red-800 transition-colors disabled:opacity-30"
+            >
+              {saving ? 'RESETTING SLOT...' : '☠ START FRESH / RESET SLOT'}
+            </button>
+          </div>
+        </div>
+      </div>
     )
   }
 
@@ -242,7 +320,7 @@ export function RoleSelector({ characters, sessionActive, onSelect, onCharacterC
               onClick={() => {
                 if (isDisabled) return
                 if (char && char.isActive) {
-                  onSelect(`player:${char.id}`)
+                  setStage({ type: 'occupied_slot', slot: i + 1, character: char })
                 } else {
                   setStage({ type: 'slot', slot: i + 1 })
                 }
