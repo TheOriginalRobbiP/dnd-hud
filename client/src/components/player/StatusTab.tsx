@@ -21,7 +21,7 @@ interface StatusTabProps {
 }
 
 export function StatusTab({ character, floor, allCharacters, activeCharIds, onInspect }: StatusTabProps) {
-  const { crawlerName, hp, maxHp, mp, maxMp, stats, statusEffects, skills, aiFavour } = character
+  const { crawlerName, hp, maxHp, mp, maxMp, stats, statusEffects, skills, aiFavour, viewerCount } = character
   const portrait = getCrawlerPortrait(crawlerName)
   const [timerSecs, setTimerSecs] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -55,27 +55,27 @@ export function StatusTab({ character, floor, allCharacters, activeCharIds, onIn
       {/* ── COMBAT STRIP — always visible, no scroll ─────── */}
       <div className="flex-shrink-0 p-4 flex flex-col gap-3 border-b border-hud-border">
 
-        {/* Room target + collapse timer inline */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 border border-hud-border px-3 py-1.5 flex-1">
-            <span className="font-hud text-xs text-hud-muted tracking-widest">TARGET</span>
-            <span className="font-hud text-3xl text-hud-accent ml-auto">{floor.roomTarget}</span>
+        {/* Collapse timer if active (Room Target removed) */}
+        {floor.collapseTimerActive && (
+          <div className={`flex items-center justify-between gap-3 border px-3 py-2 ${isCritical ? 'border-red-800 animate-pulse bg-red-950/20' : 'border-hud-border bg-hud-panel'}`}>
+            <span className="font-hud text-xs text-hud-muted tracking-widest uppercase">⏱ COLLAPSE TIMER</span>
+            <span className={`font-hud text-xl font-bold ${isCritical ? 'text-red-500' : 'text-hud-text'}`}>{formatTime(timerSecs)}</span>
           </div>
-          {floor.collapseTimerActive && (
-            <div className={`flex items-center gap-2 border px-3 py-1.5 ${isCritical ? 'border-red-800 animate-pulse' : 'border-hud-border'}`}>
-              <span className="font-hud text-xs text-hud-muted">⏱</span>
-              <span className={`font-hud text-xl ${isCritical ? 'text-red-500' : 'text-hud-text'}`}>{formatTime(timerSecs)}</span>
-            </div>
-          )}
-        </div>
+        )}
 
-        {/* HP bar — with portrait if available */}
+        {/* HP bar — with portrait and viewers if available */}
         <div className="flex gap-3 items-start md:flex-col md:items-stretch">
           {portrait && (
-            <div className="flex-shrink-0 w-16 h-20 md:w-full md:h-auto md:aspect-[9/16] border border-hud-border overflow-hidden relative">
-              <img src={portrait} alt={crawlerName} className="w-full h-full object-cover object-top opacity-80" />
-              <div className="hidden md:block absolute bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-black to-transparent">
-                 <div className="font-hud text-3xl font-bold tracking-widest uppercase">{crawlerName}</div>
+            <div className="flex flex-col gap-1 flex-shrink-0 md:w-full">
+              <div className="font-hud text-[10px] text-hud-muted tracking-widest uppercase leading-none flex items-center gap-1 px-1 py-1 border border-hud-border/40 bg-hud-panel/40 rounded justify-center">
+                <span className="text-red-500 animate-pulse">●</span>
+                <span>{viewerCount.toLocaleString()} VIEWERS</span>
+              </div>
+              <div className="w-16 h-20 md:w-full md:h-auto md:aspect-[9/16] border border-hud-border overflow-hidden relative">
+                <img src={portrait} alt={crawlerName} className="w-full h-full object-cover object-top opacity-80" />
+                <div className="hidden md:block absolute bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-black to-transparent">
+                   <div className="font-hud text-3xl font-bold tracking-widest uppercase">{crawlerName}</div>
+                </div>
               </div>
             </div>
           )}

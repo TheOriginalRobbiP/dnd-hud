@@ -56,36 +56,49 @@ export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign,
   return (
     <div className={`border ${borderCol} bg-hud-panel p-4 w-full sm:min-w-[220px] sm:w-auto flex flex-col gap-2 transition-colors`}>
       {/* Portrait + Header */}
-      {portrait && (
-        <div className="relative w-full h-36 overflow-hidden border border-hud-border mb-1">
-          <img
-            src={portrait}
-            alt={crawlerName}
-            className={`w-full h-full object-cover object-center transition-all duration-300 ${!isAlive ? 'grayscale opacity-40' : ''}`}
-            style={{ objectPosition: '50% 15%' }}
-          />
-          {!isAlive && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-4xl">☠</span>
+      <div className="flex gap-3 items-start mb-1">
+        {portrait ? (
+          <>
+            <div className="relative w-16 h-20 overflow-hidden border border-hud-border flex-shrink-0 bg-hud-bg">
+              <img
+                src={portrait}
+                alt={crawlerName}
+                className={`w-full h-full object-cover transition-all duration-300 ${!isAlive ? 'grayscale opacity-40' : ''}`}
+                style={{ objectPosition: '50% 15%' }}
+              />
+              {!isAlive && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                  <span className="text-xl">☠</span>
+                </div>
+              )}
             </div>
-          )}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-hud-bg/90 to-transparent px-2 py-1">
-            <div className={`font-hud text-xs tracking-widest ${isAlive ? 'text-hud-accent' : 'text-red-400'}`}>
-              {crawlerName.toUpperCase()}
+            <div className="flex-1 min-w-0 flex flex-col justify-between h-20">
+              <div>
+                <div className={`font-hud text-sm tracking-wider uppercase truncate ${isAlive ? 'text-hud-accent' : 'text-red-400'}`}>
+                  {crawlerName}
+                </div>
+                <div className="font-hud text-xs text-hud-muted truncate">{playerName}</div>
+              </div>
+              <div className="font-hud text-xs text-hud-muted flex items-center gap-1">
+                <span>👁</span>
+                <span>{viewerCount.toLocaleString()}</span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex justify-between items-start gap-2">
+            <div>
+              <div className={`font-hud text-sm tracking-wider uppercase ${isAlive ? 'text-hud-accent' : 'text-red-400'}`}>
+                {!isAlive && '☠ '}{crawlerName}
+              </div>
+              <div className="font-hud text-xs text-hud-muted">{playerName}</div>
+            </div>
+            <div className="font-hud text-xs text-hud-muted flex items-center gap-1 flex-shrink-0">
+              <span>👁</span>
+              <span>{viewerCount.toLocaleString()}</span>
             </div>
           </div>
-        </div>
-      )}
-      <div className="flex justify-between items-start">
-        <div>
-          {!portrait && (
-            <div className={`font-hud text-sm tracking-wider ${isAlive ? 'text-hud-accent' : 'text-red-500'}`}>
-              {isAlive ? crawlerName.toUpperCase() : `☠ ${crawlerName.toUpperCase()}`}
-            </div>
-          )}
-          <div className="font-hud text-sm text-hud-muted">{playerName}</div>
-        </div>
-        <div className="font-hud text-sm text-hud-muted">👁 {viewerCount.toLocaleString()}</div>
+        )}
       </div>
 
       {/* HP */}

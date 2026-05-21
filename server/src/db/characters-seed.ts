@@ -106,6 +106,20 @@ async function seed() {
   console.log('[seed] Cleared existing characters.')
 
   for (const c of crawlers) {
+    const equipment: Record<string, any> = {
+      head: null, face: null, neck: null, chest: null,
+      arms: null, hands: null, fingers: null, legs: null,
+      feet: null, toes: null, nipples: null,
+      mainHand: null, offHand: null,
+    }
+
+    // Put whatever they were wearing/equipped when they got in into their equipment slots
+    for (const item of c.inventory) {
+      if (item.isEquipped && item.equippedSlot && item.equippedSlot in equipment) {
+        equipment[item.equippedSlot] = item
+      }
+    }
+
     await db.insert(characters).values({
       crawlerName: c.crawlerName,
       playerName: c.playerName,
@@ -113,12 +127,7 @@ async function seed() {
       mp: c.mp, maxMp: c.maxMp,
       stats: c.stats,
       skills: c.skills,
-      equipment: {
-        head: null, face: null, neck: null, chest: null,
-        arms: null, hands: null, fingers: null, legs: null,
-        feet: null, toes: null, nipples: null,
-        mainHand: null, offHand: null,
-      },
+      equipment,
       inventory: c.inventory,
       achievements: [],
       viewerCount: c.viewerCount,

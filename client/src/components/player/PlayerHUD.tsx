@@ -80,7 +80,6 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
         <div className="flex flex-col items-end gap-1 text-[11px]">
           <DMPanel mode="player" myCharId={character.id} myName={character.crawlerName} messages={dmMessages} send={send} onRead={onDMRead} onEcho={onDMEcho} />
           <div className="font-bold tracking-widest text-hud-success">HP {character.hp}/{character.maxHp}</div>
-          <div className="font-bold tracking-widest text-hud-muted">TGT {state.floor.roomTarget}</div>
         </div>
       </div>
 
@@ -103,9 +102,6 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
         </div>
         <div className="flex items-center gap-3 pr-2">
           <DMPanel mode="player" myCharId={character.id} myName={character.crawlerName} messages={dmMessages} send={send} onRead={onDMRead} onEcho={onDMEcho} />
-          <div className="font-hud text-sm text-hud-muted">
-            TARGET {state.floor.roomTarget}
-          </div>
         </div>
       </div>
       {/* Main Area */}
@@ -131,20 +127,6 @@ export function PlayerHUD({ character, state, send, dmMessages, onDMRead, onDMEc
           
           {/* Desktop-only Middle Column (Hero Dice Roller & Skills) */}
           <div className="hidden md:flex md:flex-col md:p-8 md:gap-8 md:overflow-y-auto bg-hud-bg">
-             <div className="bg-hud-panel border border-hud-border rounded-xl p-8 relative overflow-hidden" style={{ minHeight: '200px' }}>
-                <div className="absolute inset-0 opacity-10 bg-hud-accent mix-blend-overlay"></div>
-                <div className="relative z-10 flex justify-between items-center h-full">
-                  <div>
-                    <div className="font-sans font-extrabold text-3xl text-hud-text tracking-widest uppercase mb-2">
-                      {(state.floor as any).currentRoomData?.roomName || "Floor 1: The Drop"}
-                    </div>
-                    <div className="font-mono text-sm text-hud-muted tracking-[0.1em] uppercase">
-                      {(state.floor as any).currentRoomData?.theme || "Dungeon Start"}
-                    </div>
-                  </div>
-                </div>
-             </div>
-             
              {/* Middle column contains the dice roller + skills on desktop */}
              <div className="flex-1 flex flex-col gap-8">
                <DiceHero character={character} floor={state.floor} send={send} />
