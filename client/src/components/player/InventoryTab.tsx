@@ -53,9 +53,10 @@ interface InventoryTabProps {
   onCharacterUpdate: () => void
   hideSections?: ('loot' | 'equipment' | 'backpack')[]
   compact?: boolean
+  onLogAction?: (text: string, type: 'roll' | 'item' | 'equip' | 'status' | 'system') => void
 }
 
-export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hideSections = [], compact = false }: InventoryTabProps) {
+export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hideSections = [], compact = false, onLogAction }: InventoryTabProps) {
   const [equipping, setEquipping] = useState<string | null>(null)
   const [expandedItem, setExpandedItem] = useState<string | null>(null)
   const [using, setUsing] = useState<string | null>(null)
@@ -99,17 +100,21 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
   const showBag = !hideSections.includes('backpack')
 
   const equipItem = async (itemId: string, slot: string) => {
+    const targetItem = character.inventory.find((i: any) => i.id === itemId)
     setEquipping(itemId)
     try {
       const inv = character.inventory.map((i: any) =>
         i.id === itemId ? { ...i, isEquipped: true, equippedSlot: slot } : i
       )
-      const equip = { ...equipped, [slot]: character.inventory.find((i: any) => i.id === itemId) }
+      const equip = { ...equipped, [slot]: targetItem }
       await fetch(`/api/characters/${character.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ inventory: inv, equipment: equip })
       })
+      if (targetItem) {
+        onLogAction?.(`Equipped ${targetItem.name} to ${SLOT_LABELS[slot]}`, 'equip')
+      }
       onCharacterUpdate()
     } finally {
       setEquipping(null)
@@ -130,6 +135,7 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ inventory: inv, equipment: equip })
       })
+      onLogAction?.(`Unequipped ${item.name} from ${SLOT_LABELS[slot]}`, 'equip')
       onCharacterUpdate()
     } finally {
       setEquipping(null)
@@ -151,6 +157,7 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ inventory: inv })
       })
+      onLogAction?.(`${isCurrentlyHotlisted ? 'Pinned' : 'Unpinned'} ${targetItem.name} ${isCurrentlyHotlisted ? 'to' : 'from'} Hotlist`, 'item')
       onCharacterUpdate()
     } catch (e) {
       console.error(e)
@@ -168,6 +175,13 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
       hpEffect: hpEffect ?? undefined,
       mpEffect: mpEffect ?? undefined,
     })
+    
+    // Construct descriptive healing log
+    let effectLabel = ''
+    if (hpEffect != null) effectLabel += ` (${hpEffect > 0 ? '+' : ''}${hpEffect} HP)`
+    if (mpEffect != null) effectLabel += ` (${mpEffect > 0 ? '+' : ''}${mpEffect} MP)`
+    onLogAction?.(`Used consumable: ${item.name}${effectLabel}`, 'item')
+
     setExpandedItem(null)
     setTimeout(() => setUsing(null), 1000)
   }

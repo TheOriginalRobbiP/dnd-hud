@@ -23,6 +23,13 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'rules', label: 'RULES' },
 ]
 
+interface ActionLogEntry {
+  id: string
+  timestamp: number
+  text: string
+  type: 'roll' | 'item' | 'equip' | 'status' | 'system'
+}
+
 interface PlayerHUDProps {
   character: Character
   state: AppState
@@ -40,12 +47,40 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
   const [showInventoryModal, setShowInventoryModal] = useState(false)
   const [inspectCharId, setInspectCharId] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+  const [actionLog, setActionLog] = useState<ActionLogEntry[]>([])
   const { toasts, addToast, dismiss } = useToasts()
   const prevGmLogLen = useRef(0)
   const isFirstSync = useRef(true)
 
   const character = getModifiedCharacter(rawCharacter)
 
+  // 1. Persist action log to local storage keyed on character ID
+  useEffect(() => {
+    const key = `hud:log:${character.id}`
+    const saved = localStorage.getItem(key)
+    if (saved) {
+      try {
+        setActionLog(JSON.parse(saved))
+      } catch (e) {
+        console.error(e)
+      }
+    } else {
+      setActionLog([])
+    }
+  }, [character.id])
+
+  const addLogEntry = (text: string, type: ActionLogEntry['type']) => {
+    setActionLog(prev => {
+      const updated = [
+        { id: Math.random().toString(36).substring(2), timestamp: Date.now(), text, type },
+        ...prev
+      ].slice(0, 50)
+      localStorage.setItem(`hud:log:${character.id}`, JSON.stringify(updated))
+      return updated
+    })
+  }
+
+  // 2. Setup screen resizing detect
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
     handleResize()
@@ -53,27 +88,56 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  // 3. Process incoming global logs and intercept character-specific statements
   useEffect(() => {
     if (state.gmLog.length > 0) {
       if (isFirstSync.current) {
         prevGmLogLen.current = state.gmLog.length
         isFirstSync.current = false
+
+        // Backfill log mentions on initial connection if they are empty
+        const initialLogs = state.gmLog
+          .filter(entry => entry.toLowerCase().includes(character.crawlerName.toLowerCase()))
+          .map(entry => ({
+            id: Math.random().toString(36).substring(2),
+            timestamp: Date.now(),
+            text: entry,
+            type: (entry.includes('rolled') ? 'roll' : entry.includes('Loot') ? 'item' : 'system') as ActionLogEntry['type']
+          }))
+        if (initialLogs.length > 0) {
+          setActionLog(prev => {
+            if (prev.length > 0) return prev // do not overwrite saved cache
+            const updated = initialLogs.reverse().slice(0, 50)
+            localStorage.setItem(`hud:log:${character.id}`, JSON.stringify(updated))
+            return updated
+          })
+        }
         return
       }
 
       if (state.gmLog.length > prevGmLogLen.current) {
         const newEntries = state.gmLog.slice(prevGmLogLen.current)
         newEntries.forEach(entry => {
+          // Log to global system feed as toast
           const type = entry.includes('Achievement') ? 'achievement'
             : entry.includes('Loot') ? 'loot'
             : entry.includes('WARNING') || entry.includes('collapse') ? 'warning'
             : 'announcement'
           addToast(entry, type)
+
+          // Intercept and log in-character actions locally
+          if (entry.toLowerCase().includes(character.crawlerName.toLowerCase())) {
+            const crawlerLogType = entry.includes('rolled') ? 'roll'
+              : entry.includes('Achievement') ? 'system'
+              : entry.includes('Loot') ? 'item'
+              : 'system' as ActionLogEntry['type']
+            addLogEntry(entry, crawlerLogType)
+          }
         })
         prevGmLogLen.current = state.gmLog.length
       }
     }
-  }, [state.gmLog, addToast])
+  }, [state.gmLog, addToast, character.crawlerName, character.id])
 
   const inspectChar = inspectCharId ? state.characters.find(c => c.id === inspectCharId) ?? null : null
 
@@ -167,6 +231,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                 onInspect={setInspectCharId} 
                 send={send}
                 onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)}
+                actionLog={actionLog}
               />
             </div>
             <div className={tab === 'skills' ? 'block' : 'hidden'}>
@@ -218,6 +283,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                    onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} 
                    hideSections={['backpack']}
                    compact={true}
+                   onLogAction={addLogEntry}
                  />
                </div>
 
@@ -286,6 +352,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                 send={send} 
                 onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} 
                 hideSections={isMobile ? [] : ['loot', 'equipment']}
+                onLogAction={addLogEntry}
               />
             </div>
           </div>

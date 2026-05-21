@@ -13,6 +13,13 @@ function formatTime(secs: number) {
   return `${m}:${s}`
 }
 
+interface ActionLogEntry {
+  id: string
+  timestamp: number
+  text: string
+  type: 'roll' | 'item' | 'equip' | 'status' | 'system'
+}
+
 interface StatusTabProps {
   character: Character
   floor: FloorState
@@ -21,9 +28,10 @@ interface StatusTabProps {
   onInspect?: (charId: string) => void
   send: (msg: WSMessage) => void
   onCharacterUpdate: () => void
+  actionLog?: ActionLogEntry[]
 }
 
-export function StatusTab({ character, floor, allCharacters, activeCharIds, onInspect, send, onCharacterUpdate }: StatusTabProps) {
+export function StatusTab({ character, floor, allCharacters, activeCharIds, onInspect, send, onCharacterUpdate, actionLog = [] }: StatusTabProps) {
   const { crawlerName, hp, maxHp, mp, maxMp, stats, statusEffects, skills, aiFavour, viewerCount } = character
   const portrait = getCrawlerPortrait(crawlerName)
   const [timerSecs, setTimerSecs] = useState(0)
@@ -94,6 +102,39 @@ export function StatusTab({ character, floor, allCharacters, activeCharIds, onIn
                   <div className="h-full bg-cyan-500 transition-all duration-300" style={{ width: `${(mp/maxMp)*100}%` }} />
                 </div>
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* CRAWLER ACTION LOG — retro terminal style */}
+        <div className="border border-hud-border/40 bg-hud-bg p-3 rounded-lg flex flex-col gap-1.5 h-44 shrink-0">
+          <div className="font-hud text-[10px] text-hud-muted tracking-widest uppercase border-b border-hud-border/10 pb-1 flex justify-between items-center shrink-0">
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-hud-accent animate-pulse"></span>
+              <span>CRAWLER LOG</span>
+            </span>
+            <span className="font-mono text-[8px] opacity-60">real-time feed</span>
+          </div>
+          <div className="flex-1 overflow-y-auto space-y-1 font-mono text-[10px] leading-tight pr-1 scrollbar-thin">
+            {actionLog.length === 0 ? (
+              <div className="text-hud-muted/50 italic text-center py-8">No actions logged yet in this run.</div>
+            ) : (
+              actionLog.map(log => {
+                let textCol = 'text-hud-muted'
+                if (log.type === 'roll') textCol = 'text-hud-accent font-bold'
+                if (log.type === 'item') textCol = 'text-amber-400'
+                if (log.type === 'equip') textCol = 'text-cyan-400'
+                if (log.type === 'status') textCol = 'text-red-400'
+                
+                const timeStr = new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                
+                return (
+                  <div key={log.id} className="flex gap-1.5 items-start border-b border-hud-border/5 pb-1">
+                    <span className="text-[8px] opacity-40 shrink-0 select-none pt-0.5">{timeStr}</span>
+                    <span className={`${textCol} break-words flex-1`}>{log.text}</span>
+                  </div>
+                )
+              })
             )}
           </div>
         </div>
