@@ -10,5 +10,6 @@
 2026-05-21 | WebSocket-scoped Party Status filtering | Filtered the Player HUD's Party Status sidebar by active connected WebSocket player IDs (activeCharIds) to hide inactive database-seeded pre-gens and show only real connected players.
 2026-05-22 | Render full tall crawler portraits via object-contain | Switched character portraits to object-contain with bg-black/20 and narrower container dimensions to display the full body of custom tall 9:16 artwork instead of cropping heads/legs with object-cover.
 2026-05-22 | Panic Area Scrounge starting gear (Option A & B Hybrid) | Marries gritty, modern everyday survival items with weapon/spell kits to match a 1-hour panic-scrounge of the flattened concrete ruins (firearms removed in favor of heavy construction tools like staple/nail guns).
+2026-05-22 | ICRPG-style Heart containers for crawler health display | Replaced the linear green HP bars in HPBar.tsx with custom clipping SVG heart rows (1 Heart = 10 HP) to match the ICRPG-based mechanics of our homebrew campaign.
 
 
