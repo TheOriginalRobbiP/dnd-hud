@@ -587,12 +587,12 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
         {/* ── COMBAT STARTING GEAR ─────────────────────────── */}
         {screen === 'COMBAT' && (
           <div>
-            <ScreenHeader title="STEP 4 — CHOOSE STARTING GEAR" step={4} total={7} />
-            <p className="font-hud text-hud-muted text-sm mb-2 italic">
-              "Everyone enters with Unarmed Combat at Rank 3. Now pick your starting weapon or spell scroll."
+            <ScreenHeader title="STEP 4 — PANIC HOUSEHOLD SCROUNGE" step={4} total={7} />
+            <p className="font-hud text-hud-muted text-sm mb-2 italic text-hud-accent">
+              "The sky split, the buildings collapsed, and the Syndicate AI announced the Crawl. You had exactly ONE HOUR to scrounge your house, kitchen, or garden shed before being forced down. What did you grab to survive?"
             </p>
             <p className="font-hud text-xs text-hud-muted mb-6">
-              Choosing gear automatically grants you the matching Weapon Proficiency skill at level 3, and places the weapon directly in your hand on spawn! Spells require INT 4+ and include 5 Standard Mana Potions.
+              Choosing gear automatically grants you the matching Weapon Proficiency skill at Level 3 and spawns it equipped in your Main Hand on spawn! Weird attic relics (Spells) require INT 4+ and include 5 Standard Mana Potions in your inventory.
             </p>
 
             {['Bashing', 'Edged', 'Ranged', 'Reach', 'Hand-to-Hand', 'Animal', 'Spell'].map(type => {

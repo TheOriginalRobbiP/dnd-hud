@@ -5,38 +5,38 @@ export const STAT_ARRAY = [2, 3, 4, 5, 6] // standard array — assign one to ea
 
 export const COMBAT_SKILLS = [
   // Bashing
-  { name: 'Club', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Bashing', description: 'Melee. Bludgeoning damage.' },
-  { name: 'Warhammer', effortType: 'weapon' as const, damage: '1d10 + STR', type: 'Bashing', description: 'Melee. Requires two hands. Bludgeoning damage.' },
-  { name: 'Improvised Weapons', effortType: 'weapon' as const, damage: '1d4 + STR', type: 'Bashing', description: 'Pick up anything 1–STR lbs and smack someone. Bludgeoning.' },
+  { name: 'Cast-Iron Skillet (Club)', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Bashing', description: 'Melee. Heavy, seasoned iron found in the kitchen. Bludgeoning.' },
+  { name: 'Heavy Sledgehammer (Warhammer)', effortType: 'weapon' as const, damage: '1d10 + STR', type: 'Bashing', description: 'Melee. Heavy demolition tool from the garage. Requires two hands. Bludgeoning.' },
+  { name: 'Improvised Weapons', effortType: 'weapon' as const, damage: '1d4 + STR', type: 'Bashing', description: 'Melee. Pick up any random 1-STR lb object (ash tray, brick, heavy book) and smash.' },
   // Edged
-  { name: 'Axe', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Edged', description: 'Melee. Slashing damage.' },
-  { name: 'Dagger', effortType: 'weapon' as const, damage: '1d4 + STR', type: 'Edged', description: 'Melee. DEX to hit. Piercing. AI Favor: 1.' },
-  { name: 'Longsword', effortType: 'weapon' as const, damage: '1d8 + STR', type: 'Edged', description: 'Melee. Slashing damage.' },
+  { name: 'Rusty Camping Axe (Axe)', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Edged', description: 'Melee. Slashing utility hatchet scrounged from the shed.' },
+  { name: 'Kitchen Chef Knife (Dagger)', effortType: 'weapon' as const, damage: '1d4 + STR', type: 'Edged', description: 'Melee. Dex to hit. Piercing blade grabbed during a 10-second kitchen raid. AI Favor: 1.' },
+  { name: 'Clearing Machete (Longsword)', effortType: 'weapon' as const, damage: '1d8 + STR', type: 'Edged', description: 'Melee. Long, brutal brush-clearing blade from the garden shed. Slashing.' },
   // Ranged
-  { name: 'Crossbow', effortType: 'weapon' as const, damage: '1d8 + DEX', type: 'Ranged', description: 'Ranged. DEX to hit. Piercing damage.' },
-  { name: 'Handgun', effortType: 'weapon' as const, damage: '1d8 + DEX', type: 'Ranged', description: 'Ranged. DEX to hit. Piercing damage.' },
-  { name: 'Shotgun', effortType: 'weapon' as const, damage: '1d10 + DEX', type: 'Ranged', description: 'Ranged. DEX to hit. Piercing. Requires two hands.' },
-  { name: 'Bow', effortType: 'weapon' as const, damage: '1d6 + DEX', type: 'Ranged', description: 'Ranged. DEX to hit. Piercing damage.' },
-  { name: 'Javelin', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Ranged', description: 'Thrown. STR to hit. Piercing damage.' },
-  { name: 'Slingshot', effortType: 'weapon' as const, damage: '1d4 + DEX', type: 'Ranged', description: 'Ranged. DEX to hit. Bludgeoning. AI Favor: 1.' },
-  { name: 'Shuriken', effortType: 'weapon' as const, damage: '1d4 + DEX', type: 'Ranged', description: 'Ranged. DEX to hit. Slashing. AI Favor: 1.' },
+  { name: 'Old Hunting Bow (Bow)', effortType: 'weapon' as const, damage: '1d6 + DEX', type: 'Ranged', description: 'Ranged. Dex to hit. Piercing. Compound bow grabbed from the closet.' },
+  { name: 'Compact Handgun (Handgun)', effortType: 'weapon' as const, damage: '1d8 + DEX', type: 'Ranged', description: 'Ranged. Dex to hit. Piercing. Home defense pistol grabbed from the nightstand drawer.' },
+  { name: 'Double-Barrel Shotgun (Shotgun)', effortType: 'weapon' as const, damage: '1d10 + DEX', type: 'Ranged', description: 'Ranged. Dex to hit. Piercing. Heavy gauge, requires two hands.' },
+  { name: 'Steel-Ball Slingshot (Slingshot)', effortType: 'weapon' as const, damage: '1d4 + DEX', type: 'Ranged', description: 'Ranged. Dex to hit. Quiet bludgeoning. Grabbed from a kid\'s toy box. AI Favor: 1.' },
+  { name: 'Steel-Tip Dart (Javelin)', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Ranged', description: 'Thrown. Str to hit. Piercing dart found in the man-cave.' },
+  { name: 'Metal Throwing Shuriken', effortType: 'weapon' as const, damage: '1d4 + DEX', type: 'Ranged', description: 'Ranged. Dex to hit. Slashing. Decorative ninja stars found in the attic. AI Favor: 1.' },
+  { name: 'Hunting Crossbow (Crossbow)', effortType: 'weapon' as const, damage: '1d8 + DEX', type: 'Ranged', description: 'Ranged. Dex to hit. Piercing. Heavy target crossbow found in the attic.' },
   // Reach
-  { name: 'Polearm', effortType: 'weapon' as const, damage: '1d8 + STR', type: 'Reach', description: 'Reach (10ft). Requires two hands. Slashing/Piercing.' },
-  { name: 'Quarterstaff', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Reach', description: 'Reach (10ft). Bludgeoning damage.' },
+  { name: 'Garden Pitchfork (Polearm)', effortType: 'weapon' as const, damage: '1d8 + STR', type: 'Reach', description: 'Reach (10ft). Requires two hands. Piercing garden tool.' },
+  { name: 'Stout Broom Handle (Quarterstaff)', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Reach', description: 'Reach (10ft). Bludgeoning. Hardwood broom handle unscrewed from the brush head.' },
   // Hand-to-Hand
-  { name: 'Pugilism', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Hand-to-Hand', description: 'Unarmed. DEX to hit. Choose Damage Effect: Iron Punch or Powerful Strike.' },
-  { name: 'Foot Soldier', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Hand-to-Hand', description: 'Unarmed. DEX to hit. Damage Effect: Smush.' },
-  { name: 'Noggin Nocker', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Hand-to-Hand', description: 'Unarmed. DEX to hit. Damage Effect: Skullcracker.' },
+  { name: 'Pugilism (Taped Fists)', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Hand-to-Hand', description: 'Unarmed. DEX to hit. Taped knuckles and pure adrenaline. Choose Damage Effect: Iron Punch or Powerful Strike.' },
+  { name: 'Steel-Toe Boots (Foot Soldier)', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Hand-to-Hand', description: 'Unarmed. DEX to hit. Stomping with heavy work boots. Damage Effect: Smush.' },
+  { name: 'Hard Helmet (Noggin Nocker)', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Hand-to-Hand', description: 'Unarmed. DEX to hit. Headbutting with a heavy construction/bike helmet. Damage Effect: Skullcracker.' },
   // Animal
-  { name: 'Slice Attack', effortType: 'weapon' as const, damage: '1d4 + STR', type: 'Animal', description: 'Melee. Slashing. AI Favor: 1. (Animal crawlers only)' },
-  { name: 'Back Claw', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Animal', description: 'Melee. Slashing. (Animal crawlers only)' },
-  { name: 'Bite', effortType: 'weapon' as const, damage: '1d8 + STR', type: 'Animal', description: 'Melee. Piercing. Target must have a graspable appendage. (Animal crawlers only)' },
+  { name: 'Slice Attack (Claws)', effortType: 'weapon' as const, damage: '1d4 + STR', type: 'Animal', description: 'Melee. Slashing paws. AI Favor: 1. (Animal/Pet crawlers only)' },
+  { name: 'Back Claw (Kick)', effortType: 'weapon' as const, damage: '1d6 + STR', type: 'Animal', description: 'Melee. Slashing kick. (Animal/Pet crawlers only)' },
+  { name: 'Rabid Bite (Bite)', effortType: 'weapon' as const, damage: '1d8 + STR', type: 'Animal', description: 'Melee. Piercing jaws. Requires graspable appendage. (Animal/Pet crawlers only)' },
   // Spells (requires INT 4+)
-  { name: 'Dirt Clod', effortType: 'magic' as const, damage: '1d4 + INT', type: 'Spell', description: 'Ranged. INT to hit. Bludgeoning. Mana cost: 2. Requires INT 4+.' },
-  { name: 'Fire Fingers', effortType: 'magic' as const, damage: '1d6 + INT', type: 'Spell', description: 'Ranged. INT to hit. Fire damage. Mana cost: 4. Requires INT 4+.' },
-  { name: 'Frost Scar', effortType: 'magic' as const, damage: '1d6 + INT', type: 'Spell', description: 'Ranged. INT to hit. Cold damage. Applies Frosted debuff. Mana cost: 4. Requires INT 4+.' },
-  { name: 'Shock Treatment', effortType: 'magic' as const, damage: '1d8 + INT', type: 'Spell', description: 'Ranged. INT to hit. Lightning damage. Mana cost: 6. Requires INT 4+.' },
-  { name: 'Soul Collector', effortType: 'magic' as const, damage: '1d6 + INT', type: 'Spell', description: 'Ranged. INT to hit. Necrotic damage. Mana cost: 5. Requires INT 4+.' },
+  { name: 'Fling Dirt (Dirt Clod)', effortType: 'magic' as const, damage: '1d4 + INT', type: 'Spell', description: 'Ranged. INT to hit. Bludgeoning. Grab a handful of garden soil and focus. Mana: 2.' },
+  { name: 'Lighter & Aerosol (Fire Fingers)', effortType: 'magic' as const, damage: '1d6 + INT', type: 'Spell', description: 'Ranged. INT to hit. Fire. Cheap aerosol can and lighter ignited with psychic force. Mana: 4.' },
+  { name: 'Upgraded Cattle Prod (Shock Treatment)', effortType: 'magic' as const, damage: '1d8 + INT', type: 'Spell', description: 'Ranged. INT to hit. Lightning. Modified high-voltage cattle prod sparked with mana. Mana: 6.' },
+  { name: 'Freon Spray Can (Frost Scar)', effortType: 'magic' as const, damage: '1d6 + INT', type: 'Spell', description: 'Ranged. INT to hit. Cold. Upside-down duster can sap-cooling targets. Applies Frosted debuff. Mana: 4.' },
+  { name: 'Creepy Occult Relic (Soul Collector)', effortType: 'magic' as const, damage: '1d6 + INT', type: 'Spell', description: 'Ranged. INT to hit. Necrotic. Weird taxidermy/bone relic found in the attic. Mana: 5.' },
 ]
 
 // Background skill tables from the PDF

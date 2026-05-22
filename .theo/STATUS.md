@@ -1,5 +1,17 @@
 # Project Status - dnd-hud
 
+## Session checkpoint 2026-05-22T10:00:00Z
+- **Focus**: Starting gear balance and Crawler status card sizing.
+- **Done this session**:
+  - Discussed starting gear design philosophies for the DCC/ICRPG homebrew (DCC Raw trade tool/occupation weapons vs ICRPG starting/basic loot).
+  - **Rule-set decision & implementation**: Aligned on and built the **Panic Household Scrounge (Option A & B Hybrid)** rule-set. The lore explanation is that crawlers have exactly 1 hour of prep time from the initial Syndicate AI announcement of the Crawl to scrounge their houses/garages/kitchens before being forced into the dungeon.
+  - **Starting Kits Refactor**: Re-engineered all 26 `COMBAT_SKILLS` inside `characterCreation.ts` to represent scrounged everyday objects mapped directly to classic weapon proficiency enums. (e.g. `Cast-Iron Skillet (Club)`, `Kitchen Chef Knife (Dagger)`, `Grandpa's Double-Barrel Shotgun (Shotgun)`, `Stout Broom Handle (Quarterstaff)`, `Lighter & Aerosol (Fire Fingers)`). Updated Step 4 of the Character Creation Wizard (`CrawlerWizard.tsx`) to feature this high-immersion backstory.
+  - **Sizing fix**: Comprehensively refactored crawler status cards (`StatusTab.tsx`, `CharacterCard.tsx`, `InspectModal.tsx`) across both player and GM interfaces to use `object-contain bg-black/20` and slimmer/smaller dimensions. This completely prevents portrait images from being cut off, fully displaying the characters while making the cards visually tighter and smaller on screen.
+  - Successfully verified clean type-compilation and production build with `tsc && vite build` (exit code: 0).
+- **Open / next**:
+  - Refine player dashboard layout, fonts, and colors to match DCC/Bopca specifications.
+- **Blockers**: None.
+
 ## Session checkpoint 2026-05-21T07:30:00Z
 - **Focus**: Refining the player dashboard party status.
 - **Done this session**:

@@ -59,11 +59,11 @@ export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign,
       <div className="flex gap-3 items-start mb-1">
         {portrait ? (
           <>
-            <div className="relative w-12 h-14 overflow-hidden border border-hud-border flex-shrink-0 bg-hud-bg rounded">
+            <div className="relative w-10 h-14 overflow-hidden border border-hud-border flex-shrink-0 bg-black/20 rounded">
               <img
                 src={portrait}
                 alt={crawlerName}
-                className={`w-full h-full object-cover transition-all duration-300 ${!isAlive ? 'grayscale opacity-40' : ''}`}
+                className={`w-full h-full object-contain transition-all duration-300 ${!isAlive ? 'grayscale opacity-40' : ''}`}
                 style={{ objectPosition: 'center' }}
               />
               {!isAlive && (

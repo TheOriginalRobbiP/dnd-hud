@@ -80,10 +80,10 @@ export function StatusTab({ character, floor, allCharacters, activeCharIds, onIn
                 <span className="hidden md:inline">LIVE:</span>
                 <span className="text-hud-accent text-sm md:text-base font-extrabold">{viewerCount.toLocaleString()}</span>
               </div>
-              <div className="w-16 h-20 md:w-36 md:h-44 md:mx-auto border border-hud-border overflow-hidden relative rounded-lg">
-                <img src={portrait} alt={crawlerName} className="w-full h-full object-cover object-center opacity-80" />
-                <div className="hidden md:block absolute bottom-0 left-0 right-0 p-2 pt-8 bg-gradient-to-t from-black to-transparent">
-                   <div className="font-hud text-sm font-bold tracking-widest uppercase text-center text-hud-accent">{crawlerName}</div>
+              <div className="w-12 h-18 md:w-24 md:h-36 md:mx-auto border border-hud-border overflow-hidden relative bg-black/40 rounded-lg">
+                <img src={portrait} alt={crawlerName} className="w-full h-full object-contain object-center opacity-80" />
+                <div className="hidden md:block absolute bottom-0 left-0 right-0 p-2 pt-4 bg-gradient-to-t from-black/80 to-transparent">
+                   <div className="font-hud text-xs font-bold tracking-widest uppercase text-center text-hud-accent">{crawlerName}</div>
                 </div>
               </div>
             </div>

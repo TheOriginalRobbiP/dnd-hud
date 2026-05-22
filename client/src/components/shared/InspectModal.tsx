@@ -41,8 +41,8 @@ export function InspectModal({ character: rawCharacter, onClose, hideNotes = fal
         {/* Header — portrait + name */}
         <div className="flex items-center justify-between border-b border-hud-border flex-shrink-0">
           {portrait && (
-            <div className="w-20 h-20 flex-shrink-0 overflow-hidden border-r border-hud-border">
-              <img src={portrait} alt={crawlerName} className="w-full h-full object-cover object-center" />
+            <div className="w-16 h-20 flex-shrink-0 overflow-hidden border-r border-hud-border bg-black/20">
+              <img src={portrait} alt={crawlerName} className="w-full h-full object-contain object-center" />
             </div>
           )}
           <div className="flex-1 px-4 py-3">
