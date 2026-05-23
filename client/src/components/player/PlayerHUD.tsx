@@ -238,21 +238,39 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
               <FameTab character={character} floorNumber={state.floor.floorNumber} />
             </div>
             <div className={tab === 'map' ? 'block h-[calc(100vh-180px)] md:h-full p-2' : 'hidden'}>
-              <Battlemap
-                mapUrl={state.floor.currentRoomData?.flavourArt ?? null}
-                characters={state.characters}
-                activeMobs={state.floor.activeMobs}
-                isEditable={false}
-                myCharacterId={character.id}
-                activeCharIds={activeCharIds}
-                onTokenMove={(id, isMob, posX, posY) => {
-                  if (!isMob) {
-                    send({ type: 'token_move', charId: id, posX, posY })
-                  } else {
-                    send({ type: 'token_move', mobId: id, posX, posY })
-                  }
-                }}
-              />
+              {state.floor.displayViewMode === 'scene' && (state.floor.currentRoomData?.sceneArt || state.floor.currentRoomData?.flavourArt) ? (
+                <div className="relative w-full h-full bg-[#0a0a0c] border border-hud-border rounded-lg overflow-hidden flex flex-col justify-end">
+                  <img
+                    src={state.floor.currentRoomData.sceneArt || state.floor.currentRoomData.flavourArt}
+                    alt="Scene"
+                    className="absolute inset-0 w-full h-full object-cover opacity-85"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
+                  <div className="relative z-10 p-5 flex flex-col gap-1">
+                    <span className="font-hud text-[8px] text-[#f59e0b] tracking-[0.25em] uppercase font-bold">NARRATIVE VIEW ACTIVE</span>
+                    <span className="font-hud text-sm text-hud-text font-extrabold uppercase">{state.floor.currentRoomData.roomName}</span>
+                    <span className="font-hud text-[10px] text-hud-muted mt-1 leading-relaxed max-w-[280px]">
+                      The dungeon is currently in narrative mode. The GM will cross-fade to the tactical combat map when positioning matters!
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <Battlemap
+                  mapUrl={state.floor.currentRoomData?.battlemapArt || state.floor.currentRoomData?.flavourArt || null}
+                  characters={state.characters}
+                  activeMobs={state.floor.activeMobs}
+                  isEditable={false}
+                  myCharacterId={character.id}
+                  activeCharIds={activeCharIds}
+                  onTokenMove={(id, isMob, posX, posY) => {
+                    if (!isMob) {
+                      send({ type: 'token_move', charId: id, posX, posY })
+                    } else {
+                      send({ type: 'token_move', mobId: id, posX, posY })
+                    }
+                  }}
+                />
+              )}
             </div>
             <div className={tab === 'rules' ? 'block' : 'hidden'}>
               <RulesTab />

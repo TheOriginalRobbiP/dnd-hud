@@ -20,6 +20,8 @@ interface FloorRoom {
   tags: string[] | string
   roomTarget: number
   flavourArt: string | null
+  sceneArt: string | null
+  battlemapArt: string | null
   mobTemplateIds: string
   posX: number
   posY: number
@@ -165,6 +167,7 @@ function RoomListItem({
 export function SessionNavigator({ send, notesTextSize = 'md', characters, activeMobs, activeCharIds }: SessionNavigatorProps) {
   const [activePlan, setActivePlan] = useState<FloorPlan | null>(null)
   const [viewMode, setViewMode] = useState<'notes' | 'map'>('notes')
+  const [displayViewMode, setDisplayViewMode] = useState<'scene' | 'battlemap'>('scene')
   const [rooms, setRooms] = useState<FloorRoom[]>([])
   const [connections, setConnections] = useState<RoomConnection[]>([])
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
@@ -239,10 +242,13 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
         roomId,
         roomName: room.name,
         flavourArt: room.flavourArt ?? null,
+        sceneArt: room.sceneArt ?? null,
+        battlemapArt: room.battlemapArt ?? null,
         roomTarget: room.roomTarget,
         theme: plan.theme,
         themeColour: plan.themeColour,
       })
+      setDisplayViewMode('scene') // Automatically start in cinematic SCENE mode!
     } finally {
       setEntering(null)
     }
@@ -456,36 +462,69 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
                 )}
 
                 {/* Mode Toggles: NOTES vs BATTLEMAP */}
-                {selectedRoom.flavourArt && (
-                  <div className="flex gap-2 border-t border-hud-border/25 pt-2.5 mt-1.5 flex-shrink-0">
-                    <button
-                      onClick={() => setViewMode('notes')}
-                      className={`font-hud text-[10px] border px-3 py-1 font-semibold tracking-wider rounded-[2px] transition-colors ${
-                        viewMode === 'notes'
-                          ? 'border-hud-accent text-hud-accent bg-hud-accent/5'
-                          : 'border-hud-border text-hud-muted hover:border-hud-muted hover:text-hud-text'
-                      }`}
-                    >
-                      📜 ROOM NOTES
-                    </button>
-                    <button
-                      onClick={() => setViewMode('map')}
-                      className={`font-hud text-[10px] border px-3 py-1 font-semibold tracking-wider rounded-[2px] transition-colors ${
-                        viewMode === 'map'
-                          ? 'border-hud-accent text-hud-accent bg-hud-accent/5'
-                          : 'border-hud-border text-hud-muted hover:border-hud-muted hover:text-hud-text'
-                      }`}
-                    >
-                      🗺️ BATTLEMAP VTT
-                    </button>
+                {(selectedRoom.flavourArt || selectedRoom.sceneArt || selectedRoom.battlemapArt) && (
+                  <div className="flex gap-4 border-t border-hud-border/25 pt-2.5 mt-1.5 flex-shrink-0 flex-wrap items-center">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setViewMode('notes')}
+                        className={`font-hud text-[10px] border px-3 py-1 font-semibold tracking-wider rounded-[2px] transition-colors ${
+                          viewMode === 'notes'
+                            ? 'border-hud-accent text-hud-accent bg-hud-accent/5'
+                            : 'border-hud-border text-hud-muted hover:border-hud-muted hover:text-hud-text'
+                        }`}
+                      >
+                        📜 ROOM NOTES
+                      </button>
+                      <button
+                        onClick={() => setViewMode('map')}
+                        className={`font-hud text-[10px] border px-3 py-1 font-semibold tracking-wider rounded-[2px] transition-colors ${
+                          viewMode === 'map'
+                            ? 'border-hud-accent text-hud-accent bg-hud-accent/5'
+                            : 'border-hud-border text-hud-muted hover:border-hud-muted hover:text-hud-text'
+                        }`}
+                      >
+                        🗺️ BATTLEMAP VTT
+                      </button>
+                    </div>
+
+                    {/* TV Display viewport controller (GM Only - active on current room) */}
+                    {selectedRoom.isCurrentRoom && (
+                      <div className="flex items-center gap-2 border-l border-hud-border/30 pl-4">
+                        <span className="font-hud text-[8px] text-hud-muted tracking-widest uppercase">TV DISPLAY VIEW:</span>
+                        <div className="flex bg-black/45 border border-hud-border/30 p-0.5 rounded select-none">
+                          <button
+                            onClick={async () => {
+                              setDisplayViewMode('scene')
+                              send({ type: 'display_view_mode_update', mode: 'scene' })
+                            }}
+                            className={`px-2.5 py-1 rounded text-[8px] font-bold tracking-widest uppercase transition-colors leading-none ${
+                              displayViewMode === 'scene' ? 'bg-[#f59e0b] text-hud-bg font-extrabold shadow-sm' : 'text-hud-muted hover:text-hud-text'
+                            }`}
+                          >
+                            👁️ SCENE
+                          </button>
+                          <button
+                            onClick={async () => {
+                              setDisplayViewMode('battlemap')
+                              send({ type: 'display_view_mode_update', mode: 'battlemap' })
+                            }}
+                            className={`px-2.5 py-1 rounded text-[8px] font-bold tracking-widest uppercase transition-colors leading-none ${
+                              displayViewMode === 'battlemap' ? 'bg-[#f59e0b] text-hud-bg font-extrabold shadow-sm' : 'text-hud-muted hover:text-hud-text'
+                            }`}
+                          >
+                            ⚔️ BATTLEMAP
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
               
-              {viewMode === 'map' && selectedRoom.flavourArt ? (
+              {viewMode === 'map' && (selectedRoom.battlemapArt || selectedRoom.flavourArt) ? (
                 <div className="flex-1 p-5 pb-24">
                   <Battlemap
-                    mapUrl={selectedRoom.flavourArt}
+                    mapUrl={selectedRoom.battlemapArt || selectedRoom.flavourArt}
                     characters={characters}
                     activeMobs={activeMobs}
                     isEditable={true}

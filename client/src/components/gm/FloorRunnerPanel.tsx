@@ -37,6 +37,8 @@ interface FloorRoom {
   tags: string[] | string
   roomTarget: number
   flavourArt: string | null
+  sceneArt: string | null
+  battlemapArt: string | null
   mobTemplateIds: string   // comma-separated template IDs
   posX: number
   posY: number
@@ -436,6 +438,8 @@ export function FloorRunnerPanel({ send, notesTextSize = 'md' }: FloorRunnerPane
         roomId: room.id,
         roomName: room.name,
         flavourArt: room.flavourArt ?? null,
+        sceneArt: room.sceneArt ?? null,
+        battlemapArt: room.battlemapArt ?? null,
         roomTarget: room.roomTarget,
         theme: plan.theme,
         themeColour: plan.themeColour,

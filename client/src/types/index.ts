@@ -169,6 +169,7 @@ export interface FloorState {
   activeMobs: Mob[]
   showRoomTarget: boolean
   currentRoomData?: any | null
+  displayViewMode: 'scene' | 'battlemap'
 }
 
 // ── App State (full sync payload on connect) ─────────────────
@@ -213,8 +214,9 @@ export type WSMessage =
   | { type: 'session_stop' }                                      // GM: close session — kick all crawlers, blank display
   | { type: 'session_snapshot_save'; name: string }               // GM: save named snapshot
   | { type: 'session_snapshot_load'; snapshotId: string }         // GM: restore snapshot
-  | { type: 'display_room_enter'; roomId: string; roomName: string; flavourArt: string | null; roomTarget: number; theme: string; themeColour: string }
+  | { type: 'display_room_enter'; roomId: string; roomName: string; flavourArt: string | null; sceneArt: string | null; battlemapArt: string | null; roomTarget: number; theme: string; themeColour: string }
   | { type: 'display_clear' }
   | { type: 'presence_sync'; activeCharIds: string[] }
   | { type: 'play_sound'; soundId: string }
   | { type: 'token_move'; charId?: string; mobId?: string; posX: number; posY: number }
+  | { type: 'display_view_mode_update'; mode: 'scene' | 'battlemap' }

@@ -3,6 +3,7 @@ import { floorState } from './schema.js'
 import { seedBopcaMobs } from './bopca-mobs-seed.js'
 import { seedBopcaItems } from './bopca-items-seed.js'
 import { seedTier2Items } from './items-seed-tier2.js'
+import { seedFloorPlans } from './floor-plan-seed.js'
 
 async function seed() {
   console.log('[seed] Initialising floor state...')
@@ -18,6 +19,9 @@ async function seed() {
 
   console.log('[seed] Importing tier-2 items (gold/platinum/legendary/celestial)...')
   await seedTier2Items()
+
+  console.log('[seed] Importing pre-seeded Floor 1 map...')
+  await seedFloorPlans()
 
   console.log('[seed] Done.')
   process.exit(0)

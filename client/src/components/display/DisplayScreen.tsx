@@ -7,6 +7,8 @@ interface RoomData {
   roomId: string
   roomName: string
   flavourArt: string | null
+  sceneArt: string | null
+  battlemapArt: string | null
   roomTarget: number
   theme: string
   themeColour: string
@@ -77,6 +79,7 @@ export function DisplayScreen() {
   const [achievementUnlock, setAchievementUnlock] = useState<{ characterName: string; achievement: Achievement } | null>(null)
   const [showRoomTarget, setShowRoomTarget] = useState(true)
   const [activeCharIds, setActiveCharIds] = useState<string[]>([])
+  const [displayViewMode, setDisplayViewMode] = useState<'scene' | 'battlemap'>('scene')
   
   const wsRef = useRef<WebSocket | null>(null)
   const charactersRef = useRef<any[]>([])
@@ -129,11 +132,17 @@ export function DisplayScreen() {
                 roomId: msg.roomId,
                 roomName: msg.roomName,
                 flavourArt: msg.flavourArt,
+                sceneArt: msg.sceneArt,
+                battlemapArt: msg.battlemapArt,
                 roomTarget: msg.roomTarget,
                 theme: msg.theme,
                 themeColour: msg.themeColour,
               })
+              setDisplayViewMode('scene') // Default to scene mode on entering a room!
               loadPlansAndDetails()
+              break
+            case 'display_view_mode_update':
+              setDisplayViewMode(msg.mode)
               break
             case 'display_clear':
               setRoom(null)
@@ -167,6 +176,9 @@ export function DisplayScreen() {
               if (floor.showRoomTarget !== undefined) {
                 setShowRoomTarget(floor.showRoomTarget)
               }
+              if (floor.displayViewMode !== undefined) {
+                setDisplayViewMode(floor.displayViewMode)
+              }
               
               const rd = (floor as any).currentRoomData
               if (rd) {
@@ -174,6 +186,8 @@ export function DisplayScreen() {
                   roomId: rd.roomId,
                   roomName: rd.roomName,
                   flavourArt: rd.flavourArt,
+                  sceneArt: rd.sceneArt ?? null,
+                  battlemapArt: rd.battlemapArt ?? null,
                   roomTarget: rd.roomTarget,
                   theme: rd.theme,
                   themeColour: rd.themeColour,
@@ -517,17 +531,48 @@ export function DisplayScreen() {
           {/* LEFT AREA: Live FOW Map & Room telemetries */}
           <section className="flex flex-col border-r border-[#1f1f23] p-8 gap-6 min-h-0">
             
-            {/* Live SVG Node Map or Battlemap VTT Container */}
+            {/* Live SVG Node Map or Cinematic Battleboard Container */}
             <div className="flex-1 bg-[#121214]/40 border border-[#1f1f23] rounded-[4px] relative overflow-hidden min-h-0">
-              {room && room.flavourArt ? (
-                <Battlemap
-                  mapUrl={room.flavourArt}
-                  characters={characters}
-                  activeMobs={activeMobs}
-                  isEditable={false}
-                  activeCharIds={activeCharIds}
-                  onTokenMove={() => {}}
-                />
+              {room && (room.sceneArt || room.battlemapArt || room.flavourArt) ? (
+                <>
+                  {/* Layer 1: Cinematic Narrative Scene Art */}
+                  <div 
+                    className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                      displayViewMode === 'scene' ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-95 pointer-events-none z-0'
+                    }`}
+                  >
+                    {(room.sceneArt || room.flavourArt) && (
+                      <img
+                        src={room.sceneArt || room.flavourArt || undefined}
+                        alt="Cinematic Scene"
+                        className="w-full h-full object-cover opacity-90"
+                      />
+                    )}
+                    {/* Shadow vignetting on top */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
+                    <div className="absolute bottom-5 left-5 font-mono-dcc text-[10px] font-bold text-[#f59e0b] tracking-[0.25em] bg-black/80 px-3 py-1.5 border border-[#1f1f23] rounded uppercase">
+                      👁️ NARRATIVE TELEMETRY MODE
+                    </div>
+                  </div>
+
+                  {/* Layer 2: Tactical 2D VTT Battlemap */}
+                  <div 
+                    className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                      displayViewMode === 'battlemap' ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-105 pointer-events-none z-0'
+                    }`}
+                  >
+                    {(room.battlemapArt || room.flavourArt) && (
+                      <Battlemap
+                        mapUrl={room.battlemapArt || room.flavourArt || null}
+                        characters={characters}
+                        activeMobs={activeMobs}
+                        isEditable={false}
+                        activeCharIds={activeCharIds}
+                        onTokenMove={() => {}}
+                      />
+                    )}
+                  </div>
+                </>
               ) : (
                 <>
                   {/* grid pattern bg */}

@@ -37,6 +37,8 @@ interface FloorRoom {
   tags: string[]
   roomTarget: number
   flavourArt: string | null
+  sceneArt: string | null
+  battlemapArt: string | null
   mobTemplateIds: string
   lootTier: string | null
   posX: number
@@ -134,6 +136,8 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
   const [tags, setTags] = useState(room.tags.join(', '))
   const [roomTarget, setRoomTarget] = useState(String(room.roomTarget))
   const [flavourArt, setFlavourArt] = useState(room.flavourArt ?? '')
+  const [sceneArt, setSceneArt] = useState(room.sceneArt ?? '')
+  const [battlemapArt, setBattlemapArt] = useState(room.battlemapArt ?? '')
   const [lootTier, setLootTier] = useState(room.lootTier ?? '')
   const [selectedMobs, setSelectedMobs] = useState<string[]>(
     room.mobTemplateIds ? room.mobTemplateIds.split(',').map(s => s.trim()).filter(Boolean) : []
@@ -153,6 +157,8 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
     setTags(room.tags.join(', '))
     setRoomTarget(String(room.roomTarget))
     setFlavourArt(room.flavourArt ?? '')
+    setSceneArt(room.sceneArt ?? '')
+    setBattlemapArt(room.battlemapArt ?? '')
     setLootTier(room.lootTier ?? '')
     setSelectedMobs(room.mobTemplateIds ? room.mobTemplateIds.split(',').map(s => s.trim()).filter(Boolean) : [])
     setDeleting(false)
@@ -254,6 +260,32 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
             onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
             placeholder="https://..."
             className="bg-hud-bg border border-hud-border rounded-md text-hud-text font-sans text-sm p-3 focus:border-hud-accent outline-none"
+          />
+        </label>
+
+        {/* Scene art (V2 Cinematic Scene) */}
+        <label className="flex flex-col gap-2">
+          <span className="font-mono text-[11px] font-bold text-[#f59e0b] tracking-[0.1em]">V2 CINEMATIC SCENE ART URL</span>
+          <input
+            value={sceneArt}
+            onChange={e => setSceneArt(e.target.value)}
+            onBlur={() => save({ sceneArt: sceneArt || null })}
+            onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+            placeholder="https://..."
+            className="bg-hud-bg border border-[#1f1f23] rounded-md text-hud-text font-sans text-sm p-3 focus:border-hud-accent outline-none focus:border-dashed"
+          />
+        </label>
+
+        {/* Battlemap art (V2 Top-down 2D VTT) */}
+        <label className="flex flex-col gap-2">
+          <span className="font-mono text-[11px] font-bold text-[#f59e0b] tracking-[0.1em]">V2 TOP-DOWN BATTLEMAP ART URL</span>
+          <input
+            value={battlemapArt}
+            onChange={e => setBattlemapArt(e.target.value)}
+            onBlur={() => save({ battlemapArt: battlemapArt || null })}
+            onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+            placeholder="https://..."
+            className="bg-hud-bg border border-[#1f1f23] rounded-md text-hud-text font-sans text-sm p-3 focus:border-hud-accent outline-none focus:border-dashed"
           />
         </label>
 

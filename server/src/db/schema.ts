@@ -45,6 +45,7 @@ export const floorState = pgTable('floor_state', {
   activeMobs: jsonb('active_mobs').notNull().default([]),
   currentRoomData: jsonb('current_room_data'),
   showRoomTarget: boolean('show_room_target').notNull().default(true),
+  displayViewMode: text('display_view_mode').notNull().default('scene'), // scene | battlemap
   updatedAt: timestamp('updated_at').defaultNow(),
 })
 
@@ -129,6 +130,8 @@ export const floorRooms = pgTable('floor_rooms', {
   name: text('name').notNull(),
   description: text('description').notNull().default(''),
   flavourArt: text('flavour_art'),
+  sceneArt: text('scene_art'),       // Cinematic narrative scene image
+  battlemapArt: text('battlemap_art'), // Top-down 2D VTT map image
   roomTarget: integer('room_target').notNull().default(10),
   tags: text('tags').notNull().default(''),
   mobTemplateIds: text('mob_template_ids').notNull().default(''),

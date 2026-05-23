@@ -16,6 +16,7 @@ const DEFAULT_FLOOR: FloorState = {
   collapseTimerStartedAt: null,
   activeMobs: [],
   showRoomTarget: true,
+  displayViewMode: 'scene',
 }
 
 async function ensureFloorState() {
@@ -92,13 +93,21 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
             roomId: msg.roomId,
             roomName: msg.roomName,
             flavourArt: msg.flavourArt,
+            sceneArt: msg.sceneArt,
+            battlemapArt: msg.battlemapArt,
             roomTarget: msg.roomTarget,
             theme: msg.theme,
             themeColour: msg.themeColour,
           } as any,
           activeMobs: [], // Clear active mobs upon entering a new room!
+          displayViewMode: 'scene', // Automatically reset to scene view mode on room enter
           updatedAt: new Date(),
         })
+        .where(eq(floorState.id, 1))
+      break
+    case 'display_view_mode_update':
+      await db.update(floorState)
+        .set({ displayViewMode: msg.mode, updatedAt: new Date() })
         .where(eq(floorState.id, 1))
       break
     case 'display_clear':
