@@ -535,6 +535,11 @@ export function DisplayScreen() {
             }`}>
               {connected ? '● SYNCED' : '● RECONNECTING'}
             </span>
+            {room && (
+              <span className="font-mono-dcc text-[10px] font-bold text-[#f59e0b] border border-[#f59e0b]/25 bg-[#f59e0b]/5 px-3 py-1 rounded-[2px] tracking-widest animate-pulse">
+                TARGET: {showRoomTarget ? room.roomTarget : '🔒'}
+              </span>
+            )}
             <h2 className="font-mono-dcc text-lg font-bold tracking-widest text-[#f4eee2] uppercase">
               <span className="text-[#71717a] font-normal mr-2">FLOOR {timer.active ? '1' : activePlan?.name.split(' ')[1] || '1'} —</span> 
               {activePlan?.name.toUpperCase() || 'THE COMMONS'}
@@ -552,256 +557,153 @@ export function DisplayScreen() {
           </div>
         </header>
 
-        {/* ── MAIN TWO-COLUMN SPLIT GRID ── */}
-        <main className="flex-1 grid grid-cols-[66%_34%] min-h-0">
+        {/* ── MAIN FULL-WIDTH VIEWPORT ── */}
+        <main className="flex-1 p-6 flex flex-col min-h-0 relative">
           
-          {/* LEFT AREA: Live FOW Map & Room telemetries */}
-          <section className="flex flex-col border-r border-[#1f1f23] p-8 gap-6 min-h-0">
-            
-            {/* Live SVG Node Map or Cinematic Battleboard Container */}
-            <div className="flex-1 bg-[#121214]/40 border border-[#1f1f23] rounded-[4px] relative overflow-hidden min-h-0">
-              {room && (room.sceneArt || room.battlemapArt || room.flavourArt) ? (
-                <>
-                  {/* Layer 1: Cinematic Narrative Scene Art */}
-                  <div 
-                    className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-                      displayViewMode === 'scene' ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-95 pointer-events-none z-0'
-                    }`}
-                  >
-                    {(room.sceneArt || room.flavourArt) && (
-                      <img
-                        src={room.sceneArt || room.flavourArt || undefined}
-                        alt="Cinematic Scene"
-                        className="w-full h-full object-cover opacity-90"
-                      />
-                    )}
-                    {/* Shadow vignetting on top */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
-                    <div className="absolute bottom-5 left-5 font-mono-dcc text-[10px] font-bold text-[#f59e0b] tracking-[0.25em] bg-black/80 px-3 py-1.5 border border-[#1f1f23] rounded uppercase">
-                      👁️ NARRATIVE TELEMETRY MODE
-                    </div>
+          {/* Live SVG Node Map or Cinematic Battleboard Container */}
+          <div className="flex-1 bg-[#121214]/40 border border-[#1f1f23] rounded-[4px] relative overflow-hidden min-h-0">
+            {room && (room.sceneArt || room.battlemapArt || room.flavourArt) ? (
+              <>
+                {/* Layer 1: Cinematic Narrative Scene Art */}
+                <div 
+                  className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                    displayViewMode === 'scene' ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-95 pointer-events-none z-0'
+                  }`}
+                >
+                  {(room.sceneArt || room.flavourArt) && (
+                    <img
+                      src={room.sceneArt || room.flavourArt || undefined}
+                      alt="Cinematic Scene"
+                      className="w-full h-full object-cover opacity-90"
+                    />
+                  )}
+                  {/* Shadow vignetting on top */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
+                  <div className="absolute top-5 left-5 font-mono-dcc text-[10px] font-bold text-[#f59e0b] tracking-[0.25em] bg-black/80 px-3 py-1.5 border border-[#1f1f23] rounded uppercase z-20">
+                    👁️ NARRATIVE TELEMETRY MODE
                   </div>
+                </div>
 
-                  {/* Layer 2: Tactical 2D VTT Battlemap */}
-                  <div 
-                    className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-                      displayViewMode === 'battlemap' ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-105 pointer-events-none z-0'
-                    }`}
-                  >
-                    {(room.battlemapArt || room.flavourArt) && (
-                      <Battlemap
-                        mapUrl={room.battlemapArt || room.flavourArt || null}
-                        characters={characters}
-                        activeMobs={activeMobs}
-                        isEditable={false}
-                        activeCharIds={activeCharIds}
-                        onTokenMove={() => {}}
-                      />
-                    )}
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* grid pattern bg */}
-                  <div 
-                    className="absolute inset-0 opacity-[0.035]"
-                    style={{
-                      backgroundSize: '40px 40px',
-                      backgroundImage: 'linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)'
-                    }}
-                  />
-                  <div className="absolute top-4 left-5 font-mono-dcc text-[9px] font-bold tracking-[0.25em] text-[#71717a] uppercase z-20">
-                    {activePlan ? `${activePlan.name.toUpperCase()} — TACTICAL TELEMETRY (FOW)` : 'TACTICAL TELEMETRY MAP'}
-                  </div>
-                  
-                  {rooms.length > 0 ? (
-                    <svg className="w-full h-full relative z-10 p-12" viewBox="0 0 1100 440">
-                      {/* Edges/Paths */}
-                      {connections.map(c => {
-                        const fromCoords = scaledCoords[c.fromRoomId]
-                        const toCoords = scaledCoords[c.toRoomId]
-                        if (!fromCoords || !toCoords) return null
-                        
-                        const fromRoom = rooms.find(r => r.id === c.fromRoomId)
-                        const toRoom = rooms.find(r => r.id === c.toRoomId)
-                        const isExplored = (fromRoom?.isVisited || fromRoom?.isCurrentRoom) && (toRoom?.isVisited || toRoom?.isCurrentRoom)
-                        const isFow = !isExplored && !(fromRoom?.isVisited || fromRoom?.isCurrentRoom) && !(toRoom?.isVisited || toRoom?.isCurrentRoom)
-                        
-                        return (
-                          <line
-                            key={c.id}
-                            x1={fromCoords.x}
-                            y1={fromCoords.y}
-                            x2={toCoords.x}
-                            y2={toCoords.y}
-                            stroke={isExplored ? '#10b981' : isFow ? '#1e1f24' : '#1f1f23'}
-                            strokeWidth={isExplored ? '2px' : '1.5px'}
-                            strokeDasharray={c.isContingency ? '5,5' : undefined}
-                            opacity={isFow ? 0.2 : 1}
-                            className="transition-all duration-300"
-                          />
-                        )
-                      })}
+                {/* Layer 2: Tactical 2D VTT Battlemap */}
+                <div 
+                  className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                    displayViewMode === 'battlemap' ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-105 pointer-events-none z-0'
+                  }`}
+                >
+                  {(room.battlemapArt || room.flavourArt) && (
+                    <Battlemap
+                      mapUrl={room.battlemapArt || room.flavourArt || null}
+                      characters={characters}
+                      activeMobs={activeMobs}
+                      isEditable={false}
+                      activeCharIds={activeCharIds}
+                      onTokenMove={() => {}}
+                    />
+                  )}
+                </div>
 
-                      {/* Room Nodes */}
-                      {rooms.map(r => {
-                        const coords = scaledCoords[r.id]
-                        if (!coords) return null
-                        
-                        const isVisited = r.isVisited
-                        const isCurrent = r.isCurrentRoom
-                        const isFow = !isVisited && !isCurrent
-                        
-                        const classes = isCurrent ? 'node-current' : isVisited ? 'node-visited' : 'node-fow'
-                        const dispName = isFow ? '?' : r.name.split(' — ')[1] || r.name.split(' \u2014 ')[1] || r.name
-                        const shortName = dispName.length > 18 ? dispName.substring(0, 16) + '...' : dispName
-                        
-                        return (
-                          <g key={r.id} transform={`translate(${coords.x}, ${coords.y})`} className={`${classes} transition-all duration-300`}>
-                            <circle className="node-glow" r="38" />
-                            <circle className="node-bg" r="38" />
-                            <text
-                              className="font-mono-dcc text-[10px] font-bold transition-all duration-300 fill-[#f4eee2]"
-                              y="4"
-                              textAnchor="middle"
-                              opacity={isFow ? 0.35 : 1}
-                            >
-                              {shortName.toUpperCase()}
-                            </text>
-                          </g>
-                        )
-                      })}
-                    </svg>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center font-mono-dcc text-sm text-[#71717a] italic">
-                      No floor plan layout loaded.
+                {/* Floating Transparent HUD Card Overlay */}
+                <div className="absolute bottom-5 left-5 z-20 max-w-[480px] bg-[#121214]/85 backdrop-blur-md border border-[#1f1f23] rounded p-5 shadow-2xl flex flex-col gap-2.5">
+                  <span className="font-mono-dcc text-[9px] font-bold tracking-[0.25em] text-[#f59e0b] uppercase">
+                    CURRENT SECTOR DATA
+                  </span>
+                  <h1 className="font-serif-dcc text-3xl font-normal text-[#f4eee2] leading-none uppercase tracking-wide">
+                    {room.roomName}
+                  </h1>
+                  {roomTags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {roomTags.map(tag => (
+                        <span key={tag} className="font-mono-dcc text-[8px] font-bold border border-[#f59e0b]/20 text-[#f59e0b] bg-[#f59e0b]/5 px-2 py-0.5 rounded-[2px] tracking-wider uppercase">
+                          {tag}
+                        </span>
+                      ))}
                     </div>
                   )}
-                </>
-              )}
-            </div>
-
-            {/* Room Detail Overlay Card */}
-            <div className="h-[220px] bg-[#121214] border border-[#1f1f23] rounded-[4px] p-6 flex gap-8 items-center flex-shrink-0 relative">
-              {room ? (
-                <>
-                  <div className="flex-1 flex flex-col gap-3 min-w-0">
-                    <span className="font-mono-dcc text-[10px] font-bold tracking-[0.25em] text-[#f59e0b] uppercase">
-                      CURRENT SECTOR DATA
-                    </span>
-                    <h1 className="font-serif-dcc text-[44px] font-normal text-[#f4eee2] leading-none uppercase tracking-wide truncate">
-                      {room.roomName}
-                    </h1>
-                    {roomTags.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {roomTags.map(tag => (
-                          <span key={tag} className="font-mono-dcc text-[8px] font-bold border border-[#f59e0b]/20 text-[#f59e0b] bg-[#f59e0b]/5 px-2 py-0.5 rounded-[2px] tracking-wider uppercase">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <p className="text-sm line-clamp-3 text-[#71717a] leading-relaxed font-sans pr-4">
-                      {currentRoom ? getPublicDescription(currentRoom.description) : 'No description found for this sector. Keep your alert telemetry open.'}
-                    </p>
-                  </div>
-                  <div className="w-[180px] h-full border-l border-[#1f1f23] flex flex-col items-center justify-center gap-1 bg-white/[0.005] flex-shrink-0">
-                    <span className="font-mono-dcc text-[9px] font-bold tracking-[0.25em] text-[#71717a] uppercase">
-                      {showRoomTarget ? 'ROOM TARGET' : 'TARGET'}
-                    </span>
-                    <span className="font-serif-dcc text-[90px] font-normal text-[#f59e0b] leading-none" style={{ textShadow: '0 0 30px rgba(245, 158, 11, 0.25)' }}>
-                      {showRoomTarget ? room.roomTarget : '🔒'}
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-[#71717a] font-mono-dcc text-sm">
-                  <span className="text-2xl mb-2">🧭</span>
-                  AWAITING ROOM SECTOR ENTRY
-                </div>
-              )}
-            </div>
-
-          </section>
-
-          {/* RIGHT AREA: Active Threats Encounter tracker */}
-          <section className="flex flex-col p-8 gap-6 min-h-0">
-            <div className="flex-1 flex flex-col gap-4 min-h-0">
-              <div className="font-mono-dcc text-xs font-bold tracking-[0.25em] text-[#71717a] uppercase border-b border-[#1f1f23] pb-3 flex justify-between items-center flex-shrink-0">
-                <span>ACTIVE THREATS</span>
-                <span className={activeMobs.length > 0 ? 'text-[#ef4444] font-bold' : 'text-[#10b981] font-bold'}>
-                  {activeMobs.length > 0 ? `${activeMobs.length} DETECTED` : 'SECURE'}
-                </span>
-              </div>
-
-              {activeMobs.length > 0 ? (
-                <div className="flex-1 overflow-y-auto flex flex-col gap-4 pr-1">
-                  {activeMobs.map(mob => {
-                    const hpPercent = Math.max(0, Math.min(100, (mob.hp / mob.maxHp) * 100))
-                    const isElite = mob.notes.toLowerCase().includes('elite') || mob.maxHp >= 20
-                    const isBoss = mob.notes.toLowerCase().includes('boss') || mob.maxHp >= 40
-                    const tierLabel = isBoss ? 'BOSS' : isElite ? 'ELITE' : 'BASIC'
-                    const badgeColour = isBoss 
-                      ? 'bg-red-500/10 border-red-500/20 text-red-500' 
-                      : isElite 
-                        ? 'bg-[#f59e0b]/10 border-[#f59e0b]/20 text-[#f59e0b]' 
-                        : 'bg-zinc-800/50 border-zinc-700/50 text-[#71717a]'
-                    
-                    return (
-                      <div 
-                        key={mob.id} 
-                        className={`bg-[#121214] border border-[#1f1f23] rounded-[4px] p-5 flex flex-col gap-3 transition-colors ${
-                          isBoss ? 'border-l-[3px] border-l-[#ef4444]' : isElite ? 'border-l-[3px] border-l-[#f59e0b]' : ''
-                        }`}
-                      >
-                        <div className="flex justify-between items-center gap-3">
-                          <span className={`font-mono-dcc text-sm font-bold tracking-wider uppercase ${isBoss ? 'text-[#ef4444]' : 'text-[#f4eee2]'}`}>
-                            {mob.name}
-                          </span>
-                          <span className={`font-mono-dcc text-[8px] font-bold border px-1.5 py-0.5 tracking-widest uppercase rounded-[2px] ${badgeColour}`}>
-                            {tierLabel}
-                          </span>
-                        </div>
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex justify-between font-mono-dcc text-[9px] font-semibold tracking-wider text-[#71717a] uppercase">
-                            <span>CON CHECK EFFORT</span>
-                            <span className={`font-bold flex items-center gap-1.5 ${isBoss ? 'text-[#ef4444]' : 'text-[#f4eee2]'}`}>
-                              <span>{mob.hp} / {mob.maxHp} HP</span>
-                              <span className="text-red-500">{'❤️'.repeat(Math.floor(mob.hp / 10)) + (mob.hp % 10 >= 5 ? '💔' : '')}</span>
-                              <span className="opacity-60 text-[8px] tracking-normal">({(mob.hp / 10).toFixed(1)} ❤️)</span>
-                            </span>
-                          </div>
-                          <div className="h-[8px] bg-white/[0.04] border border-white/[0.02] rounded-[1px] overflow-hidden">
-                            <div 
-                              className="h-full bg-gradient-to-r from-red-900 to-red-500 transition-all duration-300 rounded-[1px]" 
-                              style={{ width: `${hpPercent}%` }}
-                            />
-                          </div>
-                        </div>
-                        {mob.notes && (
-                          <div className="text-xs leading-relaxed text-[#71717a] font-sans pt-2 border-t border-white/[0.02]">
-                            <span className="font-mono-dcc text-[#f59e0b] font-bold mr-1">SPECIAL:</span>
-                            {mob.notes}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="flex-1 flex flex-col items-center justify-center gap-4 border border-dashed border-[#1f1f23] bg-[#121214]/20 rounded-[4px] text-[#71717a] p-8 text-center">
-                  <span className="text-3xl opacity-50">🛡️</span>
-                  <h3 className="font-mono-dcc text-[10px] font-bold tracking-[0.25em] text-[#71717a] uppercase">
-                    SECURE SECTOR
-                  </h3>
-                  <p className="text-xs max-w-[240px] leading-relaxed font-sans opacity-70">
-                    No active threats detected in this sector. Stand by for tactical update.
+                  <p className="text-xs text-[#71717a] leading-relaxed font-sans pr-2">
+                    {currentRoom ? getPublicDescription(currentRoom.description) : 'No description found for this sector. Keep your alert telemetry open.'}
                   </p>
                 </div>
-              )}
-            </div>
-          </section>
+              </>
+            ) : (
+              <>
+                {/* grid pattern bg */}
+                <div 
+                  className="absolute inset-0 opacity-[0.035]"
+                  style={{
+                    backgroundSize: '40px 40px',
+                    backgroundImage: 'linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)'
+                  }}
+                />
+                <div className="absolute top-4 left-5 font-mono-dcc text-[9px] font-bold tracking-[0.25em] text-[#71717a] uppercase z-20">
+                  {activePlan ? `${activePlan.name.toUpperCase()} — TACTICAL TELEMETRY (FOW)` : 'TACTICAL TELEMETRY MAP'}
+                </div>
+                
+                {rooms.length > 0 ? (
+                  <svg className="w-full h-full relative z-10 p-12" viewBox="0 0 1100 440">
+                    {/* Edges/Paths */}
+                    {connections.map(c => {
+                      const fromCoords = scaledCoords[c.fromRoomId]
+                      const toCoords = scaledCoords[c.toRoomId]
+                      if (!fromCoords || !toCoords) return null
+                      
+                      const fromRoom = rooms.find(r => r.id === c.fromRoomId)
+                      const toRoom = rooms.find(r => r.id === c.toRoomId)
+                      const isExplored = (fromRoom?.isVisited || fromRoom?.isCurrentRoom) && (toRoom?.isVisited || toRoom?.isCurrentRoom)
+                      const isFow = !isExplored && !(fromRoom?.isVisited || fromRoom?.isCurrentRoom) && !(toRoom?.isVisited || toRoom?.isCurrentRoom)
+                      
+                      return (
+                        <line
+                          key={c.id}
+                          x1={fromCoords.x}
+                          y1={fromCoords.y}
+                          x2={toCoords.x}
+                          y2={toCoords.y}
+                          stroke={isExplored ? '#10b981' : isFow ? '#1e1f24' : '#1f1f23'}
+                          strokeWidth={isExplored ? '2px' : '1.5px'}
+                          strokeDasharray={c.isContingency ? '5,5' : undefined}
+                          opacity={isFow ? 0.2 : 1}
+                          className="transition-all duration-300"
+                        />
+                      )
+                    })}
 
+                    {/* Room Nodes */}
+                    {rooms.map(r => {
+                      const coords = scaledCoords[r.id]
+                      if (!coords) return null
+                      
+                      const isVisited = r.isVisited
+                      const isCurrent = r.isCurrentRoom
+                      const isFow = !isVisited && !isCurrent
+                      
+                      const classes = isCurrent ? 'node-current' : isVisited ? 'node-visited' : 'node-fow'
+                      const dispName = isFow ? '?' : r.name.split(' — ')[1] || r.name.split(' \u2014 ')[1] || r.name
+                      const shortName = dispName.length > 18 ? dispName.substring(0, 16) + '...' : dispName
+                      
+                      return (
+                        <g key={r.id} transform={`translate(${coords.x}, ${coords.y})`} className={`${classes} transition-all duration-300`}>
+                          <circle className="node-glow" r="38" />
+                          <circle className="node-bg" r="38" />
+                          <text
+                            className="font-mono-dcc text-[10px] font-bold transition-all duration-300 fill-[#f4eee2]"
+                            y="4"
+                            textAnchor="middle"
+                            opacity={isFow ? 0.35 : 1}
+                          >
+                            {shortName.toUpperCase()}
+                          </text>
+                        </g>
+                      )
+                    })}
+                  </svg>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center font-mono-dcc text-sm text-[#71717a] italic">
+                    No floor plan layout loaded.
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </main>
 
         {/* ── BOTTOM TICKER BAR ── */}
