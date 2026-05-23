@@ -207,11 +207,10 @@ export function Battlemap({
                     </div>
                   )}
 
-                  {/* HP percentage overlay badge */}
-                  <div className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 bg-hud-bg border border-hud-border rounded-full px-1.5 py-0.5 text-[9px] font-bold font-hud flex items-center gap-0.5 shadow-md">
-                    <span className="text-hud-success">{t.hp}</span>
-                    <span className="opacity-30">/</span>
-                    <span className="text-hud-muted">{t.maxHp}</span>
+                  {/* HP percentage overlay badge (V2 Hearts) */}
+                  <div className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 bg-hud-bg border border-hud-border rounded-full px-1.5 py-0.5 text-[8.5px] font-bold font-hud flex items-center gap-0.5 shadow-md">
+                    <span className="text-red-500">❤️</span>
+                    <span className="text-hud-success">{(t.hp / 10).toFixed(1)}</span>
                   </div>
                 </div>
 
@@ -269,9 +268,13 @@ export function Battlemap({
                 </div>
 
                 {/* Mob Nameplate */}
-                <div className="mt-2 bg-red-950/80 border border-red-900 rounded px-1.5 py-0.5 pointer-events-none shadow-sm max-w-[100px] flex items-center justify-center">
+                <div className="mt-2 bg-red-950/80 border border-red-900 rounded px-1.5 py-0.5 pointer-events-none shadow-sm max-w-[100px] flex flex-col items-center justify-center gap-0.5">
                   <span className="font-hud text-[9px] font-bold tracking-wide text-red-300 truncate">
                     {t.name.toUpperCase()}
+                  </span>
+                  <span className="font-hud text-[7.5px] text-red-400 font-bold leading-none flex items-center gap-0.5">
+                    <span>❤️</span>
+                    <span>{(t.hp / 10).toFixed(1)}</span>
                   </span>
                 </div>
               </div>

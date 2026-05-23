@@ -738,8 +738,10 @@ export function DisplayScreen() {
                         <div className="flex flex-col gap-1.5">
                           <div className="flex justify-between font-mono-dcc text-[9px] font-semibold tracking-wider text-[#71717a] uppercase">
                             <span>CON CHECK EFFORT</span>
-                            <span className={`font-bold ${isBoss ? 'text-[#ef4444]' : 'text-[#f4eee2]'}`}>
-                              {mob.hp} / {mob.maxHp} HP
+                            <span className={`font-bold flex items-center gap-1.5 ${isBoss ? 'text-[#ef4444]' : 'text-[#f4eee2]'}`}>
+                              <span>{mob.hp} / {mob.maxHp} HP</span>
+                              <span className="text-red-500">{'❤️'.repeat(Math.floor(mob.hp / 10)) + (mob.hp % 10 >= 5 ? '💔' : '')}</span>
+                              <span className="opacity-60 text-[8px] tracking-normal">({(mob.hp / 10).toFixed(1)} ❤️)</span>
                             </span>
                           </div>
                           <div className="h-[8px] bg-white/[0.04] border border-white/[0.02] rounded-[1px] overflow-hidden">

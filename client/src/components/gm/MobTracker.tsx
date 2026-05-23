@@ -88,8 +88,10 @@ export function MobTracker({ mobs, currentFloor, send }: MobTrackerProps) {
                   {/* Full width Boss HP bar (V2 Design) */}
                   <div className="w-full h-8 bg-hud-panel border border-hud-border rounded overflow-hidden relative mb-3">
                     <div className="h-full transition-all duration-300" style={{ width: `${pct*100}%`, backgroundColor: hpCol }} />
-                    <div className="absolute inset-0 flex items-center justify-center font-hud text-sm font-bold text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
-                      {mob.hp} / {mob.maxHp} HP
+                    <div className="absolute inset-0 flex items-center justify-center font-hud text-xs md:text-sm font-bold text-white gap-2" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
+                      <span>{mob.hp} / {mob.maxHp} HP</span>
+                      <span className="text-red-500">{'❤️'.repeat(Math.floor(mob.hp / 10)) + (mob.hp % 10 >= 5 ? '💔' : '')}</span>
+                      <span className="opacity-80">({(mob.hp / 10).toFixed(1)} ❤️)</span>
                     </div>
                   </div>
                   

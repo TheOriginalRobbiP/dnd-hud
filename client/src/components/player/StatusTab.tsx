@@ -89,8 +89,13 @@ export function StatusTab({ character, floor, allCharacters, activeCharIds, onIn
             </div>
           )}
           <div className="flex-1 md:bg-hud-panel md:border md:border-hud-border md:rounded-lg md:p-4">
-            <div className="flex justify-between font-hud text-xs text-hud-muted mb-1">
-              <span>HEALTH</span><span>{hp} / {maxHp}</span>
+            <div className="flex justify-between font-hud text-xs text-hud-muted mb-1 items-center">
+              <span>HEALTH</span>
+              <span className="flex items-center gap-1">
+                <span>{hp} / {maxHp} HP</span>
+                <span className="text-red-500">{'❤️'.repeat(Math.floor(hp / 10)) + (hp % 10 >= 5 ? '💔' : '')}</span>
+                <span className="text-hud-accent font-bold">({(hp / 10).toFixed(1)} ❤️)</span>
+              </span>
             </div>
             <HPBar current={hp} max={maxHp} className="h-5" />
             {maxMp > 0 && (
