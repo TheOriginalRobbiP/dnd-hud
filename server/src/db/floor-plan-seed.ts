@@ -3,13 +3,8 @@ import { floorPlans, floorRooms, roomConnections } from './schema.js'
 import { eq } from 'drizzle-orm'
 
 export async function seedFloorPlans() {
-  console.log('[seed] Checking if floor plans exist...')
-  const existing = await db.select().from(floorPlans).limit(1)
-
-  if (existing.length > 0) {
-    console.log('[seed] Floor plans already seeded. Skipping.')
-    return
-  }
+  console.log('[seed] Wiping old floor plans and connections (cascade)...')
+  await db.delete(floorPlans)
 
   console.log('[seed] Pre-seeding Floor 1: "The Commons" layout with Scene & Battlemap pairs...')
 
