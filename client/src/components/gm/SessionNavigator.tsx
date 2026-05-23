@@ -45,6 +45,7 @@ interface SessionNavigatorProps {
   notesTextSize?: 'sm' | 'md' | 'lg'
   characters: Character[]
   activeMobs: Mob[]
+  activeCharIds: string[]
 }
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -161,7 +162,7 @@ function RoomListItem({
 }
 
 // ── Main Component ────────────────────────────────────────────
-export function SessionNavigator({ send, notesTextSize = 'md', characters, activeMobs }: SessionNavigatorProps) {
+export function SessionNavigator({ send, notesTextSize = 'md', characters, activeMobs, activeCharIds }: SessionNavigatorProps) {
   const [activePlan, setActivePlan] = useState<FloorPlan | null>(null)
   const [viewMode, setViewMode] = useState<'notes' | 'map'>('notes')
   const [rooms, setRooms] = useState<FloorRoom[]>([])
@@ -488,6 +489,7 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
                     characters={characters}
                     activeMobs={activeMobs}
                     isEditable={true}
+                    activeCharIds={activeCharIds}
                     onTokenMove={(id, isMob, posX, posY) => {
                       if (!isMob) {
                         send({ type: 'token_move', charId: id, posX, posY })

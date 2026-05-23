@@ -76,6 +76,7 @@ export function DisplayScreen() {
   const [characters, setCharacters] = useState<any[]>([])
   const [achievementUnlock, setAchievementUnlock] = useState<{ characterName: string; achievement: Achievement } | null>(null)
   const [showRoomTarget, setShowRoomTarget] = useState(true)
+  const [activeCharIds, setActiveCharIds] = useState<string[]>([])
   
   const wsRef = useRef<WebSocket | null>(null)
   const charactersRef = useRef<any[]>([])
@@ -208,6 +209,9 @@ export function DisplayScreen() {
               } else if (msg.mobId) {
                 setActiveMobs(prev => prev.map(m => m.id === msg.mobId ? { ...m, posX: msg.posX, posY: msg.posY } : m))
               }
+              break
+            case 'presence_sync':
+              setActiveCharIds(msg.activeCharIds)
               break
             case 'mob_add':
               setActiveMobs(prev => [...prev, msg.mob])
@@ -521,6 +525,7 @@ export function DisplayScreen() {
                   characters={characters}
                   activeMobs={activeMobs}
                   isEditable={false}
+                  activeCharIds={activeCharIds}
                   onTokenMove={() => {}}
                 />
               ) : (

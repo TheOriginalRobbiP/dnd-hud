@@ -7,6 +7,7 @@ interface BattlemapProps {
   activeMobs: Mob[]
   isEditable: boolean // True for GM dashboard
   myCharacterId?: string // Set for Player HUD to restrict moving other tokens
+  activeCharIds?: string[] // Track currently connected active crawlers to avoid offline ones
   onTokenMove: (id: string, isMob: boolean, posX: number, posY: number) => void
 }
 
@@ -16,6 +17,7 @@ export function Battlemap({
   activeMobs,
   isEditable,
   myCharacterId,
+  activeCharIds,
   onTokenMove,
 }: BattlemapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -94,7 +96,7 @@ export function Battlemap({
 
       {/* Render Active Character Tokens */}
       {characters
-        .filter((c) => c.isActive && c.isAlive)
+        .filter((c) => c.isActive && c.isAlive && (!activeCharIds || activeCharIds.includes(c.id)))
         .map((c) => {
           const isOwn = c.id === myCharacterId
           const posX = c.tokenPosX ?? 50

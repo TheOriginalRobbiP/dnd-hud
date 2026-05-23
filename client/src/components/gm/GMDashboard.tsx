@@ -241,6 +241,7 @@ export function GMDashboard({
                     notesTextSize={notesSize}
                     characters={state.characters}
                     activeMobs={state.floor.activeMobs}
+                    activeCharIds={activeCharIds}
                   />
                 </div>
                 <div className="border-l border-hud-border flex flex-col overflow-y-auto">
@@ -279,6 +280,7 @@ export function GMDashboard({
                       notesTextSize={notesSize}
                       characters={state.characters}
                       activeMobs={state.floor.activeMobs}
+                      activeCharIds={activeCharIds}
                     />
                   </div>
                 )}

@@ -244,6 +244,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                 activeMobs={state.floor.activeMobs}
                 isEditable={false}
                 myCharacterId={character.id}
+                activeCharIds={activeCharIds}
                 onTokenMove={(id, isMob, posX, posY) => {
                   if (!isMob) {
                     send({ type: 'token_move', charId: id, posX, posY })
