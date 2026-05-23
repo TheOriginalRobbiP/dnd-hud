@@ -2,3 +2,4 @@
 
 2026-05-23 | Integrated dynamic hearts visual representation | Converted HP numbers across all screens to visual heart icon lists (❤️/💔/🖤) with fractional metrics (e.g. 1.6 ❤️) matching the ICRPG "Everything Has Hearts" rule.
 2026-05-23 | Added dynamic physical token dispersion | Replaced naive exact coordinate grouping with an iterative radial force relaxation algorithm in Battlemap.tsx to elegantly resolve all close overlapping tokens.
+2026-05-23 | Switched to custom Czepeku-style local maps | Generated 10 unique Czepeku-style hand-drawn Scene Art and Battlemap Art pairs for all 5 sectors, copying them to client public assets and changing the seed script to clear and reseed on container boot.
