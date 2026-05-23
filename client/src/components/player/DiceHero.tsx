@@ -19,6 +19,7 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
   const [manualSides, setManualSides] = useState<number>(20)
   const [manualType, setManualType] = useState<'raw' | 'attack' | 'damage'>('raw')
   const [manualValue, setManualValue] = useState('')
+  const [targetMobId, setTargetMobId] = useState<string>('')
 
   const mainHand = character.equipment?.mainHand
 
@@ -26,6 +27,29 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
   const isRanged = mainHand
     ? /shotgun|pistol|rifle|gun|bow|blunderbuss|ranged|firearm|musket|revolver|laser/i.test(mainHand.name + ' ' + mainHand.description)
     : false
+
+  const targetMob = floor.activeMobs?.find(m => m.id === targetMobId) || null
+  const weaponRange = (mainHand as any)?.range || (isRanged ? 'near' : 'melee')
+  
+  let targetDistance = 0
+  let isOutOfRange = false
+  
+  if (targetMob) {
+    const charX = character.tokenPosX ?? 50
+    const charY = character.tokenPosY ?? 50
+    const mobX = (targetMob as any).posX ?? 50
+    const mobY = (targetMob as any).posY ?? 50
+    
+    const dx = charX - mobX
+    const dy = charY - mobY
+    targetDistance = Math.sqrt(dx*dx + dy*dy)
+    
+    if (weaponRange === 'melee' && targetDistance >= 15) {
+      isOutOfRange = true
+    } else if (weaponRange === 'near' && targetDistance >= 45) {
+      isOutOfRange = true
+    }
+  }
 
   const statVal = isRanged ? (character.stats.DEX ?? 4) : (character.stats.STR ?? 4)
   const statName = isRanged ? 'DEX' : 'STR'
@@ -111,7 +135,8 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
 
     const modParts = [`${statName}(${statMod >= 0 ? '+' : ''}${statMod})`]
     if (skillRank > 0) modParts.push(`Rank(${skillRank})`)
-    const text = `[${character.crawlerName}] attacked ${isPhysical ? 'physically' : 'digitally'} with **${mainHand.name}**: ${isPhysical ? 'physical' : 'd20'}(${raw}) + ${modParts.join('+')} = **${total}** vs Room Target ${target} — ${pass ? 'HIT ✓' : 'MISS ✗'}`
+    const targetText = targetMob ? ` targeting **${targetMob.name}**` : ''
+    const text = `[${character.crawlerName}] attacked ${isPhysical ? 'physically' : 'digitally'} with **${mainHand.name}**${targetText}: ${isPhysical ? 'physical' : 'd20'}(${raw}) + ${modParts.join('+')} = **${total}** vs Room Target ${target} — ${pass ? 'HIT ✓' : 'MISS ✗'}`
     send({ type: 'announcement', label: 'Combat', text })
   }
 
@@ -147,7 +172,8 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
     })
     setRolling(false)
 
-    const text = `[${character.crawlerName}] rolled ${isPhysical ? 'physical' : 'digital'} damage for **${mainHand.name}**: d${effortDie}(${raw}) + ${statName}(${statMod >= 0 ? '+' : ''}${statMod}) = **${total} ${isRanged ? 'Guns' : 'Weapon'} Effort** 💥`
+    const targetText = targetMob ? ` targeting **${targetMob.name}**` : ''
+    const text = `[${character.crawlerName}] rolled ${isPhysical ? 'physical' : 'digital'} damage for **${mainHand.name}**${targetText}: d${effortDie}(${raw}) + ${statName}(${statMod >= 0 ? '+' : ''}${statMod}) = **${total} ${isRanged ? 'Guns' : 'Weapon'} Effort** 💥`
     send({ type: 'announcement', label: 'Combat', text })
   }
 
@@ -287,14 +313,46 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
                 </span>
               </div>
 
+              {/* Target Selector and Range checks */}
+              {floor.activeMobs && floor.activeMobs.length > 0 && (
+                <div className="flex flex-col gap-1.5 bg-black/25 border border-hud-border/20 p-2.5 rounded">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-hud text-[9px] text-hud-muted tracking-widest uppercase">Target Threat:</span>
+                    <select
+                      value={targetMobId}
+                      onChange={e => setTargetMobId(e.target.value)}
+                      className="bg-hud-bg border border-hud-border/40 text-hud-text font-hud text-[10px] px-2 py-1 rounded outline-none focus:border-hud-accent"
+                    >
+                      <option value="">— No Target —</option>
+                      {floor.activeMobs.map(m => (
+                        <option key={m.id} value={m.id}>{m.name.toUpperCase()}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  {targetMob && (
+                    <div className="flex items-center justify-between font-hud text-[9px] text-hud-muted border-t border-hud-border/10 pt-1.5 mt-1.5">
+                      <span>DISTANCE:</span>
+                      <span className={isOutOfRange ? 'text-red-400 font-bold' : 'text-green-400 font-bold'}>
+                        {Math.round(targetDistance)}% ({isOutOfRange ? 'OUT OF RANGE ❌' : 'IN RANGE ✓'})
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-2 mt-1">
                 {/* Roll Attack Check Button */}
                 <button
                   onClick={triggerWeaponAttack}
-                  disabled={rolling}
-                  className="font-hud text-[10px] border border-hud-accent text-hud-accent bg-hud-accent/15 hover:bg-hud-accent/30 transition-all rounded py-2 flex flex-col items-center justify-center gap-0.5 font-bold tracking-wider leading-none"
+                  disabled={rolling || isOutOfRange}
+                  className={`font-hud text-[10px] border rounded py-2 flex flex-col items-center justify-center gap-0.5 font-bold tracking-wider leading-none transition-all ${
+                    isOutOfRange
+                      ? 'border-red-900/50 text-red-500 bg-red-950/20 hover:bg-red-950/30 opacity-70 cursor-not-allowed'
+                      : 'border-hud-accent text-hud-accent bg-hud-accent/15 hover:bg-hud-accent/30'
+                  }`}
                 >
-                  <span>{rollMode === 'manual' ? '🎯 ENTER ATTACK' : '🎯 ROLL ATTACK'}</span>
+                  <span>{isOutOfRange ? '❌ OUT OF RANGE' : rollMode === 'manual' ? '🎯 ENTER ATTACK' : '🎯 ROLL ATTACK'}</span>
                   <span className="text-[7.5px] font-normal opacity-70 leading-none mt-1">
                     d20 {checkMod >= 0 ? '+' : ''}{checkMod} ({statName} {statMod >= 0 ? '+' : ''}{statMod}{skillRank > 0 ? `, Lv${skillRank}` : ''})
                   </span>
@@ -303,10 +361,14 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
                 {/* Roll Damage / Effort Button */}
                 <button
                   onClick={triggerWeaponDamage}
-                  disabled={rolling}
-                  className="font-hud text-[10px] border border-amber-600 text-amber-400 bg-amber-950/20 hover:bg-amber-950/40 transition-all rounded py-2 flex flex-col items-center justify-center gap-0.5 font-bold tracking-wider leading-none"
+                  disabled={rolling || isOutOfRange}
+                  className={`font-hud text-[10px] border rounded py-2 flex flex-col items-center justify-center gap-0.5 font-bold tracking-wider leading-none transition-all ${
+                    isOutOfRange
+                      ? 'border-red-900/50 text-red-500 bg-red-950/20 hover:bg-red-950/30 opacity-70 cursor-not-allowed'
+                      : 'border-amber-600 text-amber-400 bg-amber-950/20 hover:bg-amber-950/40'
+                  }`}
                 >
-                  <span>{rollMode === 'manual' ? '💥 ENTER DAMAGE' : '💥 ROLL DAMAGE'}</span>
+                  <span>{isOutOfRange ? '❌ OUT OF RANGE' : rollMode === 'manual' ? '💥 ENTER DAMAGE' : '💥 ROLL DAMAGE'}</span>
                   <span className="text-[7.5px] font-normal opacity-70 leading-none mt-1">
                     d{effortDie} {statMod >= 0 ? '+' : ''}{statMod} ({statName} mod)
                   </span>

@@ -307,6 +307,19 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
       await db.insert(gmLog).values({ message: `[System] Snapshot restored: "${snap.name}"` })
       break
     }
+    case 'token_move': {
+      if (msg.charId) {
+        await db.update(characters)
+          .set({ tokenPosX: msg.posX, tokenPosY: msg.posY, updatedAt: new Date() })
+          .where(eq(characters.id, msg.charId))
+      } else if (msg.mobId) {
+        const [f] = await db.select().from(floorState).limit(1)
+        const mobs = ((f?.activeMobs as Array<{id:string; posX?: number; posY?: number}>) ?? [])
+          .map(m => m.id === msg.mobId ? { ...m, posX: msg.posX, posY: msg.posY } : m)
+        await db.update(floorState).set({ activeMobs: mobs, updatedAt: new Date() }).where(eq(floorState.id, 1))
+      }
+      break
+    }
     default:
       break
   }

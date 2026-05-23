@@ -12,11 +12,13 @@ import { PartySidebar } from './PartySidebar'
 import { RulesTab } from './RulesTab'
 import { Hotlist } from './Hotlist'
 import { getModifiedCharacter } from '../../utils/modifiers'
+import { Battlemap } from '../shared/Battlemap'
 
-type Tab = 'status' | 'skills' | 'fame' | 'rules'
+type Tab = 'status' | 'skills' | 'map' | 'fame' | 'rules'
 const TABS: { id: Tab; label: string }[] = [
   { id: 'status', label: 'STATUS' },
   { id: 'skills', label: 'SKILLS' },
+  { id: 'map', label: 'MAP' },
   { id: 'fame', label: 'FAME' },
   { id: 'rules', label: 'RULES' },
 ]
@@ -235,6 +237,22 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
             <div className={tab === 'fame' ? 'block' : 'hidden md:hidden'}>
               <FameTab character={character} floorNumber={state.floor.floorNumber} />
             </div>
+            <div className={tab === 'map' ? 'block h-[calc(100vh-180px)] md:h-full p-2' : 'hidden'}>
+              <Battlemap
+                mapUrl={state.floor.currentRoomData?.flavourArt ?? null}
+                characters={state.characters}
+                activeMobs={state.floor.activeMobs}
+                isEditable={false}
+                myCharacterId={character.id}
+                onTokenMove={(id, isMob, posX, posY) => {
+                  if (!isMob) {
+                    send({ type: 'token_move', charId: id, posX, posY })
+                  } else {
+                    send({ type: 'token_move', mobId: id, posX, posY })
+                  }
+                }}
+              />
+            </div>
             <div className={tab === 'rules' ? 'block' : 'hidden'}>
               <RulesTab />
             </div>
@@ -295,6 +313,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
         {TABS.map(t => {
           let icon = "📊"
           if (t.id === 'skills') icon = "⚔️"
+          if (t.id === 'map') icon = "🗺️"
           if (t.id === 'fame') icon = "⭐"
           if (t.id === 'rules') icon = "📜"
 

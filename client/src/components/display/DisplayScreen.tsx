@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { WSMessage, AppState, Mob, Achievement } from '../../types'
+import { Battlemap } from '../shared/Battlemap'
 
 // ── Types ─────────────────────────────────────────────────────
 interface RoomData {
@@ -200,6 +201,13 @@ export function DisplayScreen() {
               setRooms([])
               setConnections([])
               setActiveMobs([])
+              break
+            case 'token_move':
+              if (msg.charId) {
+                setCharacters(prev => prev.map(c => c.id === msg.charId ? { ...c, tokenPosX: msg.posX, tokenPosY: msg.posY } : c))
+              } else if (msg.mobId) {
+                setActiveMobs(prev => prev.map(m => m.id === msg.mobId ? { ...m, posX: msg.posX, posY: msg.posY } : m))
+              }
               break
             case 'mob_add':
               setActiveMobs(prev => [...prev, msg.mob])
@@ -505,82 +513,94 @@ export function DisplayScreen() {
           {/* LEFT AREA: Live FOW Map & Room telemetries */}
           <section className="flex flex-col border-r border-[#1f1f23] p-8 gap-6 min-h-0">
             
-            {/* Live SVG Node Map Container */}
+            {/* Live SVG Node Map or Battlemap VTT Container */}
             <div className="flex-1 bg-[#121214]/40 border border-[#1f1f23] rounded-[4px] relative overflow-hidden min-h-0">
-              {/* grid pattern bg */}
-              <div 
-                className="absolute inset-0 opacity-[0.035]"
-                style={{
-                  backgroundSize: '40px 40px',
-                  backgroundImage: 'linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)'
-                }}
-              />
-              <div className="absolute top-4 left-5 font-mono-dcc text-[9px] font-bold tracking-[0.25em] text-[#71717a] uppercase">
-                {activePlan ? `${activePlan.name.toUpperCase()} — TACTICAL TELEMETRY (FOW)` : 'TACTICAL TELEMETRY MAP'}
-              </div>
-              
-              {rooms.length > 0 ? (
-                <svg className="w-full h-full relative z-10 p-12" viewBox="0 0 1100 440">
-                  {/* Edges/Paths */}
-                  {connections.map(c => {
-                    const fromCoords = scaledCoords[c.fromRoomId]
-                    const toCoords = scaledCoords[c.toRoomId]
-                    if (!fromCoords || !toCoords) return null
-                    
-                    const fromRoom = rooms.find(r => r.id === c.fromRoomId)
-                    const toRoom = rooms.find(r => r.id === c.toRoomId)
-                    const isExplored = (fromRoom?.isVisited || fromRoom?.isCurrentRoom) && (toRoom?.isVisited || toRoom?.isCurrentRoom)
-                    const isFow = !isExplored && !(fromRoom?.isVisited || fromRoom?.isCurrentRoom) && !(toRoom?.isVisited || toRoom?.isCurrentRoom)
-                    
-                    return (
-                      <line
-                        key={c.id}
-                        x1={fromCoords.x}
-                        y1={fromCoords.y}
-                        x2={toCoords.x}
-                        y2={toCoords.y}
-                        stroke={isExplored ? '#10b981' : isFow ? '#1e1f24' : '#1f1f23'}
-                        strokeWidth={isExplored ? '2px' : '1.5px'}
-                        strokeDasharray={c.isContingency ? '5,5' : undefined}
-                        opacity={isFow ? 0.2 : 1}
-                        className="transition-all duration-300"
-                      />
-                    )
-                  })}
-
-                  {/* Room Nodes */}
-                  {rooms.map(r => {
-                    const coords = scaledCoords[r.id]
-                    if (!coords) return null
-                    
-                    const isVisited = r.isVisited
-                    const isCurrent = r.isCurrentRoom
-                    const isFow = !isVisited && !isCurrent
-                    
-                    const classes = isCurrent ? 'node-current' : isVisited ? 'node-visited' : 'node-fow'
-                    const dispName = isFow ? '?' : r.name.split(' — ')[1] || r.name.split(' \u2014 ')[1] || r.name
-                    const shortName = dispName.length > 18 ? dispName.substring(0, 16) + '...' : dispName
-                    
-                    return (
-                      <g key={r.id} transform={`translate(${coords.x}, ${coords.y})`} className={`${classes} transition-all duration-300`}>
-                        <circle className="node-glow" r="38" />
-                        <circle className="node-bg" r="38" />
-                        <text
-                          className="font-mono-dcc text-[10px] font-bold transition-all duration-300 fill-[#f4eee2]"
-                          y="4"
-                          textAnchor="middle"
-                          opacity={isFow ? 0.35 : 1}
-                        >
-                          {shortName.toUpperCase()}
-                        </text>
-                      </g>
-                    )
-                  })}
-                </svg>
+              {room && room.flavourArt ? (
+                <Battlemap
+                  mapUrl={room.flavourArt}
+                  characters={characters}
+                  activeMobs={activeMobs}
+                  isEditable={false}
+                  onTokenMove={() => {}}
+                />
               ) : (
-                <div className="w-full h-full flex items-center justify-center font-mono-dcc text-sm text-[#71717a] italic">
-                  No floor plan layout loaded.
-                </div>
+                <>
+                  {/* grid pattern bg */}
+                  <div 
+                    className="absolute inset-0 opacity-[0.035]"
+                    style={{
+                      backgroundSize: '40px 40px',
+                      backgroundImage: 'linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)'
+                    }}
+                  />
+                  <div className="absolute top-4 left-5 font-mono-dcc text-[9px] font-bold tracking-[0.25em] text-[#71717a] uppercase z-20">
+                    {activePlan ? `${activePlan.name.toUpperCase()} — TACTICAL TELEMETRY (FOW)` : 'TACTICAL TELEMETRY MAP'}
+                  </div>
+                  
+                  {rooms.length > 0 ? (
+                    <svg className="w-full h-full relative z-10 p-12" viewBox="0 0 1100 440">
+                      {/* Edges/Paths */}
+                      {connections.map(c => {
+                        const fromCoords = scaledCoords[c.fromRoomId]
+                        const toCoords = scaledCoords[c.toRoomId]
+                        if (!fromCoords || !toCoords) return null
+                        
+                        const fromRoom = rooms.find(r => r.id === c.fromRoomId)
+                        const toRoom = rooms.find(r => r.id === c.toRoomId)
+                        const isExplored = (fromRoom?.isVisited || fromRoom?.isCurrentRoom) && (toRoom?.isVisited || toRoom?.isCurrentRoom)
+                        const isFow = !isExplored && !(fromRoom?.isVisited || fromRoom?.isCurrentRoom) && !(toRoom?.isVisited || toRoom?.isCurrentRoom)
+                        
+                        return (
+                          <line
+                            key={c.id}
+                            x1={fromCoords.x}
+                            y1={fromCoords.y}
+                            x2={toCoords.x}
+                            y2={toCoords.y}
+                            stroke={isExplored ? '#10b981' : isFow ? '#1e1f24' : '#1f1f23'}
+                            strokeWidth={isExplored ? '2px' : '1.5px'}
+                            strokeDasharray={c.isContingency ? '5,5' : undefined}
+                            opacity={isFow ? 0.2 : 1}
+                            className="transition-all duration-300"
+                          />
+                        )
+                      })}
+
+                      {/* Room Nodes */}
+                      {rooms.map(r => {
+                        const coords = scaledCoords[r.id]
+                        if (!coords) return null
+                        
+                        const isVisited = r.isVisited
+                        const isCurrent = r.isCurrentRoom
+                        const isFow = !isVisited && !isCurrent
+                        
+                        const classes = isCurrent ? 'node-current' : isVisited ? 'node-visited' : 'node-fow'
+                        const dispName = isFow ? '?' : r.name.split(' — ')[1] || r.name.split(' \u2014 ')[1] || r.name
+                        const shortName = dispName.length > 18 ? dispName.substring(0, 16) + '...' : dispName
+                        
+                        return (
+                          <g key={r.id} transform={`translate(${coords.x}, ${coords.y})`} className={`${classes} transition-all duration-300`}>
+                            <circle className="node-glow" r="38" />
+                            <circle className="node-bg" r="38" />
+                            <text
+                              className="font-mono-dcc text-[10px] font-bold transition-all duration-300 fill-[#f4eee2]"
+                              y="4"
+                              textAnchor="middle"
+                              opacity={isFow ? 0.35 : 1}
+                            >
+                              {shortName.toUpperCase()}
+                            </text>
+                          </g>
+                        )
+                      })}
+                    </svg>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center font-mono-dcc text-sm text-[#71717a] italic">
+                      No floor plan layout loaded.
+                    </div>
+                  )}
+                </>
               )}
             </div>
 

@@ -24,6 +24,8 @@ export const characters = pgTable('characters', {
   isActive: boolean('is_active').notNull().default(true),
   aiFavour: integer('ai_favour').notNull().default(0),  // AI Favour tokens
   portrait: text('portrait'),                           // path to portrait image e.g. /images/crawlers/doris.png
+  tokenPosX: real('token_pos_x').notNull().default(50.0),
+  tokenPosY: real('token_pos_y').notNull().default(50.0),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 })
@@ -79,6 +81,7 @@ export const items = pgTable('items', {
   hpEffect: integer('hp_effect'),            // heal/damage on use (positive = heal)
   mpEffect: integer('mp_effect'),            // mana restore on use
   tags: text('tags').notNull().default(''), // comma-separated: weapon, armor, jewelry etc
+  range: text('range').notNull().default('melee'), // melee | near | far
   createdAt: timestamp('created_at').defaultNow(),
 }, (t) => ({ nameUnique: unique().on(t.name) }))
 

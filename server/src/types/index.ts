@@ -66,6 +66,7 @@ export interface InventoryItem {
   equippedSlot: keyof EquipmentSlots | null
   fromLootBox: boolean
   lootBoxTier: LootBoxTier | null
+  range?: 'melee' | 'near' | 'far'
 }
 
 // ── Loot Box ─────────────────────────────────────────────────
@@ -132,6 +133,8 @@ export interface Character {
   notes: string
   isAlive: boolean
   isActive: boolean
+  tokenPosX: number
+  tokenPosY: number
 }
 
 // ── Mob ──────────────────────────────────────────────────────
@@ -142,6 +145,8 @@ export interface Mob {
   maxHp: number
   effortType: 'basic' | 'weapon' | 'magic'
   notes: string
+  posX?: number
+  posY?: number
 }
 
 // ── Floor State ──────────────────────────────────────────────
@@ -157,6 +162,7 @@ export interface FloorState {
   collapseTimerStartedAt: number | null  // timestamp for client-side countdown
   activeMobs: Mob[]
   showRoomTarget: boolean
+  currentRoomData?: any | null
 }
 
 // ── App State (full sync payload on connect) ─────────────────
@@ -205,3 +211,4 @@ export type WSMessage =
   | { type: 'display_clear' }
   | { type: 'presence_sync'; activeCharIds: string[] }
   | { type: 'play_sound'; soundId: string }
+  | { type: 'token_move'; charId?: string; mobId?: string; posX: number; posY: number }

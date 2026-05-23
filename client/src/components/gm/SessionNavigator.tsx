@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import type { WSMessage } from '../../types'
+import type { WSMessage, Character, Mob } from '../../types'
+import { Battlemap } from '../shared/Battlemap'
 
 // Re-using the same shapes the server returns for the floor planner
 interface FloorPlan {
@@ -42,6 +43,8 @@ interface MobTemplate {
 interface SessionNavigatorProps {
   send: (msg: WSMessage) => void
   notesTextSize?: 'sm' | 'md' | 'lg'
+  characters: Character[]
+  activeMobs: Mob[]
 }
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -158,13 +161,19 @@ function RoomListItem({
 }
 
 // ── Main Component ────────────────────────────────────────────
-export function SessionNavigator({ send, notesTextSize = 'md' }: SessionNavigatorProps) {
+export function SessionNavigator({ send, notesTextSize = 'md', characters, activeMobs }: SessionNavigatorProps) {
   const [activePlan, setActivePlan] = useState<FloorPlan | null>(null)
+  const [viewMode, setViewMode] = useState<'notes' | 'map'>('notes')
   const [rooms, setRooms] = useState<FloorRoom[]>([])
   const [connections, setConnections] = useState<RoomConnection[]>([])
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [entering, setEntering] = useState<string | null>(null)
+
+  // Reset view mode back to notes when selected room changes
+  useEffect(() => {
+    setViewMode('notes')
+  }, [selectedRoomId])
 
   // 1. Fetch data
   const fetchData = useCallback(async () => {
@@ -444,30 +453,74 @@ export function SessionNavigator({ send, notesTextSize = 'md' }: SessionNavigato
                     ))}
                   </div>
                 )}
-              </div>
-              
-              <div className="flex-1 overflow-y-auto p-5 pb-24 prose prose-invert max-w-none">
-                {parseDescriptionSections(selectedRoom.description).length > 0 ? (
-                  <div className="flex flex-col gap-6">
-                    {parseDescriptionSections(selectedRoom.description).map((sec, idx) => (
-                      <div key={idx} className="flex flex-col gap-2">
-                        {sec.title && (
-                          <h3 className="font-hud text-sm text-hud-accent tracking-widest border-b border-hud-border pb-1 m-0">
-                            {sec.title}
-                          </h3>
-                        )}
-                        <div className={`text-hud-text whitespace-pre-wrap font-sans leading-relaxed ${bodyTextClass}`}>
-                          {sec.content}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-hud-muted italic font-sans flex items-center justify-center h-32 border border-dashed border-hud-border">
-                    No notes provided for this room.
+
+                {/* Mode Toggles: NOTES vs BATTLEMAP */}
+                {selectedRoom.flavourArt && (
+                  <div className="flex gap-2 border-t border-hud-border/25 pt-2.5 mt-1.5 flex-shrink-0">
+                    <button
+                      onClick={() => setViewMode('notes')}
+                      className={`font-hud text-[10px] border px-3 py-1 font-semibold tracking-wider rounded-[2px] transition-colors ${
+                        viewMode === 'notes'
+                          ? 'border-hud-accent text-hud-accent bg-hud-accent/5'
+                          : 'border-hud-border text-hud-muted hover:border-hud-muted hover:text-hud-text'
+                      }`}
+                    >
+                      📜 ROOM NOTES
+                    </button>
+                    <button
+                      onClick={() => setViewMode('map')}
+                      className={`font-hud text-[10px] border px-3 py-1 font-semibold tracking-wider rounded-[2px] transition-colors ${
+                        viewMode === 'map'
+                          ? 'border-hud-accent text-hud-accent bg-hud-accent/5'
+                          : 'border-hud-border text-hud-muted hover:border-hud-muted hover:text-hud-text'
+                      }`}
+                    >
+                      🗺️ BATTLEMAP VTT
+                    </button>
                   </div>
                 )}
               </div>
+              
+              {viewMode === 'map' && selectedRoom.flavourArt ? (
+                <div className="flex-1 p-5 pb-24">
+                  <Battlemap
+                    mapUrl={selectedRoom.flavourArt}
+                    characters={characters}
+                    activeMobs={activeMobs}
+                    isEditable={true}
+                    onTokenMove={(id, isMob, posX, posY) => {
+                      if (!isMob) {
+                        send({ type: 'token_move', charId: id, posX, posY })
+                      } else {
+                        send({ type: 'token_move', mobId: id, posX, posY })
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto p-5 pb-24 prose prose-invert max-w-none">
+                  {parseDescriptionSections(selectedRoom.description).length > 0 ? (
+                    <div className="flex flex-col gap-6">
+                      {parseDescriptionSections(selectedRoom.description).map((sec, idx) => (
+                        <div key={idx} className="flex flex-col gap-2">
+                          {sec.title && (
+                            <h3 className="font-hud text-sm text-hud-accent tracking-widest border-b border-hud-border pb-1 m-0">
+                              {sec.title}
+                            </h3>
+                          )}
+                          <div className={`text-hud-text whitespace-pre-wrap font-sans leading-relaxed ${bodyTextClass}`}>
+                            {sec.content}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-hud-muted italic font-sans flex items-center justify-center h-32 border border-dashed border-hud-border">
+                      No notes provided for this room.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-hud-muted font-hud text-sm border-l border-hud-border border-dashed m-8">

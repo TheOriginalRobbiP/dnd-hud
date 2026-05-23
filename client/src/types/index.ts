@@ -70,6 +70,7 @@ export interface InventoryItem {
   charges?: number | null       // null = single use, number = remaining uses
   hpEffect?: number | null      // positive = heal, negative = damage
   mpEffect?: number | null
+  range?: 'melee' | 'near' | 'far'
 }
 
 // ── Loot Box ─────────────────────────────────────────────────
@@ -138,6 +139,8 @@ export interface Character {
   isActive: boolean
   aiFavour: number        // AI Favour tokens — shown as ⚡
   portrait: string | null // path to portrait image
+  tokenPosX: number
+  tokenPosY: number
 }
 
 // ── Mob ──────────────────────────────────────────────────────
@@ -148,6 +151,8 @@ export interface Mob {
   maxHp: number
   effortType: 'basic' | 'weapon' | 'magic'
   notes: string
+  posX?: number
+  posY?: number
 }
 
 // ── Floor State ──────────────────────────────────────────────
@@ -163,6 +168,7 @@ export interface FloorState {
   collapseTimerStartedAt: number | null  // timestamp for client-side countdown
   activeMobs: Mob[]
   showRoomTarget: boolean
+  currentRoomData?: any | null
 }
 
 // ── App State (full sync payload on connect) ─────────────────
@@ -211,3 +217,4 @@ export type WSMessage =
   | { type: 'display_clear' }
   | { type: 'presence_sync'; activeCharIds: string[] }
   | { type: 'play_sound'; soundId: string }
+  | { type: 'token_move'; charId?: string; mobId?: string; posX: number; posY: number }

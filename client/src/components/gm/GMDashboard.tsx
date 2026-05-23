@@ -236,7 +236,12 @@ export function GMDashboard({
                   <GMLogPanel gmLog={state.gmLog} lootQueue={state.lootQueue} characters={activeCharacters} send={send} />
                 </div>
                 <div className="flex flex-col overflow-hidden bg-hud-bg">
-                  <SessionNavigator send={send} notesTextSize={notesSize} />
+                  <SessionNavigator
+                    send={send}
+                    notesTextSize={notesSize}
+                    characters={state.characters}
+                    activeMobs={state.floor.activeMobs}
+                  />
                 </div>
                 <div className="border-l border-hud-border flex flex-col overflow-y-auto">
                   <RoomPanel floor={state.floor} send={send} />
@@ -269,7 +274,12 @@ export function GMDashboard({
               <div className="flex-1 flex flex-col gap-4 mt-2">
                 {mobileTab === 'map' && (
                   <div className="flex-1 min-h-[400px] flex flex-col">
-                    <SessionNavigator send={send} notesTextSize={notesSize} />
+                    <SessionNavigator
+                      send={send}
+                      notesTextSize={notesSize}
+                      characters={state.characters}
+                      activeMobs={state.floor.activeMobs}
+                    />
                   </div>
                 )}
                 {mobileTab === 'room' && (
