@@ -130,7 +130,7 @@ export function RoomPanel({ floor, send }: RoomPanelProps) {
 
       {/* ── Mob tracker — gets all remaining space ─────────── */}
       <div className="flex-1 overflow-y-auto">
-        <MobTracker mobs={floor.activeMobs} currentFloor={floor.floorNumber} send={send} />
+        <MobTracker floor={floor} send={send} />
       </div>
     </div>
   )

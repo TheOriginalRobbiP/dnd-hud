@@ -17,6 +17,7 @@ const DEFAULT_FLOOR: FloorState = {
   activeMobs: [],
   showRoomTarget: true,
   displayViewMode: 'scene',
+  bonePile: [],
 }
 
 async function ensureFloorState() {
@@ -110,13 +111,62 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
         .set({ displayViewMode: msg.mode, updatedAt: new Date() })
         .where(eq(floorState.id, 1))
       break
+    case 'bone_harvest_trigger': {
+      const [f] = await db.select().from(floorState).limit(1)
+      const bonePileList = (f?.bonePile as string[]) ?? []
+      if (bonePileList.length === 0) break
+
+      const activeMobsList = (f?.activeMobs as Array<{id:string; hp:number; maxHp:number; effortType:string; notes:string; posX?:number; posY?:number; name:string}>) ?? []
+      
+      // Find the Bone Collector or Centaminotaur as the spawn origin point
+      const boneCollector = activeMobsList.find(m => 
+        m.name.toUpperCase().includes('BONE COLLECTOR') || 
+        m.name.toUpperCase().includes('CENTAMINOTAUR')
+      )
+      const bX = boneCollector?.posX ?? 50
+      const bY = boneCollector?.posY ?? 50
+
+      const spawnedSkeletons = bonePileList.map((name, k) => {
+        const angle = (k * 2 * Math.PI) / bonePileList.length
+        const radius = 8.0 // percentage units
+        const posX = Math.round(Math.max(3, Math.min(97, bX + radius * Math.cos(angle))))
+        const posY = Math.round(Math.max(3, Math.min(97, bY + radius * Math.sin(angle))))
+
+        return {
+          id: crypto.randomUUID(),
+          name: `Skeletal ${name}`,
+          hp: 5,
+          maxHp: 5,
+          effortType: 'basic' as 'basic',
+          notes: 'A fragile, one-hit skeletal minion raised by the Bone Collector.',
+          posX,
+          posY,
+        }
+      })
+
+      const updatedMobs = [...activeMobsList, ...spawnedSkeletons]
+      
+      await db.update(floorState)
+        .set({
+          activeMobs: updatedMobs,
+          bonePile: [], // Clear the bone pile
+          updatedAt: new Date()
+        })
+        .where(eq(floorState.id, 1))
+
+      await db.insert(gmLog).values({
+        message: `[Bone Harvest] The Bone Collector raised ${spawnedSkeletons.length} skeletal minions onto the tracks!`
+      })
+      break
+    }
     case 'display_clear':
       await db.update(floorState)
         .set({ currentRoomData: null, updatedAt: new Date() })
         .where(eq(floorState.id, 1))
       break
     case 'play_sound':
-      // No DB state — just broadcast to all clients (display screen picks it up)
+    case 'system_alert':
+      // No DB state — just broadcast to all clients
       break
     case 'collapse_timer_start':
       await db.update(floorState)
@@ -184,14 +234,36 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
     }
     case 'mob_remove': {
       const [f] = await db.select().from(floorState).limit(1)
-      const mobs = ((f?.activeMobs as Array<{id:string}>) ?? []).filter(m => m.id !== msg.mobId)
-      await db.update(floorState).set({ activeMobs: mobs, updatedAt: new Date() }).where(eq(floorState.id, 1))
+      const activeMobsList = (f?.activeMobs as Array<{id:string; hp:number; name:string}>) ?? []
+      const originalMob = activeMobsList.find(m => m.id === msg.mobId)
+      
+      const mobs = activeMobsList.filter(m => m.id !== msg.mobId)
+      const updates: any = { activeMobs: mobs, updatedAt: new Date() }
+      
+      // If a mob was already defeated (hp <= 0) when removed, log its bones
+      if (originalMob && originalMob.hp <= 0) {
+        const currentBonePile = (f?.bonePile as string[]) ?? []
+        updates.bonePile = [...currentBonePile, originalMob.name]
+      }
+      
+      await db.update(floorState).set(updates).where(eq(floorState.id, 1))
       break
     }
     case 'mob_hp_update': {
       const [f] = await db.select().from(floorState).limit(1)
-      const mobs = ((f?.activeMobs as Array<{id:string;hp:number}>) ?? []).map(m => m.id === msg.mobId ? {...m, hp: msg.hp} : m)
-      await db.update(floorState).set({ activeMobs: mobs, updatedAt: new Date() }).where(eq(floorState.id, 1))
+      const activeMobsList = (f?.activeMobs as Array<{id:string; hp:number; name:string}>) ?? []
+      const originalMob = activeMobsList.find(m => m.id === msg.mobId)
+      
+      const mobs = activeMobsList.map(m => m.id === msg.mobId ? {...m, hp: msg.hp} : m)
+      const updates: any = { activeMobs: mobs, updatedAt: new Date() }
+      
+      // Add to bone pile if the mob was alive and is now killed
+      if (originalMob && originalMob.hp > 0 && msg.hp <= 0) {
+        const currentBonePile = (f?.bonePile as string[]) ?? []
+        updates.bonePile = [...currentBonePile, originalMob.name]
+      }
+      
+      await db.update(floorState).set(updates).where(eq(floorState.id, 1))
       break
     }
     case 'achievement_unlock': {
@@ -278,7 +350,7 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
           .where(eq(characters.id, char.id))
       }
       await db.update(floorState)
-        .set({ activeMobs: [], collapseTimerActive: false, collapseTimerSeconds: null, collapseTimerStartedAt: null, roomNumber: 1, currentRoomData: null, updatedAt: new Date() })
+        .set({ activeMobs: [], collapseTimerActive: false, collapseTimerSeconds: null, collapseTimerStartedAt: null, roomNumber: 1, currentRoomData: null, bonePile: [], updatedAt: new Date() })
         .where(eq(floorState.id, 1))
       await db.delete(lootBoxes).where(ne(lootBoxes.state, 'opened'))
       

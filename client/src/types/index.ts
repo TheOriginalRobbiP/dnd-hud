@@ -170,6 +170,7 @@ export interface FloorState {
   showRoomTarget: boolean
   currentRoomData?: any | null
   displayViewMode: 'scene' | 'battlemap'
+  bonePile: string[]
 }
 
 // ── App State (full sync payload on connect) ─────────────────
@@ -220,3 +221,5 @@ export type WSMessage =
   | { type: 'play_sound'; soundId: string }
   | { type: 'token_move'; charId?: string; mobId?: string; posX: number; posY: number }
   | { type: 'display_view_mode_update'; mode: 'scene' | 'battlemap' }
+  | { type: 'bone_harvest_trigger' }
+  | { type: 'system_alert'; text: string }

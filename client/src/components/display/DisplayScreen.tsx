@@ -80,6 +80,8 @@ export function DisplayScreen() {
   const [showRoomTarget, setShowRoomTarget] = useState(true)
   const [activeCharIds, setActiveCharIds] = useState<string[]>([])
   const [displayViewMode, setDisplayViewMode] = useState<'scene' | 'battlemap'>('scene')
+  const [systemAlert, setSystemAlert] = useState<string | null>(null)
+  const [isShaking, setIsShaking] = useState(false)
   
   const wsRef = useRef<WebSocket | null>(null)
   const charactersRef = useRef<any[]>([])
@@ -248,6 +250,22 @@ export function DisplayScreen() {
               })
               break
             }
+            case 'system_alert': {
+              setSystemAlert(msg.text)
+              setIsShaking(true)
+              setTimeout(() => {
+                setSystemAlert(null)
+              }, 8500)
+              setTimeout(() => {
+                setIsShaking(false)
+              }, 3000)
+              
+              // Autoplay standard dramatic alarm buzzer
+              const audio = new Audio('/audio/alarm.mp3')
+              audio.volume = 0.5
+              audio.play().catch(() => {})
+              break
+            }
           }
         } catch (err) {
           console.error('[DisplayScreen WS] Parse error:', err)
@@ -365,11 +383,20 @@ export function DisplayScreen() {
 
   return (
     <div
-      className="relative h-screen w-screen overflow-hidden bg-[#09090b] text-[#f4eee2] flex flex-col"
+      className={`relative h-screen w-screen overflow-hidden bg-[#09090b] text-[#f4eee2] flex flex-col ${isShaking ? 'animate-shake' : ''}`}
       style={room ? { '--theme-colour': room.themeColour } as React.CSSProperties : undefined}
     >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        @keyframes shake {
+          0%, 100% { transform: translate(0, 0); }
+          10%, 30%, 50%, 70%, 90% { transform: translate(-10px, -5px); }
+          20%, 40%, 60%, 80% { transform: translate(10px, 5px); }
+        }
+        .animate-shake {
+          animation: shake 0.3s ease-in-out infinite;
+        }
         
         .viewport-style {
           font-family: 'Inter', system-ui, sans-serif;
@@ -844,12 +871,12 @@ export function DisplayScreen() {
                   </span>
                   <span className={`font-mono-dcc text-[8px] font-bold px-3 py-1 tracking-widest rounded-[2px] uppercase ${
                     (achievementUnlock.achievement.tier as string) === 'platinum' 
-                      ? 'bg-[#3b82f6] text-[#09090b]' 
-                      : achievementUnlock.achievement.tier === 'celestial' 
-                        ? 'bg-[#a855f7] text-[#09090b]' 
-                        : achievementUnlock.achievement.tier === 'silver'
-                          ? 'bg-[#94a3b8] text-[#09090b]'
-                          : 'bg-[#f59e0b] text-[#09090b]'
+                    ? 'bg-[#3b82f6] text-[#09090b]' 
+                    : achievementUnlock.achievement.tier === 'celestial' 
+                      ? 'bg-[#a855f7] text-[#09090b]' 
+                      : achievementUnlock.achievement.tier === 'silver'
+                        ? 'bg-[#94a3b8] text-[#09090b]'
+                        : 'bg-[#f59e0b] text-[#09090b]'
                   }`}>
                     {(achievementUnlock.achievement.tier || 'GOLD').toUpperCase()} TIER
                   </span>
@@ -863,6 +890,40 @@ export function DisplayScreen() {
                   </h2>
                   <p className="text-base text-[#71717a] max-w-[600px] leading-relaxed font-sans">
                     New Achievement awarded to <span className="text-[#f4eee2] font-semibold">{achievementUnlock.characterName}</span>: {achievementUnlock.achievement.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── FULL SCREEN SYSTEM ALERT OVERLAY ── */}
+        <div className={`popup-overlay absolute inset-0 bg-[#3b0712]/90 backdrop-blur-[15px] z-[1001] flex items-center justify-center transition-all duration-500 ${
+          systemAlert ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}>
+          {systemAlert && (
+            <div className="achievement-card p-0.5 rounded-[4px] border-red-600 bg-[#09090b] shadow-[0_0_80px_rgba(239,68,68,0.4)] scale-100 translate-y-0">
+              <div className="bg-[#121214] rounded-[2px] overflow-hidden">
+                <div className="px-6 py-4 border-b border-red-900 flex items-center justify-between bg-red-950/20">
+                  <span className="font-mono-dcc text-[10px] font-bold tracking-[0.3em] text-red-500 uppercase animate-pulse">
+                    ⚠️ SYSTEM INTRUSION ALERT
+                  </span>
+                  <span className="font-mono-dcc text-[8px] font-bold px-3 py-1 tracking-widest rounded-[2px] uppercase bg-red-600 text-white animate-pulse">
+                    CRITICAL
+                  </span>
+                </div>
+                <div className="p-12 flex flex-col items-center text-center gap-6">
+                  <div className="w-[100px] h-[100px] flex items-center justify-center text-4xl bg-red-950/20 border border-red-800 rounded-full animate-bounce">
+                    🚨
+                  </div>
+                  <h2 className="font-serif-dcc text-[44px] font-normal text-red-500 leading-tight tracking-wide animate-pulse uppercase">
+                    BONE HARVEST TRIGGERED
+                  </h2>
+                  <p className="text-xl text-[#f4eee2] font-semibold max-w-[680px] leading-relaxed font-mono-dcc border border-red-900 p-4 bg-black/60 rounded">
+                    {systemAlert}
+                  </p>
+                  <p className="text-xs text-red-400 font-mono-dcc opacity-60">
+                    Sponsor Broadcast cameras locked. Show ratings spiking (+18.4%). Do not die.
                   </p>
                 </div>
               </div>

@@ -56,9 +56,16 @@ export function handleWsConnection(ws: WebSocket) {
 
       await applyMessage(message)
 
-      if (message.type === 'loot_opened') {
+      if (message.type === 'loot_opened' || message.type === 'bone_harvest_trigger') {
         const freshState = await getFullState()
         broadcast({ type: 'full_state_sync', state: freshState } as any, undefined)
+
+        if (message.type === 'bone_harvest_trigger') {
+          broadcast({ 
+            type: 'system_alert', 
+            text: "THE BONE COLLECTOR ROARS! THE BONES OF YOUR VICTIMS SHIVER AND RISE TO ENCIRCLE YOU!" 
+          }, undefined)
+        }
       } else {
         broadcast(message, ws)
       }

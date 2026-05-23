@@ -1,16 +1,16 @@
 import { effortColour } from '../../utils/colours'
 import { BestiaryPicker } from './BestiaryPicker'
 import { useState } from 'react'
-import type { Mob, WSMessage } from '../../types'
+import type { Mob, WSMessage, FloorState } from '../../types'
 
 
 interface MobTrackerProps {
-  mobs: Mob[]
-  currentFloor: number
+  floor: FloorState
   send: (msg: WSMessage) => void
 }
 
-export function MobTracker({ mobs, currentFloor, send }: MobTrackerProps) {
+export function MobTracker({ floor, send }: MobTrackerProps) {
+  const { activeMobs: mobs, floorNumber: currentFloor, bonePile, currentRoomData } = floor
   const [adding, setAdding] = useState(false)
   const [showBestiary, setShowBestiary] = useState(false)
   const [name, setName] = useState('')
@@ -40,6 +40,19 @@ export function MobTracker({ mobs, currentFloor, send }: MobTrackerProps) {
           + ADD MOB
         </button>
       </div>
+
+      {/* Bone Harvest Trigger (Sector 8 & Bone Pile Available) */}
+      {currentRoomData?.roomName?.includes('Subway Platform') && bonePile && bonePile.length > 0 && (
+        <div className="mb-4 border border-red-700 bg-red-950/20 p-2 text-center rounded-[2px] shadow-lg">
+          <div className="font-hud text-[9px] text-red-400 font-bold tracking-widest mb-1">BONE COLLECTION COMPLETE</div>
+          <button 
+            onClick={() => send({ type: 'bone_harvest_trigger' })}
+            className="w-full font-hud text-xs bg-red-700 hover:bg-red-600 text-white font-bold py-1.5 px-3 rounded transition-all shadow-md animate-pulse"
+          >
+            💀 TRIGGER BONE HARVEST ({bonePile.length} MINIONS) 💀
+          </button>
+        </div>
+      )}
 
       {adding && (
         <div className="flex flex-col gap-2 mb-3 border border-hud-border p-2">
