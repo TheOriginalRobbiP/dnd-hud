@@ -39,6 +39,37 @@ export function RoleSelector({ characters, sessionActive, onSelect, onCharacterC
     )
   }
 
+  // ── Library ───────────────────────────────────────────────────
+  if (stage.type === 'library') {
+    const handleSelectSaved = async (char: Character) => {
+      if (saving) return
+      setSaving(true)
+      try {
+        const res = await fetch(`/api/characters/${char.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slot: stage.slot, isActive: true })
+        })
+        if (!res.ok) throw new Error('Failed to update slot')
+        onCharacterCreated?.()
+        onSelect(`player:${char.id}`)
+      } catch (e) {
+        console.error(e)
+        setSaving(false)
+      }
+    }
+
+    return (
+      <div className="min-h-screen bg-hud-bg flex items-center justify-center p-4">
+        <SavedCrawlerLibrary
+          characters={characters}
+          onSelect={handleSelectSaved}
+          onCancel={() => setStage({ type: 'slot', slot: stage.slot })}
+        />
+      </div>
+    )
+  }
+
   // ── Occupied Slot Confirmation Screen ────────────────────────
   if (stage.type === 'occupied_slot') {
     const { slot, character: char } = stage
@@ -302,11 +333,30 @@ export function RoleSelector({ characters, sessionActive, onSelect, onCharacterC
         <button
           onClick={() => setStage({ type: 'wizard', slot })}
           className="w-full max-w-lg py-4 border border-hud-accent text-hud-accent font-hud tracking-widest text-sm
-                     hover:bg-hud-accent hover:text-hud-bg transition-colors flex flex-col items-center gap-1"
+                     hover:bg-hud-accent hover:text-hud-bg transition-colors flex flex-col items-center gap-1 mb-6"
         >
           <span>⬡ CREATE YOUR OWN</span>
           <span className="text-xs text-hud-muted font-hud normal-case tracking-normal group-hover:text-hud-bg">
             Guided 7-step character creation
+          </span>
+        </button>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 w-full max-w-lg mb-6">
+          <div className="flex-1 h-px bg-hud-border" />
+          <span className="font-hud text-hud-muted text-xs tracking-widest">OR</span>
+          <div className="flex-1 h-px bg-hud-border" />
+        </div>
+
+        {/* Import Saved Crawler */}
+        <button
+          onClick={() => setStage({ type: 'library', slot })}
+          className="w-full max-w-lg py-4 border border-amber-500/50 text-amber-500 font-hud tracking-widest text-sm
+                     hover:bg-amber-500 hover:text-hud-bg transition-colors flex flex-col items-center gap-1"
+        >
+          <span>📁 RECONSTRUCT ARCHIVED CRAWLER</span>
+          <span className="text-xs text-hud-muted font-hud normal-case tracking-normal group-hover:text-hud-bg">
+            Load an existing crawler from the soul bank
           </span>
         </button>
 
@@ -343,7 +393,7 @@ export function RoleSelector({ characters, sessionActive, onSelect, onCharacterC
 
       <div className="w-full max-w-xs flex flex-col gap-2">
         {SLOT_LABELS.map((label, i) => {
-          const char = characters[i]
+          const char = characters.find(c => c.slot === i + 1)
           const isDisabled = !sessionActive
           return (
             <button
