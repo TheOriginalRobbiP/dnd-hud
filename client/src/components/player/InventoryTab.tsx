@@ -54,9 +54,10 @@ interface InventoryTabProps {
   hideSections?: ('loot' | 'equipment' | 'backpack')[]
   compact?: boolean
   onLogAction?: (text: string, type: 'roll' | 'item' | 'equip' | 'status' | 'system') => void
+  locked?: boolean
 }
 
-export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hideSections = [], compact = false, onLogAction }: InventoryTabProps) {
+export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hideSections = [], compact = false, onLogAction, locked = false }: InventoryTabProps) {
   const [equipping, setEquipping] = useState<string | null>(null)
   const [expandedItem, setExpandedItem] = useState<string | null>(null)
   const [using, setUsing] = useState<string | null>(null)
@@ -288,7 +289,8 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
   }
 
   return (
-    <div className={`flex flex-col ${compact ? 'gap-3 p-0' : 'gap-6 p-4'}`}>
+    <div className="relative overflow-hidden min-h-[200px] w-full">
+      <div className={`flex flex-col ${compact ? 'gap-3 p-0' : 'gap-6 p-4'} ${locked ? 'opacity-20 pointer-events-none' : ''}`}>
 
       {/* Loot boxes */}
       {showLoot && (
@@ -481,6 +483,20 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
             </div>
 
           </div>
+        </div>
+      )}
+      </div>
+
+      {locked && (
+        <div className="absolute inset-0 bg-[#0d0d0f]/95 border border-red-900/40 rounded-xl flex flex-col items-center justify-center gap-1.5 p-6 select-none z-10 text-center animate-pulse">
+          <span className="text-red-500 text-3xl leading-none">🔒</span>
+          <span className="font-hud text-base text-red-500 font-extrabold tracking-widest uppercase leading-none mt-2">MODULE ENCRYPTED</span>
+          <span className="font-hud text-xs text-hud-muted tracking-wider uppercase mt-1 max-w-[320px] leading-relaxed">
+            INVENTORY STORAGE AND RETRIEVAL COOLDOWNS ARE SECURED BY THE BORANT CORPORATION SECURITY DIVISION. 
+          </span>
+          <span className="font-hud text-[10px] text-hud-accent/60 mt-1 max-w-[280px] leading-relaxed">
+            REQUISITE: REGISTER AT YOUR LOCAL TUTORIAL GUILD TO GAIN SYSTEM AUTHORIZATION.
+          </span>
         </div>
       )}
     </div>

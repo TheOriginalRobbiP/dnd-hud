@@ -173,6 +173,7 @@ export interface FloorState {
   currentRoomData?: any | null
   displayViewMode: 'scene' | 'battlemap'
   bonePile: string[]
+  preTutorialActive: boolean
 }
 
 // ── App State (full sync payload on connect) ─────────────────

@@ -31,10 +31,11 @@ function parseEffect(item: any): { hpEffect: number | null; mpEffect: number | n
 interface HotlistProps {
   character: Character
   send: (msg: WSMessage) => void
-  onCharacterUpdate: () => void
+  onCharacterUpdate?: () => void
+  locked?: boolean
 }
 
-export function Hotlist({ character, send }: HotlistProps) {
+export function Hotlist({ character, send, locked = false }: HotlistProps) {
   const [using, setUsing] = useState<string | null>(null)
   
   const carried = character.inventory.filter((i: any) => !i.isEquipped)
@@ -72,55 +73,67 @@ export function Hotlist({ character, send }: HotlistProps) {
   }
 
   return (
-    <div className="border border-hud-border bg-hud-panel/25 p-2 rounded-lg flex flex-col gap-1.5">
+    <div className="border border-hud-border bg-hud-panel/25 p-2 rounded-lg flex flex-col gap-1.5 relative overflow-hidden">
       <div className="font-hud text-[10px] text-hud-muted tracking-widest flex justify-between items-center uppercase border-b border-hud-border/40 pb-1">
         <span>🎒 ACTIVE HOTLIST</span>
         <span className="text-[8px] text-hud-muted normal-case italic">max 6 slots</span>
       </div>
-      <div className="grid grid-cols-6 gap-1.5">
-        {Array.from({ length: 6 }).map((_, idx) => {
-          const stack = stackedHotlist[idx]
-          if (stack) {
-            const item = stack.primary
-            const count = stack.items.length
-            const consumable = isConsumableItem(item)
-            const charges = item.charges ?? null
-            return (
-              <div key={item.id} className="border border-hud-accent bg-hud-panel p-1.5 text-center rounded flex flex-col justify-between min-h-[62px] relative overflow-hidden transition-all duration-200">
-                <div className="font-hud text-[9px] text-hud-accent font-bold truncate uppercase leading-tight pr-1.5" title={item.name}>{item.name}</div>
-                
-                {/* Badge for stacking */}
-                {count > 1 && (
-                  <div className="absolute top-0 right-0 bg-hud-accent text-hud-bg text-[7px] font-extrabold px-1 rounded-bl leading-none py-0.5">
-                    {count}
-                  </div>
-                )}
-
-                <div className="flex flex-col gap-0.5 mt-auto w-full">
-                  {consumable ? (
-                    <button
-                      onClick={() => useItem(item)}
-                      disabled={using === item.id}
-                      className="font-hud text-[9px] text-hud-bg bg-amber-500 hover:bg-amber-400 font-extrabold px-1.5 py-1 rounded leading-none transition-colors w-full"
-                    >
-                      {using === item.id ? '...' : charges != null ? `USE(${charges})` : 'USE'}
-                    </button>
-                  ) : (
-                    <div className="font-hud text-[9px] text-hud-muted italic leading-none text-center py-1 bg-hud-panel/40 border border-hud-border/30 rounded">
-                      gear
+      <div className="relative">
+        <div className="grid grid-cols-6 gap-1.5">
+          {Array.from({ length: 6 }).map((_, idx) => {
+            const stack = stackedHotlist[idx]
+            if (stack) {
+              const item = stack.primary
+              const count = stack.items.length
+              const consumable = isConsumableItem(item)
+              const charges = item.charges ?? null
+              return (
+                <div key={item.id} className="border border-hud-accent bg-hud-panel p-1.5 text-center rounded flex flex-col justify-between min-h-[62px] relative overflow-hidden transition-all duration-200">
+                  <div className="font-hud text-[9px] text-hud-accent font-bold truncate uppercase leading-tight pr-1.5" title={item.name}>{item.name}</div>
+                  
+                  {/* Badge for stacking */}
+                  {count > 1 && (
+                    <div className="absolute top-0 right-0 bg-hud-accent text-hud-bg text-[7px] font-extrabold px-1 rounded-bl leading-none py-0.5">
+                      {count}
                     </div>
                   )}
+
+                  <div className="flex flex-col gap-0.5 mt-auto w-full">
+                    {consumable ? (
+                      <button
+                        onClick={() => useItem(item)}
+                        disabled={using === item.id || locked}
+                        className="font-hud text-[9px] text-hud-bg bg-amber-500 hover:bg-amber-400 font-extrabold px-1.5 py-1 rounded leading-none transition-colors w-full"
+                      >
+                        {using === item.id ? '...' : charges != null ? `USE(${charges})` : 'USE'}
+                      </button>
+                    ) : (
+                      <div className="font-hud text-[9px] text-hud-muted italic leading-none text-center py-1 bg-hud-panel/40 border border-hud-border/30 rounded">
+                        gear
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )
-          } else {
-            return (
-              <div key={idx} className="border border-hud-border border-dashed p-1.5 text-center rounded flex items-center justify-center min-h-[62px] bg-hud-panel/5">
-                <span className="font-hud text-[9px] text-hud-muted italic leading-none">empty</span>
-              </div>
-            )
-          }
-        })}
+              )
+            } else {
+              return (
+                <div key={idx} className="border border-hud-border border-dashed p-1.5 text-center rounded flex items-center justify-center min-h-[62px] bg-hud-panel/5">
+                  <span className="font-hud text-[9px] text-hud-muted italic leading-none">empty</span>
+                </div>
+              )
+            }
+          })}
+        </div>
+
+        {locked && (
+          <div className="absolute inset-0 bg-[#0d0d0f]/95 border border-red-900/40 rounded flex flex-col items-center justify-center gap-1 p-2 select-none z-10 text-center animate-pulse">
+            <span className="text-red-500 text-lg leading-none">🔒</span>
+            <span className="font-hud text-[10px] text-red-500 font-extrabold tracking-widest uppercase leading-none mt-1">HOTLIST ENCRYPTED</span>
+            <span className="font-hud text-[8px] text-hud-muted tracking-wider uppercase mt-1 max-w-[220px] leading-tight">
+              REQUISITE: REGISTER AT TUTORIAL GUILD TO DECRYPT COOLDOWN CHANNELS.
+            </span>
+          </div>
+        )}
       </div>
     </div>
   )

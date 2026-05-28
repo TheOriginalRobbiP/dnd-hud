@@ -81,6 +81,16 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
     })
   }
 
+  const handleOpenInventory = () => {
+    if (state.floor.preTutorialActive) {
+      addLogEntry("⚠️ [BORANT SECURITY] ENCRYPTED MODULE: Register at nearest Tutorial Guild to decrypt inventory storage.", "system")
+      // Optionally trigger a subtle error beep if sound is wired
+      send({ type: 'play_sound', soundId: 'error' })
+    } else {
+      setShowInventoryModal(true)
+    }
+  }
+
   // 2. Setup screen resizing detect
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -168,11 +178,15 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
         <div className="flex flex-col items-end gap-1.5 text-[11px]">
           <div className="flex gap-2 items-center">
             <button 
-              onClick={() => setShowInventoryModal(true)}
-              className="font-hud text-[10px] border border-hud-border text-hud-muted px-2 py-0.5 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider flex items-center gap-1 bg-hud-bg/50 rounded"
+              onClick={handleOpenInventory}
+              className={`font-hud text-[10px] border px-2 py-0.5 transition-colors tracking-wider flex items-center gap-1 rounded ${
+                state.floor.preTutorialActive 
+                  ? 'border-red-900/60 text-red-500 bg-red-950/5' 
+                  : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent bg-hud-bg/50'
+              }`}
             >
-              <span>🎒</span>
-              <span>INVENTORY</span>
+              <span>{state.floor.preTutorialActive ? '🔒' : '🎒'}</span>
+              <span>{state.floor.preTutorialActive ? 'LOCKED' : 'INVENTORY'}</span>
             </button>
             <DMPanel mode="player" myCharId={character.id} myName={character.crawlerName} messages={dmMessages} send={send} onRead={onDMRead} onEcho={onDMEcho} />
           </div>
@@ -199,11 +213,15 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
         </div>
         <div className="flex items-center gap-3 pr-2">
           <button 
-            onClick={() => setShowInventoryModal(true)}
-            className="font-hud text-[10px] sm:text-xs border border-hud-border text-hud-muted px-2.5 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider flex items-center gap-1.5"
+            onClick={handleOpenInventory}
+            className={`font-hud text-[10px] sm:text-xs border px-2.5 py-1 transition-colors tracking-wider flex items-center gap-1.5 ${
+              state.floor.preTutorialActive 
+                ? 'border-red-900/60 text-red-500 bg-red-950/5' 
+                : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'
+            }`}
           >
-            <span>🎒</span>
-            <span>INVENTORY</span>
+            <span>{state.floor.preTutorialActive ? '🔒' : '🎒'}</span>
+            <span>{state.floor.preTutorialActive ? 'LOCKED' : 'INVENTORY'}</span>
           </button>
           <button 
             onClick={() => setShowJournalModal(true)}
@@ -245,7 +263,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
               <SkillsTab character={character} />
             </div>
             <div className={tab === 'fame' ? 'block' : 'hidden md:hidden'}>
-              <FameTab character={character} floorNumber={state.floor.floorNumber} />
+              <FameTab character={character} floorNumber={state.floor.floorNumber} locked={state.floor.preTutorialActive} />
             </div>
             <div className={tab === 'map' ? 'block h-[calc(100vh-180px)] md:h-full p-2' : 'hidden'}>
               {state.floor.displayViewMode === 'scene' && (state.floor.currentRoomData?.sceneArt || state.floor.currentRoomData?.flavourArt) ? (
@@ -305,6 +323,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                  character={character} 
                  send={send} 
                  onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} 
+                 locked={state.floor.preTutorialActive}
                />
                
                <div className="bg-hud-panel border border-hud-border rounded-xl p-6">
@@ -334,11 +353,12 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                    hideSections={['backpack']}
                    compact={true}
                    onLogAction={addLogEntry}
+                   locked={state.floor.preTutorialActive}
                  />
                </div>
 
                <div className="p-4">
-                 <FameTab character={character} floorNumber={state.floor.floorNumber} />
+                 <FameTab character={character} floorNumber={state.floor.floorNumber} locked={state.floor.preTutorialActive} />
                </div>
              </div>
           </div>
@@ -426,6 +446,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                 onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} 
                 hideSections={isMobile ? [] : ['loot', 'equipment']}
                 onLogAction={addLogEntry}
+                locked={state.floor.preTutorialActive}
               />
             </div>
           </div>

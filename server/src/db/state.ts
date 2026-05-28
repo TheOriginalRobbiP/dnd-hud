@@ -18,6 +18,7 @@ const DEFAULT_FLOOR: FloorState = {
   showRoomTarget: true,
   displayViewMode: 'scene',
   bonePile: [],
+  preTutorialActive: false,
 }
 
 async function ensureFloorState() {

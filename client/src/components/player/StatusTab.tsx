@@ -168,7 +168,7 @@ export function StatusTab({ character, floor, allCharacters, activeCharIds, onIn
 
           {/* Hotlist Quick Access Belt — Mobile */}
           <div className="mt-4">
-            <Hotlist character={character} send={send} onCharacterUpdate={onCharacterUpdate} />
+            <Hotlist character={character} send={send} onCharacterUpdate={onCharacterUpdate} locked={floor.preTutorialActive} />
           </div>
         </div>
       </div>

@@ -114,7 +114,7 @@ export function GMDashboard({
     <div className="min-h-screen flex flex-col bg-hud-bg overflow-y-auto font-sans" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
       {sessionMgrOpen && (
-        <SessionManager send={send} onClose={() => setSessionMgrOpen(false)} />
+        <SessionManager floorState={state.floor} send={send} onClose={() => setSessionMgrOpen(false)} />
       )}
 
       {/* Header */}

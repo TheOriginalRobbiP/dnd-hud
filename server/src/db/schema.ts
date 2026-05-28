@@ -49,6 +49,7 @@ export const floorState = pgTable('floor_state', {
   showRoomTarget: boolean('show_room_target').notNull().default(true),
   displayViewMode: text('display_view_mode').notNull().default('scene'), // scene | battlemap
   bonePile: jsonb('bone_pile').notNull().default([]), // array of strings (names of killed mobs)
+  preTutorialActive: boolean('pre_tutorial_active').notNull().default(false),
   updatedAt: timestamp('updated_at').defaultNow(),
 })
 
