@@ -147,6 +147,10 @@ function applyPatch(state: AppState, msg: WSMessage): AppState {
     }
     case 'announcement':
       return { ...state, gmLog: [`[${msg.label}] ${msg.text}`, ...state.gmLog].slice(0, 20) }
+    case 'player_notes_update':
+      return { ...state, characters: state.characters.map(c => c.id === msg.charId ? { ...c, playerNotes: msg.notes } : c) }
+    case 'ai_favour_update':
+      return { ...state, characters: state.characters.map(c => c.id === msg.charId ? { ...c, aiFavour: Math.max(0, c.aiFavour + msg.delta) } : c) }
     case 'session_start':
       return { ...state, floor: { ...state.floor, sessionActive: true } }
     case 'session_stop':

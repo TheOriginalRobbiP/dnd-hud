@@ -105,7 +105,7 @@ async function seed() {
   await db.delete(characters)
   console.log('[seed] Cleared existing characters.')
 
-  for (const c of crawlers) {
+  for (const [idx, c] of crawlers.entries()) {
     const equipment: Record<string, any> = {
       head: null, face: null, neck: null, chest: null,
       arms: null, hands: null, fingers: null, legs: null,
@@ -136,6 +136,7 @@ async function seed() {
       notes: c.notes,
       isAlive: true,
       isActive: true,
+      slot: idx + 1,
     })
     console.log(`[seed] Created: ${c.crawlerName} — ${c.notes.split('.')[0]}`)
   }

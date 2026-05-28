@@ -12,6 +12,7 @@
     "build": "npm run build --workspace=server && npm run build --workspace=client"
   },
   "dependencies": {
+    "drizzle-orm": "^0.45.2",
     "puppeteer": "^25.0.2"
   }
 }

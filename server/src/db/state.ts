@@ -327,6 +327,12 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
       }
       break
     }
+    case 'player_notes_update': {
+      await db.update(characters)
+        .set({ playerNotes: msg.notes, updatedAt: new Date() })
+        .where(eq(characters.id, msg.charId))
+      break
+    }
     case 'session_start': {
       await db.update(floorState)
         .set({ sessionActive: true, updatedAt: new Date() })

@@ -13,12 +13,14 @@ import { RulesTab } from './RulesTab'
 import { Hotlist } from './Hotlist'
 import { getModifiedCharacter } from '../../utils/modifiers'
 import { Battlemap } from '../shared/Battlemap'
+import { JournalEditor } from './JournalEditor'
 
-type Tab = 'status' | 'skills' | 'map' | 'fame' | 'rules'
+type Tab = 'status' | 'skills' | 'map' | 'notes' | 'fame' | 'rules'
 const TABS: { id: Tab; label: string }[] = [
   { id: 'status', label: 'STATUS' },
   { id: 'skills', label: 'SKILLS' },
   { id: 'map', label: 'MAP' },
+  { id: 'notes', label: 'NOTES' },
   { id: 'fame', label: 'FAME' },
   { id: 'rules', label: 'RULES' },
 ]
@@ -45,6 +47,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
   const [tab, setTab] = useState<Tab>('status')
   const [showRulesModal, setShowRulesModal] = useState(false)
   const [showInventoryModal, setShowInventoryModal] = useState(false)
+  const [showJournalModal, setShowJournalModal] = useState(false)
   const [inspectCharId, setInspectCharId] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const [actionLog, setActionLog] = useState<ActionLogEntry[]>([])
@@ -203,6 +206,13 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
             <span>INVENTORY</span>
           </button>
           <button 
+            onClick={() => setShowJournalModal(true)}
+            className="font-hud text-[10px] sm:text-xs border border-hud-border text-hud-muted px-2.5 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider flex items-center gap-1.5"
+          >
+            <span>🗒️</span>
+            <span>JOURNAL</span>
+          </button>
+          <button 
             onClick={() => setShowRulesModal(true)}
             className="font-hud text-[10px] sm:text-xs border border-hud-border text-hud-muted px-2.5 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider flex items-center gap-1.5"
           >
@@ -275,6 +285,14 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
             <div className={tab === 'rules' ? 'block' : 'hidden'}>
               <RulesTab />
             </div>
+            <div className={tab === 'notes' ? 'block h-full p-2' : 'hidden'}>
+              <JournalEditor
+                characterId={character.id}
+                crawlerName={character.crawlerName}
+                initialNotes={character.playerNotes || ''}
+                send={send}
+              />
+            </div>
           </div>
           
           {/* Desktop-only Middle Column (Hero Dice Roller & Skills) */}
@@ -333,6 +351,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
           let icon = "📊"
           if (t.id === 'skills') icon = "⚔️"
           if (t.id === 'map') icon = "🗺️"
+          if (t.id === 'notes') icon = "🗒️"
           if (t.id === 'fame') icon = "⭐"
           if (t.id === 'rules') icon = "📜"
 
@@ -350,6 +369,28 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
 
       {inspectChar && <InspectModal character={inspectChar} onClose={() => setInspectCharId(null)} hideNotes />}
       
+      {/* Desktop-only Journal Modal overlay */}
+      {showJournalModal && (
+        <div className="fixed inset-0 bg-hud-bg/95 flex items-center justify-center z-50 p-4" onClick={() => setShowJournalModal(false)}>
+          <div className="bg-hud-panel border border-hud-border w-full max-w-2xl flex flex-col overflow-hidden rounded-xl"
+            style={{ height: '80vh', maxHeight: '700px' }}
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-hud-border flex-shrink-0 bg-hud-panel/40">
+              <div className="font-hud text-xs text-hud-accent tracking-widest font-bold uppercase">🗒️ CRAWLER JOURNAL</div>
+              <button onClick={() => setShowJournalModal(false)} className="text-hud-muted hover:text-hp-low font-hud text-xs font-bold border border-hud-border/40 px-2 py-0.5 hover:border-red-900 rounded">✕ CLOSE</button>
+            </div>
+            <div className="flex-1 overflow-hidden p-4">
+              <JournalEditor
+                characterId={character.id}
+                crawlerName={character.crawlerName}
+                initialNotes={character.playerNotes || ''}
+                send={send}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Desktop-only Rules Modal overlay */}
       {showRulesModal && (
         <div className="fixed inset-0 bg-hud-bg/95 flex items-center justify-center z-50 p-4" onClick={() => setShowRulesModal(false)}>

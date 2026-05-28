@@ -22,6 +22,8 @@ export const characters = pgTable('characters', {
   notes: text('notes').notNull().default(''),
   isAlive: boolean('is_alive').notNull().default(true),
   isActive: boolean('is_active').notNull().default(true),
+  playerNotes: text('player_notes').notNull().default(''),
+  slot: integer('slot'),
   aiFavour: integer('ai_favour').notNull().default(0),  // AI Favour tokens
   portrait: text('portrait'),                           // path to portrait image e.g. /images/crawlers/doris.png
   tokenPosX: real('token_pos_x').notNull().default(50.0),

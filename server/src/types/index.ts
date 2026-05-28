@@ -133,6 +133,10 @@ export interface Character {
   notes: string
   isAlive: boolean
   isActive: boolean
+  playerNotes: string
+  slot: number | null
+  aiFavour: number
+  portrait: string | null
   tokenPosX: number
   tokenPosY: number
 }
@@ -204,6 +208,7 @@ export type WSMessage =
   | { type: 'direct_message'; toCharId: string | 'gm'; fromCharId: string | 'gm'; fromName: string; text: string; timestamp: number }
   | { type: 'full_state_sync_request' }
   | { type: 'ai_favour_update'; charId: string; delta: number }
+  | { type: 'player_notes_update'; charId: string; notes: string }
   | { type: 'session_reset' }
   | { type: 'session_start' }
   | { type: 'session_stop' }

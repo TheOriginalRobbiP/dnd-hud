@@ -142,29 +142,60 @@ export function Battlemap({
           })),
         ]
 
-        const coordCounts: Record<string, number> = {}
-        const dispersedTokens = rawTokens.map((t) => {
-          // Round to 0 decimal places to cluster tightly overlapping tokens
-          const key = `${Math.round(t.posX)}_${Math.round(t.posY)}`
-          const count = coordCounts[key] ?? 0
-          coordCounts[key] = count + 1
-
-          if (count === 0) return t
-
-          // Spread overlapping tokens radially
-          const radius = 5.5 + Math.floor(count / 6) * 1.5
-          const angle = (count * 2 * Math.PI) / Math.min(6, count + 2)
-
-          return {
-            ...t,
-            displayPosX: t.posX + radius * Math.cos(angle),
-            displayPosY: t.posY + radius * Math.sin(angle),
-          }
-        }).map(t => ({
+        // Dynamic physical token dispersion / relaxation
+        const dispersedTokens = rawTokens.map((t) => ({
           ...t,
-          displayPosX: (t as any).displayPosX ?? t.posX,
-          displayPosY: (t as any).displayPosY ?? t.posY,
+          displayPosX: t.posX,
+          displayPosY: t.posY,
         }))
+
+        const minDist = 6.5 // Minimum distance in percentage (tokens are roughly 6% map size)
+        const iterations = 10
+
+        for (let iter = 0; iter < iterations; iter++) {
+          let hasMoved = false
+          for (let j = 0; j < dispersedTokens.length; j++) {
+            for (let k = j + 1; k < dispersedTokens.length; k++) {
+              const t1 = dispersedTokens[j]
+              const t2 = dispersedTokens[k]
+
+              const dx = t2.displayPosX - t1.displayPosX
+              const dy = t2.displayPosY - t1.displayPosY
+              
+              // Handle perfect overlap by giving a slight offset based on indexes
+              let dist = Math.sqrt(dx * dx + dy * dy)
+              let dirX = dx
+              let dirY = dy
+              
+              if (dist === 0) {
+                const angle = (j + k) * 0.77 // pseudo-random deterministic angle
+                dirX = Math.cos(angle) * 0.1
+                dirY = Math.sin(angle) * 0.1
+                dist = 0.1
+              }
+
+              if (dist < minDist) {
+                const overlap = minDist - dist
+                const pushX = (dirX / dist) * overlap * 0.5
+                const pushY = (dirY / dist) * overlap * 0.5
+
+                dispersedTokens[j].displayPosX -= pushX
+                dispersedTokens[j].displayPosY -= pushY
+                dispersedTokens[k].displayPosX += pushX
+                dispersedTokens[k].displayPosY += pushY
+
+                // Bound clamp each token within standard map limits (3% - 97%)
+                dispersedTokens[j].displayPosX = Math.max(3, Math.min(97, dispersedTokens[j].displayPosX))
+                dispersedTokens[j].displayPosY = Math.max(3, Math.min(97, dispersedTokens[j].displayPosY))
+                dispersedTokens[k].displayPosX = Math.max(3, Math.min(97, dispersedTokens[k].displayPosX))
+                dispersedTokens[k].displayPosY = Math.max(3, Math.min(97, dispersedTokens[k].displayPosY))
+                
+                hasMoved = true
+              }
+            }
+          }
+          if (!hasMoved) break
+        }
 
         return dispersedTokens.map((t) => {
           if (!t.isMob) {

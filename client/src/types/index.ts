@@ -137,6 +137,8 @@ export interface Character {
   notes: string
   isAlive: boolean
   isActive: boolean
+  playerNotes: string
+  slot: number | null
   aiFavour: number        // AI Favour tokens — shown as ⚡
   portrait: string | null // path to portrait image
   tokenPosX: number
@@ -210,6 +212,7 @@ export type WSMessage =
   | { type: 'direct_message'; toCharId: string | 'gm'; fromCharId: string | 'gm'; fromName: string; text: string; timestamp: number }
   | { type: 'full_state_sync_request' }
   | { type: 'ai_favour_update'; charId: string; delta: number }   // +N grant, -N spend
+  | { type: 'player_notes_update'; charId: string; notes: string }
   | { type: 'session_reset' }                                     // GM: reset HP/status/mobs/loot
   | { type: 'session_start' }                                     // GM: open session — crawlers can join, display activates
   | { type: 'session_stop' }                                      // GM: close session — kick all crawlers, blank display

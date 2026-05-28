@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Character, UserRole } from '../../types'
 import { CrawlerWizard } from './CrawlerWizard'
+import { SavedCrawlerLibrary } from './SavedCrawlerLibrary'
 import { PREGENS } from '../../data/pregens'
 
 interface RoleSelectorProps {
@@ -15,6 +16,7 @@ type Stage =
   | { type: 'slot'; slot: number }
   | { type: 'pregen'; slot: number; pregenIdx: number }
   | { type: 'wizard'; slot: number }
+  | { type: 'library'; slot: number }
   | { type: 'occupied_slot'; slot: number; character: Character }
 
 const SLOT_LABELS = ['PLAYER 1', 'PLAYER 2', 'PLAYER 3', 'PLAYER 4']
@@ -41,8 +43,27 @@ export function RoleSelector({ characters, sessionActive, onSelect, onCharacterC
   if (stage.type === 'occupied_slot') {
     const { slot, character: char } = stage
 
-    const handleReset = async () => {
+    const handleRetire = async () => {
       if (saving) return
+      setSaving(true)
+      try {
+        const res = await fetch(`/api/characters/${char.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slot: null, isActive: false })
+        })
+        if (!res.ok) throw new Error('Failed to retire')
+        onCharacterCreated?.() // Refresh characters state
+        setSaving(false)
+        setStage({ type: 'slot', slot })
+      } catch {
+        setSaving(false)
+      }
+    }
+
+    const handleVaporize = async () => {
+      if (saving) return
+      if (!window.confirm(`Are you absolutely sure you want to VAPORIZE ${char.crawlerName}? This permanently deletes them from the Borant database!`)) return
       setSaving(true)
       try {
         const res = await fetch(`/api/characters/${char.id}`, {
@@ -101,12 +122,22 @@ export function RoleSelector({ characters, sessionActive, onSelect, onCharacterC
             </button>
 
             <button
-              onClick={handleReset}
+              onClick={handleRetire}
               disabled={saving}
-              className="w-full py-3.5 border border-red-950 text-red-500 font-hud tracking-widest text-xs
+              className="w-full py-3.5 border border-amber-950 text-amber-500 font-hud tracking-widest text-xs
+                         hover:bg-amber-950/20 hover:border-amber-800 transition-colors disabled:opacity-30 flex flex-col items-center justify-center gap-0.5"
+            >
+              <span>📁 RETIRE & ARCHIVE CRAWLER</span>
+              <span className="text-[8px] opacity-60">Saves to library bank for future sessions</span>
+            </button>
+
+            <button
+              onClick={handleVaporize}
+              disabled={saving}
+              className="w-full py-2.5 border border-red-950 text-red-500 font-hud tracking-widest text-[10px]
                          hover:bg-red-950/20 hover:border-red-800 transition-colors disabled:opacity-30"
             >
-              {saving ? 'RESETTING SLOT...' : '☠ START FRESH / RESET SLOT'}
+              ☠ DISINTEGRATE / START FRESH
             </button>
           </div>
         </div>

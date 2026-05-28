@@ -56,6 +56,8 @@ charactersRouter.post('/', async (c) => {
     sponsors: body.sponsors ?? [],
     statusEffects: body.statusEffects ?? [],
     notes: body.notes ?? '',
+    playerNotes: body.playerNotes ?? '',
+    slot: body.slot ?? null,
   }).returning()
   return c.json(created, 201)
 })
