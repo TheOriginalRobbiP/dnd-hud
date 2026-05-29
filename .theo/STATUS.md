@@ -5,7 +5,9 @@
 - **Done this session:**
   - **Audio Pipeline:** Integrated `Kokoro-82M` (via customized `kokoro-onnx` handler to bypass NumPy pickle vulnerabilities) and exposed over a secure, authenticated ngrok tunnel to generate zero-cost, studio-quality soundboard voice lines in real-time. Added a **"DYNAMIC AI"** category on the GM Soundboard.
   - **Portrait Generation:** Added Hono API backend and Astro Wizard UI forms to generate native 9:16 player portraits using `illustriousXL_v01.safetensors`, `dreamshaperXL_lightningDPMSDE.safetensors`, and standard SDXL checkpoints.
-  - **Flux 2 & Flux 1 Dev Integration:** Added state-of-the-art UNET-based Flux pipelines (`flux2-klein-9b.safetensors`, `flux1-dev.safetensors`) into ComfyUI prompts, supporting dynamic `LoraLoader` injection (e.g. `Flux_2-Turbo-LoRA_comfyui.safetensors`, `j_3dgame_flux.safetensors`), guidance tuning, and custom KSampler configuration.
+  - **Flux 2 & Flux 1 Dev Integration:** Added state-of-the-art UNET-based Flux pipelines (`flux2-klein-9b.safetensors`, `flux1-dev.safetensors`) into ComfyUI prompts, supporting dynamic `LoraLoader` injection (e.g. `Flux_2-Turbo-LoRA_comfyui.safetensors`, `j_3dgame_flux.safetensors`), guidance tuning, and custom KSampler configuration. Resolved Flux 2 Klein shape-dimension multiplier mismatches inside ComfyUI's PyTorch stack using custom CLIPLoader structures.
+  - **Portrait Display & Game Calibration:** Fixed player HUD StatusTab, InspectModal, and SavedCrawlerLibrary to cleanly render dynamic custom portraits from character database strings rather than falling back to name-based arrays. Adjusted character leveling defaults so that newly forged souls correctly spawn at Level 1 instead of falling back to Level 2.
+  - **Network Stability:** Patched client-side Nginx proxy configurations to expand `proxy_read_timeout` to `300s` (5 minutes), completely eliminating 504 Gateway Time-out exceptions during intensive model loads.
   - **Workspace Compilation:** Verified 100% build compatibility of the shared multi-workspace structure (`server` + `client`).
 - **Open / Next:**
   - Game-time live testing with players.
