@@ -207,8 +207,10 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
           >
             ⏏ SWITCH CRAWLER
           </button>
-          <div className="font-hud text-sm text-hud-accent tracking-widest">
-            {character.isAlive ? character.crawlerName.toUpperCase() : `☠ ${character.crawlerName.toUpperCase()}`}
+          <div className="font-hud text-sm text-hud-accent tracking-widest flex items-center gap-2">
+            <span>{character.isAlive ? character.crawlerName.toUpperCase() : `☠ ${character.crawlerName.toUpperCase()}`}</span>
+            <span className="opacity-40 text-xs">|</span>
+            <span className="text-hud-muted text-xs font-bold uppercase">LVL {(character as any).level || 1} {(character as any).class || 'CRAWLER'}</span>
           </div>
         </div>
         <div className="flex items-center gap-3 pr-2">
