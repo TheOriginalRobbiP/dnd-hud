@@ -26,6 +26,8 @@ services:
       NODE_ENV: production
       GM_PIN: ${GM_PIN}
       COMFYUI_URL: ${COMFYUI_URL}
+    volumes:
+      - hud_audio:/app/client/public/audio
     depends_on:
       db:
         condition: service_healthy
@@ -39,6 +41,8 @@ services:
       dockerfile: Dockerfile.client
     ports:
       - "3080:80"
+    volumes:
+      - hud_audio:/usr/share/nginx/html/audio
     depends_on:
       - server
     restart: unless-stopped
@@ -54,3 +58,4 @@ networks:
 
 volumes:
   hud_pgdata:
+  hud_audio:
