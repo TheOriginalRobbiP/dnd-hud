@@ -65,7 +65,7 @@ export function SavedCrawlerLibrary({ characters, onSelect, onCancel }: SavedCra
                         {c.crawlerName}
                       </span>
                       <span className="font-hud text-[9px] text-hud-muted bg-hud-panel px-1.5 py-0.5 border border-hud-border/20 rounded">
-                        LVL 2 {c.class || 'CRAWLER'}
+                        LVL {(c as any).level || 1} {c.class || 'CRAWLER'}
                       </span>
                     </div>
                     <div className="font-hud text-[11px] text-hud-muted mt-0.5">Player: {c.playerName}</div>
