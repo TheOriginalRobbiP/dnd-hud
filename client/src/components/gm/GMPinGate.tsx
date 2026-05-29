@@ -4,11 +4,12 @@ const PIN_SESSION_KEY = 'hud:gm-verified'
 
 interface GMPinGateProps {
   onVerified: () => void
+  onBack?: () => void
 }
 
 const NUMPAD = ['1','2','3','4','5','6','7','8','9','⌫','0','✓'] as const
 
-export function GMPinGate({ onVerified }: GMPinGateProps) {
+export function GMPinGate({ onVerified, onBack }: GMPinGateProps) {
   const [pin, setPin] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -114,6 +115,15 @@ export function GMPinGate({ onVerified }: GMPinGateProps) {
             </button>
           ))}
         </div>
+
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="font-hud w-full text-[10px] text-hud-muted border border-hud-border py-2 mt-2 hover:border-hud-accent hover:text-hud-accent hover:bg-hud-panel/40 transition-all tracking-widest uppercase"
+          >
+            ← Back to Selection
+          </button>
+        )}
       </div>
 
       <div className="font-hud text-xs text-hud-muted text-center max-w-xs opacity-60">

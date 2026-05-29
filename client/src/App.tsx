@@ -64,7 +64,15 @@ function App() {
   )
 
   if (role === 'gm') {
-    if (!gmVerified) return <GMPinGate onVerified={() => setGmVerified(true)} />
+    if (!gmVerified) return (
+      <GMPinGate
+        onVerified={() => setGmVerified(true)}
+        onBack={() => {
+          localStorage.removeItem(ROLE_KEY)
+          setRole(null)
+        }}
+      />
+    )
     if (!state) return <div className="h-screen bg-hud-bg flex items-center justify-center font-hud text-hud-muted animate-pulse">SYNCING STATE...</div>
     return (
       <>
