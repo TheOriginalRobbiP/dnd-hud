@@ -25,6 +25,7 @@ services:
       PORT: 3001
       NODE_ENV: production
       GM_PIN: ${GM_PIN}
+      COMFYUI_URL: ${COMFYUI_URL}
     depends_on:
       db:
         condition: service_healthy
