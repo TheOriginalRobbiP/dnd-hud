@@ -1,5 +1,17 @@
 # Project Status: dnd-hud
 
+## Session Checkpoint 2026-05-29T14:15:00Z
+- **Focus:** Switched to local AI image generation (Flux 2 & Flux 1 Dev with LoRAs) and voice generation (Kokoro-82M TTS) to completely remove cloud dependency.
+- **Done this session:**
+  - **Audio Pipeline:** Integrated `Kokoro-82M` (via customized `kokoro-onnx` handler to bypass NumPy pickle vulnerabilities) and exposed over a secure, authenticated ngrok tunnel to generate zero-cost, studio-quality soundboard voice lines in real-time. Added a **"DYNAMIC AI"** category on the GM Soundboard.
+  - **Portrait Generation:** Added Hono API backend and Astro Wizard UI forms to generate native 9:16 player portraits using `illustriousXL_v01.safetensors`, `dreamshaperXL_lightningDPMSDE.safetensors`, and standard SDXL checkpoints.
+  - **Flux 2 & Flux 1 Dev Integration:** Added state-of-the-art UNET-based Flux pipelines (`flux2-klein-9b.safetensors`, `flux1-dev.safetensors`) into ComfyUI prompts, supporting dynamic `LoraLoader` injection (e.g. `Flux_2-Turbo-LoRA_comfyui.safetensors`, `j_3dgame_flux.safetensors`), guidance tuning, and custom KSampler configuration.
+  - **Workspace Compilation:** Verified 100% build compatibility of the shared multi-workspace structure (`server` + `client`).
+- **Open / Next:**
+  - Game-time live testing with players.
+  - Additional LoRA style mappings for player classes.
+- **Blockers:** None.
+
 ## Session checkpoint 2026-05-23T18:00:00Z
 - **Focus**: DCC Storyline Integration, Display Overhaul, and Mechanics Calibration.
 - **Done this session**:

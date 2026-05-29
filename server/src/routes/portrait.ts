@@ -20,7 +20,9 @@ portraitRouter.post('/generate', async (c) => {
       checkpoint = 'illustriousXL_v01.safetensors', 
       filename,
       width = 768,
-      height = 1344
+      height = 1344,
+      lora = 'none',
+      lora_strength = 1.0
     } = await c.req.json()
 
     if (!prompt) {
@@ -37,71 +39,218 @@ portraitRouter.post('/generate', async (c) => {
 
     const negativePrompt = `photorealistic, photorealistic 3D render, photography, real life, blurry, low quality, bad hands, deformed anatomy, cropped head, floating limbs`
 
-    // Determine steps, CFG, and sampler based on checkpoint
-    const isLightning = checkpoint.toLowerCase().includes('lightning')
-    const steps = isLightning ? 8 : 25
-    const cfg = isLightning ? 2.0 : 7.0
-    const sampler_name = isLightning ? 'dpmpp_sde' : 'euler'
-    const scheduler = isLightning ? 'normal' : 'normal'
+    const isFlux = checkpoint.toLowerCase().includes('flux')
+    let workflow: Record<string, any>
 
-    // Standard 7-node SDXL Image Generation Workflow JSON
-    const workflow = {
-      "1": {
-        "inputs": {
-          "ckpt_name": checkpoint
+    if (isFlux) {
+      // Determine VAE name for Flux
+      const vae_name = checkpoint.toLowerCase().includes('klein') ? 'flux2-klein-vae.safetensors' : 'ae.safetensors'
+      
+      // Determine steps - use fewer steps for Turbo LoRA
+      const isTurbo = lora.toLowerCase().includes('turbo')
+      const steps = isTurbo ? 10 : 20
+
+      // standard Flux 2 or Flux 1 Dev ComfyUI workflow
+      workflow = {
+        "11": {
+          "inputs": {
+            "unet_name": checkpoint,
+            "weight_dtype": "default"
+          },
+          "class_type": "UNETLoader"
         },
-        "class_type": "CheckpointLoaderSimple"
-      },
-      "2": {
-        "inputs": {
-          "text": positivePrompt,
-          "clip": ["1", 1]
+        "12": {
+          "inputs": {
+            "clip_name1": "clip_l.safetensors",
+            "clip_name2": "t5xxl_fp8_e4m3fn.safetensors",
+            "type": "flux"
+          },
+          "class_type": "DualCLIPLoader"
         },
-        "class_type": "CLIPTextEncode"
-      },
-      "3": {
-        "inputs": {
-          "text": negativePrompt,
-          "clip": ["1", 1]
+        "13": {
+          "inputs": {
+            "vae_name": vae_name
+          },
+          "class_type": "VAELoader"
         },
-        "class_type": "CLIPTextEncode"
-      },
-      "4": {
-        "inputs": {
-          "width": width,
-          "height": height,
-          "batch_size": 1
+        "4": {
+          "inputs": {
+            "width": width,
+            "height": height,
+            "batch_size": 1
+          },
+          "class_type": "EmptyLatentImage"
         },
-        "class_type": "EmptyLatentImage"
-      },
-      "5": {
-        "inputs": {
-          "seed": Math.floor(Math.random() * 1000000000),
-          "steps": steps,
-          "cfg": cfg,
-          "sampler_name": sampler_name,
-          "scheduler": scheduler,
-          "denoise": 1.0,
-          "model": ["1", 0],
-          "positive": ["2", 0],
-          "negative": ["3", 0],
-          "latent_image": ["4", 0]
+        "6": {
+          "inputs": {
+            "samples": ["5", 0],
+            "vae": ["13", 0]
+          },
+          "class_type": "VAEDecode"
         },
-        "class_type": "KSampler"
-      },
-      "6": {
-        "inputs": {
-          "samples": ["5", 0],
-          "vae": ["1", 2]
+        "7": {
+          "inputs": {
+            "filename_prefix": `dnd_hud_portrait_${safeFilename}`,
+            "images": ["6", 0]
+          },
+          "class_type": "SaveImage"
+        }
+      }
+
+      if (lora && lora !== 'none') {
+        // Wire in LoraLoader
+        workflow["15"] = {
+          "inputs": {
+            "lora_name": lora,
+            "strength_model": Number(lora_strength),
+            "strength_clip": Number(lora_strength),
+            "model": ["11", 0],
+            "clip": ["12", 0]
+          },
+          "class_type": "LoraLoader"
+        }
+        workflow["2"] = {
+          "inputs": {
+            "text": positivePrompt,
+            "clip": ["15", 1]
+          },
+          "class_type": "CLIPTextEncode"
+        }
+        workflow["3"] = {
+          "inputs": {
+            "text": "",
+            "clip": ["15", 1]
+          },
+          "class_type": "CLIPTextEncode"
+        }
+        workflow["14"] = {
+          "inputs": {
+            "guidance": 3.5,
+            "conditioning": ["2", 0]
+          },
+          "class_type": "FluxGuidance"
+        }
+        workflow["5"] = {
+          "inputs": {
+            "seed": Math.floor(Math.random() * 1000000000),
+            "steps": steps,
+            "cfg": 1.0,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+            "denoise": 1.0,
+            "model": ["15", 0],
+            "positive": ["14", 0],
+            "negative": ["3", 0],
+            "latent_image": ["4", 0]
+          },
+          "class_type": "KSampler"
+        }
+      } else {
+        // Direct wiring without LoraLoader
+        workflow["2"] = {
+          "inputs": {
+            "text": positivePrompt,
+            "clip": ["12", 0]
+          },
+          "class_type": "CLIPTextEncode"
+        }
+        workflow["3"] = {
+          "inputs": {
+            "text": "",
+            "clip": ["12", 0]
+          },
+          "class_type": "CLIPTextEncode"
+        }
+        workflow["14"] = {
+          "inputs": {
+            "guidance": 3.5,
+            "conditioning": ["2", 0]
+          },
+          "class_type": "FluxGuidance"
+        }
+        workflow["5"] = {
+          "inputs": {
+            "seed": Math.floor(Math.random() * 1000000000),
+            "steps": steps,
+            "cfg": 1.0,
+            "sampler_name": "euler",
+            "scheduler": "simple",
+            "denoise": 1.0,
+            "model": ["11", 0],
+            "positive": ["14", 0],
+            "negative": ["3", 0],
+            "latent_image": ["4", 0]
+          },
+          "class_type": "KSampler"
+        }
+      }
+
+    } else {
+      // Standard SDXL Image Generation Workflow
+      const isLightning = checkpoint.toLowerCase().includes('lightning')
+      const steps = isLightning ? 8 : 25
+      const cfg = isLightning ? 2.0 : 7.0
+      const sampler_name = isLightning ? 'dpmpp_sde' : 'euler'
+      const scheduler = isLightning ? 'normal' : 'normal'
+
+      workflow = {
+        "1": {
+          "inputs": {
+            "ckpt_name": checkpoint
+          },
+          "class_type": "CheckpointLoaderSimple"
         },
-        "class_type": "VAEDecode"
-      },
-      "7": {
-        "inputs": {
-          "filename_prefix": `dnd_hud_portrait_${safeFilename}`,
-          "images": ["6", 0]
+        "2": {
+          "inputs": {
+            "text": positivePrompt,
+            "clip": ["1", 1]
+          },
+          "class_type": "CLIPTextEncode"
         },
-        "class_type": "SaveImage"
+        "3": {
+          "inputs": {
+            "text": negativePrompt,
+            "clip": ["1", 1]
+          },
+          "class_type": "CLIPTextEncode"
+        },
+        "4": {
+          "inputs": {
+            "width": width,
+            "height": height,
+            "batch_size": 1
+          },
+          "class_type": "EmptyLatentImage"
+        },
+        "5": {
+          "inputs": {
+            "seed": Math.floor(Math.random() * 1000000000),
+            "steps": steps,
+            "cfg": cfg,
+            "sampler_name": sampler_name,
+            "scheduler": scheduler,
+            "denoise": 1.0,
+            "model": ["1", 0],
+            "positive": ["2", 0],
+            "negative": ["3", 0],
+            "latent_image": ["4", 0]
+          },
+          "class_type": "KSampler"
+        },
+        "6": {
+          "inputs": {
+            "samples": ["5", 0],
+            "vae": ["1", 2]
+          },
+          "class_type": "VAEDecode"
+        },
+        "7": {
+          "inputs": {
+            "filename_prefix": `dnd_hud_portrait_${safeFilename}`,
+            "images": ["6", 0]
+          },
+          "class_type": "SaveImage"
+        }
       }
     }
 

@@ -179,7 +179,9 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
 
   // Local AI portrait generation states
   const [aiPrompt, setAiPrompt] = useState('')
-  const [aiCheckpoint, setAiCheckpoint] = useState('illustriousXL_v01.safetensors')
+  const [aiCheckpoint, setAiCheckpoint] = useState('flux2-klein-9b.safetensors')
+  const [aiLora, setAiLora] = useState('none')
+  const [aiLoraStrength, setAiLoraStrength] = useState(1.0)
   const [aiGenerating, setAiGenerating] = useState(false)
   const [aiGenStatus, setAiGenStatus] = useState<string | null>(null)
   const [customPortraits, setCustomPortraits] = useState<{ path: string; label: string }[]>([])
@@ -284,6 +286,8 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
         body: JSON.stringify({
           prompt: aiPrompt,
           checkpoint: aiCheckpoint,
+          lora: aiLora,
+          lora_strength: aiLoraStrength,
         })
       })
 
@@ -513,11 +517,45 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
                   className="bg-black/60 border border-hud-border border-opacity-30 p-1.5 font-hud text-xs text-white rounded focus:border-hud-accent focus:outline-none"
                   disabled={aiGenerating}
                 >
+                  <option value="flux2-klein-9b.safetensors">Flux 2 Klein (State-of-the-Art Realism - Local GPU)</option>
+                  <option value="flux1-dev.safetensors">Flux 1 Dev (High Fidelity - Local GPU)</option>
                   <option value="illustriousXL_v01.safetensors">Illustrious XL V1 (Premium Illustration Style)</option>
                   <option value="dreamshaperXL_lightningDPMSDE.safetensors">Dreamshaper XL Lightning (Ultra Fast - 3s)</option>
                   <option value="gameIconInstitute_v4XL.safetensors">Game Icon Institute (RPG Game Icon Style)</option>
                 </select>
               </div>
+
+              {aiCheckpoint.toLowerCase().includes('flux') && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex flex-col gap-1">
+                    <label className="font-hud text-[10px] text-hud-muted">AI LORA STYLE (FLUX ONLY)</label>
+                    <select
+                      value={aiLora}
+                      onChange={e => setAiLora(e.target.value)}
+                      className="bg-black/60 border border-hud-border border-opacity-30 p-1.5 font-hud text-xs text-white rounded focus:border-hud-accent focus:outline-none"
+                      disabled={aiGenerating}
+                    >
+                      <option value="none">No LoRA (Default Flux)</option>
+                      <option value="Flux_2-Turbo-LoRA_comfyui.safetensors">Flux 2 Turbo (Speed up generation)</option>
+                      <option value="j_3dgame_flux.safetensors">3D Game Style (Adds DCC style game vibe)</option>
+                      <option value="sims1_style.safetensors">Retro Sims Style</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="font-hud text-[10px] text-hud-muted">LORA STRENGTH</label>
+                    <input
+                      type="number"
+                      min="0.1"
+                      max="2.0"
+                      step="0.1"
+                      value={aiLoraStrength}
+                      onChange={e => setAiLoraStrength(parseFloat(e.target.value) || 1.0)}
+                      className="bg-black/60 border border-hud-border border-opacity-30 p-1.5 font-hud text-xs text-white rounded focus:border-hud-accent focus:outline-none"
+                      disabled={aiGenerating}
+                    />
+                  </div>
+                </div>
+              )}
 
               <button
                 type="submit"
