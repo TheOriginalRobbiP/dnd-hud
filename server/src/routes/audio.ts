@@ -27,6 +27,22 @@ audioRouter.post('/generate', async (c) => {
       ? filename.toLowerCase().replace(/[^a-z0-9_]/g, '_')
       : `announcement_${Date.now()}`
 
+    // Parse basic auth from COMFYUI_URL if present
+    const defaultHeaders: Record<string, string> = {}
+    let targetUrl = COMFYUI_URL
+    try {
+      const parsedUrl = new URL(COMFYUI_URL)
+      if (parsedUrl.username && parsedUrl.password) {
+        const credentials = Buffer.from(`${parsedUrl.username}:${parsedUrl.password}`).toString('base64')
+        defaultHeaders['Authorization'] = `Basic ${credentials}`
+        parsedUrl.username = ''
+        parsedUrl.password = ''
+        targetUrl = parsedUrl.toString().replace(/\/$/, '')
+      }
+    } catch (e) {
+      // Fallback
+    }
+
     // 1. Build the ComfyUI API Prompt payload
     // Using SaveAudioMP3 (standard in ComfyUI-KokoroTTS for high quality mp3 compression)
     const workflow = {
@@ -47,12 +63,12 @@ audioRouter.post('/generate', async (c) => {
       }
     }
 
-    console.log(`[HUD Audio] Prompting ComfyUI at ${COMFYUI_URL} for "${text.substring(0, 30)}..."`)
+    console.log(`[HUD Audio] Prompting ComfyUI at ${targetUrl} for "${text.substring(0, 30)}..."`)
 
     // 2. Queue the prompt in ComfyUI
-    const response = await fetch(`${COMFYUI_URL}/prompt`, {
+    const response = await fetch(`${targetUrl}/prompt`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...defaultHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt: workflow })
     })
 
@@ -72,7 +88,9 @@ audioRouter.post('/generate', async (c) => {
     for (let attempt = 0; attempt < 60; attempt++) {
       await new Promise(resolve => setTimeout(resolve, 1000))
       
-      const historyResp = await fetch(`${COMFYUI_URL}/history/${prompt_id}`)
+      const historyResp = await fetch(`${targetUrl}/history/${prompt_id}`, {
+        headers: defaultHeaders
+      })
       if (!historyResp.ok) continue
       
       const history = await historyResp.json() as any
@@ -94,8 +112,10 @@ audioRouter.post('/generate', async (c) => {
     console.log(`[HUD Audio] ComfyUI generated output file: ${outputFilename}`)
 
     // 4. Download the generated audio file from ComfyUI
-    const fileUrl = `${COMFYUI_URL}/view?filename=${encodeURIComponent(outputFilename)}&type=output`
-    const fileResp = await fetch(fileUrl)
+    const fileUrl = `${targetUrl}/view?filename=${encodeURIComponent(outputFilename)}&type=output`
+    const fileResp = await fetch(fileUrl, {
+      headers: defaultHeaders
+    })
     if (!fileResp.ok) {
       throw new Error(`Failed to download audio from ComfyUI: ${fileResp.statusText}`)
     }
