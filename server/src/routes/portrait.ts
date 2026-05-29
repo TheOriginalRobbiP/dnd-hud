@@ -50,6 +50,24 @@ portraitRouter.post('/generate', async (c) => {
       const isTurbo = lora.toLowerCase().includes('turbo')
       const steps = isTurbo ? 10 : 20
 
+      const isKlein = checkpoint.toLowerCase().includes('klein')
+      const clipNode = isKlein 
+        ? {
+            "inputs": {
+              "clip_name": "flux2-klein-qwen3-15b.safetensors",
+              "type": "flux2"
+            },
+            "class_type": "CLIPLoader"
+          }
+        : {
+            "inputs": {
+              "clip_name1": "clip_l.safetensors",
+              "clip_name2": "t5xxl_fp8_e4m3fn.safetensors",
+              "type": "flux"
+            },
+            "class_type": "DualCLIPLoader"
+          }
+
       // standard Flux 2 or Flux 1 Dev ComfyUI workflow
       workflow = {
         "11": {
@@ -59,14 +77,7 @@ portraitRouter.post('/generate', async (c) => {
           },
           "class_type": "UNETLoader"
         },
-        "12": {
-          "inputs": {
-            "clip_name1": "clip_l.safetensors",
-            "clip_name2": "t5xxl_fp8_e4m3fn.safetensors",
-            "type": "flux"
-          },
-          "class_type": "DualCLIPLoader"
-        },
+        "12": clipNode,
         "13": {
           "inputs": {
             "vae_name": vae_name
