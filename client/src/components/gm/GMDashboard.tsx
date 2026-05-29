@@ -8,6 +8,7 @@ import { SessionNavigator } from './SessionNavigator'
 import { GMRulesPanel } from './GMRulesPanel'
 import { SoundboardPanel } from './SoundboardPanel'
 import { CharacterBar } from './CharacterBar'
+import { ItemDatabasePanel } from './ItemDatabasePanel'
 import type { DirectMessage } from '../../hooks/useWebSocket'
 
 interface GMDashboardProps {
@@ -19,7 +20,7 @@ interface GMDashboardProps {
   onDMEcho: (dm: DirectMessage) => void
 }
 
-type GmMode = 'plan' | 'session' | 'sound' | 'rules'
+type GmMode = 'plan' | 'session' | 'sound' | 'rules' | 'items'
 type NotesSize = 'sm' | 'md' | 'lg'
 type SessionMobileTab = 'map' | 'room' | 'log'
 
@@ -167,6 +168,12 @@ export function GMDashboard({
           >
             📖 RULES
           </button>
+          <button
+            onClick={() => setGmMode('items')}
+            className={`font-hud text-xs border px-2 py-1 transition-colors ${gmMode === 'items' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'}`}
+          >
+            📦 ITEMS
+          </button>
         </div>
 
         <div className="flex items-center gap-3 flex-shrink-0">
@@ -204,6 +211,12 @@ export function GMDashboard({
         {gmMode === 'rules' && (
           <div className="flex-1 overflow-hidden flex flex-col pb-12 md:pb-0">
             <GMRulesPanel />
+          </div>
+        )}
+
+        {gmMode === 'items' && (
+          <div className="flex-1 overflow-hidden flex flex-col pb-12 md:pb-0">
+            <ItemDatabasePanel />
           </div>
         )}
 

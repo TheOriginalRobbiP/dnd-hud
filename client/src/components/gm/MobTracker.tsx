@@ -35,10 +35,16 @@ export function MobTracker({ floor, send }: MobTrackerProps) {
     <div className="border border-hud-border p-3">
       <div className="flex justify-between items-center mb-3">
         <div className="font-hud text-sm text-hud-muted tracking-widest">MOB TRACKER</div>
-        <button onClick={() => setAdding(a => !a)}
-          className="font-hud text-sm border border-hud-border text-hud-muted px-2 py-1 hover:border-red-700 hover:text-red-400 transition-colors">
-          + ADD MOB
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => setShowBestiary(true)}
+            className="font-hud text-xs border border-hud-border text-hud-muted px-2.5 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors uppercase">
+            📖 BESTIARY
+          </button>
+          <button onClick={() => setAdding(a => !a)}
+            className="font-hud text-xs border border-hud-border text-hud-muted px-2.5 py-1 hover:border-red-700 hover:text-red-400 transition-colors uppercase">
+            + ADD MOB
+          </button>
+        </div>
       </div>
 
       {/* Bone Harvest Trigger (Sector 8 & Bone Pile Available) */}
