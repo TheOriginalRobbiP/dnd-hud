@@ -443,7 +443,7 @@ export function FloorRunnerPanel({ send, notesTextSize = 'md' }: FloorRunnerPane
         roomTarget: room.roomTarget,
         theme: plan.theme,
         themeColour: plan.themeColour,
-        tags: room.tags || '',
+        tags: Array.isArray(room.tags) ? room.tags.join(',') : (room.tags || ''),
       })
 
       // 6. Spawn mob templates
