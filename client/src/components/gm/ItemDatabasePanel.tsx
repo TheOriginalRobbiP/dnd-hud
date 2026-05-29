@@ -61,7 +61,7 @@ export function ItemDatabasePanel() {
       </div>
 
       {/* Search Filters */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-hud-panel border border-hud-border p-3 rounded-lg mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 bg-hud-panel border border-hud-border p-3 rounded-lg mb-4">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -101,6 +101,17 @@ export function ItemDatabasePanel() {
           <option value="toes">Toes</option>
           <option value="mainHand">Main Hand</option>
           <option value="offHand">Off Hand</option>
+        </select>
+
+        <select
+          value={floor}
+          onChange={(e) => setFloor(e.target.value)}
+          className="bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2 focus:border-hud-accent outline-none"
+        >
+          <option value="">All Floors</option>
+          <option value="1">Floor 1</option>
+          <option value="2">Floor 2</option>
+          <option value="3">Floor 3</option>
         </select>
       </div>
 
