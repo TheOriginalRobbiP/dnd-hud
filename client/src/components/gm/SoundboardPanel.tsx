@@ -14,6 +14,8 @@ interface SoundLine {
 const LINES: SoundLine[] = [
   { id: 'session_start',       label: 'Session Start',    category: 'Session' },
   { id: 'session_stop',        label: 'Session Stop',     category: 'Session' },
+  { id: 'announcement_seizure',label: 'Syndicate Seizure',category: 'Announcements' },
+  { id: 'announcement_floor1', label: 'Floor 1 Entry',      category: 'Announcements' },
   { id: 'room_generic',        label: 'Room Enter',       category: 'Room' },
   { id: 'room_boss',           label: 'Boss Room',        category: 'Room' },
   { id: 'room_trap',           label: 'Trap Room',        category: 'Room' },
@@ -31,12 +33,13 @@ const LINES: SoundLine[] = [
 ]
 
 const CATEGORY_COLOURS: Record<string, string> = {
-  'Session':     'border-hud-accent text-hud-accent',
-  'Room':        'border-blue-400 text-blue-400',
-  'Achievement': 'border-yellow-400 text-yellow-400',
-  'Loot':        'border-green-400 text-green-400',
-  'Timer':       'border-red-400 text-red-400',
-  'AI Favour':   'border-purple-400 text-purple-400',
+  'Session':       'border-hud-accent text-hud-accent',
+  'Announcements': 'border-pink-400 text-pink-400',
+  'Room':          'border-blue-400 text-blue-400',
+  'Achievement':   'border-yellow-400 text-yellow-400',
+  'Loot':          'border-green-400 text-green-400',
+  'Timer':         'border-red-400 text-red-400',
+  'AI Favour':     'border-purple-400 text-purple-400',
 }
 
 const CATEGORIES = Array.from(new Set(LINES.map(l => l.category)))

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Character, LootBox as LootBoxType, WSMessage } from '../../types'
+import type { Character, LootBox as LootBoxType, WSMessage, FloorState } from '../../types'
 import { LootBox } from './LootBox'
 
 const SLOTS = [
@@ -55,9 +55,10 @@ interface InventoryTabProps {
   compact?: boolean
   onLogAction?: (text: string, type: 'roll' | 'item' | 'equip' | 'status' | 'system') => void
   locked?: boolean
+  floorState?: FloorState
 }
 
-export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hideSections = [], compact = false, onLogAction, locked = false }: InventoryTabProps) {
+export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hideSections = [], compact = false, onLogAction, locked = false, floorState }: InventoryTabProps) {
   const [equipping, setEquipping] = useState<string | null>(null)
   const [expandedItem, setExpandedItem] = useState<string | null>(null)
   const [using, setUsing] = useState<string | null>(null)
@@ -299,7 +300,7 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
           {myBoxes.length === 0
             ? <p className="font-hud text-xs text-hud-muted italic">No pending loot boxes. Keep earning, Crawler.</p>
             : <div className="flex flex-col gap-2">
-                {myBoxes.map(b => <LootBox key={b.id} lootBox={b} charId={character.id} send={send} />)}
+                {myBoxes.map(b => <LootBox key={b.id} lootBox={b} charId={character.id} send={send} floorState={floorState} onLogAction={onLogAction} />)}
               </div>
           }
         </div>

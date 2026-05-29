@@ -1,6 +1,6 @@
 import { tierColour } from '../../utils/colours'
 import { useState } from 'react'
-import type { LootBox as LootBoxType, WSMessage } from '../../types'
+import type { LootBox as LootBoxType, WSMessage, FloorState } from '../../types'
 
 const LOOTBOX_IMAGES: Record<string, string> = {
   bronze:    '/images/lootboxes/lootbox-bronze.png',
@@ -17,16 +17,34 @@ interface LootBoxProps {
   lootBox: LootBoxType
   charId: string
   send: (msg: WSMessage) => void
+  floorState?: FloorState
+  onLogAction?: (text: string, type: 'roll' | 'item' | 'equip' | 'status' | 'system') => void
 }
 
-export function LootBox({ lootBox, charId, send }: LootBoxProps) {
+export function LootBox({ lootBox, charId, send, floorState, onLogAction }: LootBoxProps) {
   const [openState, setOpenState] = useState<OpenState>('idle')
   const colour = tierColour(lootBox.tier)
   const item = lootBox.contents[0]
   const boxImg = LOOTBOX_IMAGES[lootBox.tier] ?? LOOTBOX_IMAGES.bronze
 
+  const tags = floorState?.currentRoomData?.tags || ''
+  const isSafeRoom = tags.toLowerCase().includes('safe')
+  const hasActiveMobs = (floorState?.activeMobs || []).length > 0
+  const isSecureArea = isSafeRoom && !hasActiveMobs
+
   const handleOpen = () => {
     if (lootBox.state !== 'authorised' || openState !== 'idle') return
+
+    if (!isSecureArea) {
+      send({ type: 'play_sound', soundId: 'error' })
+      if (hasActiveMobs) {
+        onLogAction?.("⚠️ [SYSTEM WARNING] ACTIVE HOSTILES DETECTED. Unboxing is strictly prohibited during active combat.", "system")
+      } else {
+        onLogAction?.("⚠️ [SYSTEM REQUISITE ERROR] All award boxes may only be unboxed inside secure Safe Rooms.", "system")
+      }
+      return
+    }
+
     setOpenState('opening-1')
     setTimeout(() => setOpenState('opening-2'), 400)
     setTimeout(() => {
@@ -85,6 +103,27 @@ export function LootBox({ lootBox, charId, send }: LootBoxProps) {
   )
 
   // authorised — tap to open
+  if (!isSecureArea) {
+    const errorMsg = hasActiveMobs ? 'COMBAT ACTIVE' : 'SAFE ZONE REQUIRED'
+    return (
+      <button onClick={handleOpen}
+        className="border border-red-900 bg-red-950/5 p-3 w-full text-left transition-all duration-300 cursor-pointer hover:border-red-500 hover:scale-[1.01]"
+        style={{ boxShadow: '0 0 8px rgba(239, 68, 68, 0.15)' }}>
+        <div className="flex items-center gap-3">
+          <img src={boxImg} alt={lootBox.tier} className="w-14 h-14 object-contain grayscale opacity-60" />
+          <div>
+            <div className="font-hud text-sm tracking-widest text-red-500 font-bold uppercase">
+              ⚠️ {lootBox.tier.toUpperCase()} BOX — SECURED
+            </div>
+            <div className="font-hud text-[10px] text-hud-muted mt-1 leading-tight uppercase">
+              {errorMsg}
+            </div>
+          </div>
+        </div>
+      </button>
+    )
+  }
+
   return (
     <button onClick={handleOpen}
       className="border p-3 w-full text-left transition-all duration-300 cursor-pointer hover:scale-[1.02]"

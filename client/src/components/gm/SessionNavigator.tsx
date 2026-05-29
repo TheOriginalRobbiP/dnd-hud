@@ -247,6 +247,7 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
         roomTarget: room.roomTarget,
         theme: plan.theme,
         themeColour: plan.themeColour,
+        tags: room.tags || '',
       })
       setDisplayViewMode('scene') // Automatically start in cinematic SCENE mode!
     } finally {

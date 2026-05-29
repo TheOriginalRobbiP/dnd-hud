@@ -354,6 +354,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                    compact={true}
                    onLogAction={addLogEntry}
                    locked={state.floor.preTutorialActive}
+                   floorState={state.floor}
                  />
                </div>
 
@@ -447,6 +448,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                 hideSections={isMobile ? [] : ['loot', 'equipment']}
                 onLogAction={addLogEntry}
                 locked={state.floor.preTutorialActive}
+                floorState={state.floor}
               />
             </div>
           </div>

@@ -24,7 +24,7 @@ export async function seedFloorPlans() {
       sceneArt: '/images/rooms/sector1_arrival_scene.png',
       battlemapArt: '/images/rooms/sector1_arrival_battlemap.png',
       roomTarget: 10,
-      tags: 'start,safe',
+      tags: 'start',
       posX: 100,
       posY: 220,
     },

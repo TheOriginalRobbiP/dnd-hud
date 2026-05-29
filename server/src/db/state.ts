@@ -100,6 +100,7 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
             roomTarget: msg.roomTarget,
             theme: msg.theme,
             themeColour: msg.themeColour,
+            tags: msg.tags,
           } as any,
           activeMobs: [], // Clear active mobs upon entering a new room!
           displayViewMode: 'scene', // Automatically reset to scene view mode on room enter
