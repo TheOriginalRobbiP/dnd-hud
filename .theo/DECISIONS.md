@@ -1,9 +1,3 @@
-# Decisions Log
+# DnD HUD Decisions
 
-2026-05-23 | Integrated dynamic hearts visual representation | Converted HP numbers across all screens to visual heart icon lists (❤️/💔/🖤) with fractional metrics (e.g. 1.6 ❤️) matching the ICRPG "Everything Has Hearts" rule.
-2026-05-23 | Added dynamic physical token dispersion | Replaced naive exact coordinate grouping with an iterative radial force relaxation algorithm in Battlemap.tsx to elegantly resolve all close overlapping tokens.
-2026-05-23 | Switched to custom Czepeku-style local maps | Generated 10 unique Czepeku-style hand-drawn Scene Art and Battlemap Art pairs for all 5 sectors, copying them to client public assets and changing the seed script to clear and reseed on container boot.
-2026-05-23 | Re-aligned Floor 1 with DCC storyline | Redesigned Floor 1 ("The Antechamber") to match DCC Book 1: first finding the Tutorial Guild to register classes, then exploring to locate the Subway Platform stairwell. Connected early goblin kills (Gryla's Babes, Goblin Scouts) to the final boss encounter, where the Bone Collector summons them as skeletal minions.
-2026-05-23 | Overhauled TV Display Layout to Full-Width HUD | Removed redundant "Active Threats" sidebar and bottom detail cards. Expanded Battlemap/Scene Art to fill 100% viewport width/height. Moved Room Target indicator to the top header bar, and overlayed room nameplates/descriptions in a floating transparent HUD card.
-2026-05-29 | Switched from ElevenLabs/Cloud APIs to local ComfyUI model pipeline (Kokoro-82M) | Completely bypasses rate limits, credits, and operational costs while maintaining production-grade speech quality and expressiveness.
-2026-05-29 | Integrated local UNET-based Flux (Flux 2 Klein & Flux 1 Dev) with LoRAs for character portrait generation | Provides state-of-the-art image quality for player-facing content, with dynamic speed/quality tuning via Turbo and Game-Style LoRAs.
+2026-05-29 | Add Back Button to GM Login Gate | Added an onBack callback to GMPinGate to allow users to return to role/crawler selection screen if they select GM by mistake.
