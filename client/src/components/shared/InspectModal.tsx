@@ -26,7 +26,7 @@ interface InspectModalProps {
 export function InspectModal({ character: rawCharacter, onClose, hideNotes = false }: InspectModalProps) {
   const character = getModifiedCharacter(rawCharacter)
   const { crawlerName, playerName, hp, maxHp, mp, maxMp, stats, skills, equipment, inventory, notes } = character
-  const portrait = getCrawlerPortrait(crawlerName)
+  const portrait = getCrawlerPortrait(crawlerName, character.portrait)
 
   const equippedSlots = SLOTS.filter(([key]) => (equipment as any)[key] !== null && (equipment as any)[key] !== undefined)
   const carriedItems = inventory.filter(item => !item.isEquipped)

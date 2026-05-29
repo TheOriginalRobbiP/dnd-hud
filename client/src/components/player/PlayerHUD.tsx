@@ -171,7 +171,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
               {character.isAlive ? character.crawlerName.toUpperCase() : `☠ ${character.crawlerName.toUpperCase()}`}
             </div>
             <div className="text-hud-accent text-[11px] font-bold mt-1 tracking-widest uppercase">
-              LVL {(character as any).level || 2} {(character as any).class || 'CRAWLER'}
+              LVL {(character as any).level || 1} {(character as any).class || 'CRAWLER'}
             </div>
           </div>
         </div>

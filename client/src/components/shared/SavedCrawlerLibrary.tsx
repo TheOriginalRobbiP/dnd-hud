@@ -38,7 +38,7 @@ export function SavedCrawlerLibrary({ characters, onSelect, onCancel }: SavedCra
           </div>
         ) : (
           savedCrawlers.map((c) => {
-            const portrait = getCrawlerPortrait(c.crawlerName) || c.portrait
+            const portrait = getCrawlerPortrait(c.crawlerName, c.portrait)
             return (
               <div
                 key={c.id}

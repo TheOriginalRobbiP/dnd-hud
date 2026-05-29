@@ -33,7 +33,7 @@ interface StatusTabProps {
 
 export function StatusTab({ character, floor, allCharacters, activeCharIds, onInspect, send, onCharacterUpdate, actionLog = [] }: StatusTabProps) {
   const { crawlerName, hp, maxHp, mp, maxMp, stats, statusEffects, skills, aiFavour, viewerCount } = character
-  const portrait = getCrawlerPortrait(crawlerName)
+  const portrait = getCrawlerPortrait(crawlerName, character.portrait)
   const [timerSecs, setTimerSecs] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
