@@ -28,6 +28,7 @@ services:
       COMFYUI_URL: ${COMFYUI_URL}
     volumes:
       - hud_audio:/app/client/public/audio
+      - hud_portraits:/app/client/public/images/crawlers
     depends_on:
       db:
         condition: service_healthy
@@ -43,6 +44,7 @@ services:
       - "3080:80"
     volumes:
       - hud_audio:/usr/share/nginx/html/audio
+      - hud_portraits:/usr/share/nginx/html/images/crawlers
     depends_on:
       - server
     restart: unless-stopped
@@ -59,3 +61,4 @@ networks:
 volumes:
   hud_pgdata:
   hud_audio:
+  hud_portraits:

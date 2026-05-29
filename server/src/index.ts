@@ -10,6 +10,7 @@ import { itemsRouter } from './routes/items.js'
 import { mobsRouter } from './routes/mobs.js'
 import { floorPlansRouter } from './routes/floor-plans.js'
 import { audioRouter } from './routes/audio.js'
+import { portraitRouter } from './routes/portrait.js'
 import { handleWsConnection } from './ws/handler.js'
 
 dotenv.config()
@@ -22,6 +23,7 @@ app.route('/api/items', itemsRouter)
 app.route('/api/mobs', mobsRouter)
 app.route('/api/floor-plans', floorPlansRouter)
 app.route('/api/audio', audioRouter)
+app.route('/api/portrait', portraitRouter)
 // ── GM PIN auth ──────────────────────────────────────────────
 // PIN is set via GM_PIN env var. Defaults to '1234' if not set.
 // Clients send a guess; server returns ok: true/false.

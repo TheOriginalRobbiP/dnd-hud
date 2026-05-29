@@ -177,6 +177,13 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
   const [error, setError] = useState('')
   const [bopSearchVal, setBopSearchVal] = useState('')
 
+  // Local AI portrait generation states
+  const [aiPrompt, setAiPrompt] = useState('')
+  const [aiCheckpoint, setAiCheckpoint] = useState('illustriousXL_v01.safetensors')
+  const [aiGenerating, setAiGenerating] = useState(false)
+  const [aiGenStatus, setAiGenStatus] = useState<string | null>(null)
+  const [customPortraits, setCustomPortraits] = useState<{ path: string; label: string }[]>([])
+
   const screen = SCREENS[screenIdx]
   const update = (patch: Partial<WizardState>) => setWizard(p => ({ ...p, ...patch }))
 
@@ -260,6 +267,50 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
       const next = [...current] as [string, string]
       next[emptyIdx] = skill
       update({ [field]: next })
+    }
+  }
+
+  const handleGeneratePortrait = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!aiPrompt.trim()) return
+
+    setAiGenerating(true)
+    setAiGenStatus('GENERATING...')
+
+    try {
+      const response = await fetch('/api/portrait/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: aiPrompt,
+          checkpoint: aiCheckpoint,
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate')
+      }
+
+      setAiGenStatus('SUCCESS!')
+      
+      const newPortrait = {
+        path: data.url,
+        label: `AI FACE ${customPortraits.length + 1}`
+      }
+      
+      setCustomPortraits(prev => [newPortrait, ...prev])
+      update({ portrait: data.url }) // Auto-select the newly generated portrait!
+      setAiPrompt('')
+      
+      setTimeout(() => setAiGenStatus(null), 2000)
+
+    } catch (error: any) {
+      console.error(error)
+      setAiGenStatus(`ERROR: ${error.message || 'Generation failed'}`)
+      setTimeout(() => setAiGenStatus(null), 4000)
+    } finally {
+      setAiGenerating(false)
     }
   }
 
@@ -413,6 +464,75 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
                 </button>
               ))}
             </div>
+
+            {/* Custom generated portraits */}
+            {customPortraits.length > 0 && (
+              <div className="mt-6">
+                <div className="font-hud text-xs text-hud-accent tracking-wider mb-3">AI GENERATED FACES</div>
+                <div className="grid grid-cols-4 gap-2 mb-6">
+                  {customPortraits.map(p => (
+                    <button
+                      key={p.path}
+                      onClick={() => update({ portrait: p.path })}
+                      className={`relative border-2 transition-all overflow-hidden aspect-[3/4] rounded-lg ${wizard.portrait === p.path ? 'border-hud-accent' : 'border-hud-border hover:border-hud-accent/60'}`}
+                    >
+                      <img src={p.path} alt={p.label} className="w-full h-full object-cover object-top" />
+                      {wizard.portrait === p.path && (
+                        <div className="absolute bottom-0 inset-x-0 py-1 font-hud text-[10px] tracking-wider text-center bg-hud-accent text-hud-bg">
+                          SELECTED
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Local AI Portrait Generator Form */}
+            <form onSubmit={handleGeneratePortrait} className="mt-6 border border-hud-border border-opacity-40 p-4 bg-white/5 flex flex-col gap-3 rounded-lg">
+              <p className="font-hud text-xs tracking-widest text-hud-accent uppercase">
+                Local AI Portrait Generator (ComfyUI)
+              </p>
+              <p className="font-hud text-[10px] text-hud-muted -mt-2 uppercase tracking-wide">
+                Generates a portrait in "Gravity Falls meets Adventure Time" style
+              </p>
+
+              <textarea
+                value={aiPrompt}
+                onChange={e => setAiPrompt(e.target.value)}
+                placeholder="Describe your character (e.g. 18-year-old boy, red hoodie, blue cap, wide excited eyes, grin)..."
+                className="bg-black/40 border border-hud-border border-opacity-30 p-2 font-mono text-xs text-white rounded resize-none h-16 focus:border-hud-accent focus:outline-none"
+                disabled={aiGenerating}
+              />
+
+              <div className="flex flex-col gap-1">
+                <label className="font-hud text-[10px] text-hud-muted">AI CHECKPOINT MODEL</label>
+                <select
+                  value={aiCheckpoint}
+                  onChange={e => setAiCheckpoint(e.target.value)}
+                  className="bg-black/60 border border-hud-border border-opacity-30 p-1.5 font-hud text-xs text-white rounded focus:border-hud-accent focus:outline-none"
+                  disabled={aiGenerating}
+                >
+                  <option value="illustriousXL_v01.safetensors">Illustrious XL V1 (Premium Illustration Style)</option>
+                  <option value="dreamshaperXL_lightningDPMSDE.safetensors">Dreamshaper XL Lightning (Ultra Fast - 3s)</option>
+                  <option value="gameIconInstitute_v4XL.safetensors">Game Icon Institute (RPG Game Icon Style)</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                disabled={aiGenerating || !aiPrompt.trim()}
+                className={`font-hud text-xs py-2 px-3 border transition-all rounded uppercase tracking-wider
+                  ${aiGenerating 
+                    ? 'border-hud-accent text-hud-accent bg-hud-accent/10 animate-pulse'
+                    : !aiPrompt.trim()
+                      ? 'border-hud-border border-opacity-20 text-hud-muted cursor-not-allowed'
+                      : 'border-hud-accent text-hud-accent hover:bg-hud-accent/10'
+                  }`}
+              >
+                {aiGenStatus || 'Generate Character Portrait (Takes ~10s)'}
+              </button>
+            </form>
 
             {wizard.portrait && (
               <div className="mt-4 border border-hud-accent/40 p-3 flex items-center gap-3 rounded bg-hud-panel/10">
