@@ -11,7 +11,7 @@ interface SoundLine {
   category: string
 }
 
-const LINES: SoundLine[] = [
+const INITIAL_LINES: SoundLine[] = [
   { id: 'session_start',       label: 'Session Start',    category: 'Session' },
   { id: 'session_stop',        label: 'Session Stop',     category: 'Session' },
   { id: 'announcement_seizure',label: 'Syndicate Seizure',category: 'Announcements' },
@@ -40,25 +40,101 @@ const CATEGORY_COLOURS: Record<string, string> = {
   'Loot':          'border-green-400 text-green-400',
   'Timer':         'border-red-400 text-red-400',
   'AI Favour':     'border-purple-400 text-purple-400',
+  'Dynamic AI':    'border-amber-400 text-amber-400',
 }
 
-const CATEGORIES = Array.from(new Set(LINES.map(l => l.category)))
+const KOKORO_SPEAKERS = [
+  { value: 'bm_george',   label: 'George (UK Male Announcer)' },
+  { value: 'bm_lewis',    label: 'Lewis (UK Male Warm)' },
+  { value: 'bf_emma',     label: 'Emma (UK Female)' },
+  { value: 'bf_isabella', label: 'Isabella (UK Female)' },
+  { value: 'am_adam',     label: 'Adam (US Male)' },
+  { value: 'am_michael',  label: 'Michael (US Male)' },
+  { value: 'af_bella',    label: 'Bella (US Female Display)' },
+  { value: 'af_sarah',    label: 'Sarah (US Female Standard)' },
+]
 
 export function SoundboardPanel({ send }: SoundboardPanelProps) {
   const [playing, setPlaying] = useState<string | null>(null)
   const [volume, setVolume] = useState(0.8)
+  
+  // Custom generation inputs
+  const [ttsText, setTtsText] = useState('')
+  const [speaker, setSpeaker] = useState('bm_george')
+  const [label, setLabel] = useState('')
+  const [generating, setGenerating] = useState(false)
+  const [genStatus, setGenStatus] = useState<string | null>(null)
+  
+  // Dynamic lines generated during this session
+  const [dynamicLines, setDynamicLines] = useState<SoundLine[]>([])
 
-  const play = (line: SoundLine) => {
+  const allLines = [...INITIAL_LINES, ...dynamicLines]
+  const categories = Array.from(new Set(allLines.map(l => l.category)))
+
+  const play = (lineId: string) => {
     // Broadcast to all clients via WS so display screen plays it too
-    send({ type: 'play_sound', soundId: line.id } as WSMessage)
+    send({ type: 'play_sound', soundId: lineId } as WSMessage)
 
     // Also play locally for GM preview
-    const audio = new Audio(`/audio/${line.id}.mp3`)
+    const audio = new Audio(`/audio/${lineId}.mp3`)
     audio.volume = volume
-    setPlaying(line.id)
+    setPlaying(lineId)
     audio.play()
     audio.onended = () => setPlaying(null)
     audio.onerror = () => setPlaying(null)
+  }
+
+  const handleGenerate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!ttsText.trim()) return
+
+    setGenerating(true)
+    setGenStatus('GENERATING...')
+
+    const safeLabel = label.trim() || `AI Line ${dynamicLines.length + 1}`
+    const safeFilename = `dynamic_${safeLabel.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`
+
+    try {
+      const response = await fetch('/api/audio/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: ttsText,
+          speaker,
+          filename: safeFilename
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate')
+      }
+
+      setGenStatus('SUCCESS!')
+      
+      // Add to dynamic list so it shows up in the soundboard list
+      const newSound: SoundLine = {
+        id: safeFilename,
+        label: safeLabel,
+        category: 'Dynamic AI'
+      }
+      setDynamicLines(prev => [...prev.filter(l => l.id !== safeFilename), newSound])
+
+      // Automatically play the newly generated sound!
+      setTimeout(() => {
+        play(safeFilename)
+        setGenStatus(null)
+        setTtsText('')
+        setLabel('')
+      }, 500)
+
+    } catch (error: any) {
+      console.error(error)
+      setGenStatus(`ERROR: ${error.message || 'Generation failed'}`)
+      setTimeout(() => setGenStatus(null), 4000)
+    } finally {
+      setGenerating(false)
+    }
   }
 
   return (
@@ -79,22 +155,79 @@ export function SoundboardPanel({ send }: SoundboardPanelProps) {
         </div>
       </div>
 
+      {/* Local AI voice generator */}
+      <form onSubmit={handleGenerate} className="border border-hud-border border-opacity-40 p-3 bg-white/5 flex flex-col gap-3 rounded">
+        <p className="font-hud text-xs tracking-widest text-hud-accent uppercase">
+          Local AI Voice Generator (Kokoro)
+        </p>
+
+        <textarea
+          value={ttsText}
+          onChange={e => setTtsText(e.target.value)}
+          placeholder="Enter lines for the AI announcer to speak..."
+          className="bg-black/40 border border-hud-border border-opacity-30 p-2 font-mono text-xs text-white rounded resize-none h-16 focus:border-hud-accent focus:outline-none"
+          disabled={generating}
+        />
+
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col gap-1">
+            <label className="font-hud text-[10px] text-hud-muted">SPEAKER</label>
+            <select
+              value={speaker}
+              onChange={e => setSpeaker(e.target.value)}
+              className="bg-black/60 border border-hud-border border-opacity-30 p-1.5 font-hud text-xs text-white rounded focus:border-hud-accent focus:outline-none"
+              disabled={generating}
+            >
+              {KOKORO_SPEAKERS.map(s => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="font-hud text-[10px] text-hud-muted">LABEL (ID)</label>
+            <input
+              type="text"
+              value={label}
+              onChange={e => setLabel(e.target.value)}
+              placeholder="e.g. Warning Room 5"
+              className="bg-black/60 border border-hud-border border-opacity-30 p-1.5 font-hud text-xs text-white rounded focus:border-hud-accent focus:outline-none"
+              disabled={generating}
+            />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={generating || !ttsText.trim()}
+          className={`font-hud text-xs py-2 px-3 border transition-all rounded uppercase tracking-wider
+            ${generating 
+              ? 'border-hud-accent text-hud-accent bg-hud-accent/10 animate-pulse'
+              : !ttsText.trim()
+                ? 'border-hud-border border-opacity-20 text-hud-muted cursor-not-allowed'
+                : 'border-hud-accent text-hud-accent hover:bg-hud-accent/10'
+            }`}
+        >
+          {genStatus || 'Generate & Play Line'}
+        </button>
+      </form>
+
       {/* Categories */}
-      {CATEGORIES.map(cat => (
-        <div key={cat}>
+      {categories.map(cat => (
+        <div key={cat} className="mt-2">
           <p className={`font-hud text-xs tracking-widest mb-2 ${CATEGORY_COLOURS[cat] ?? 'text-hud-muted'}`}>
             {cat.toUpperCase()}
           </p>
           <div className="flex flex-wrap gap-2">
-            {LINES.filter(l => l.category === cat).map(line => {
+            {allLines.filter(l => l.category === cat).map(line => {
               const isPlaying = playing === line.id
               const colour = CATEGORY_COLOURS[cat] ?? 'border-hud-border text-hud-muted'
               return (
                 <button
                   key={line.id}
-                  onClick={() => play(line)}
+                  onClick={() => play(line.id)}
                   disabled={isPlaying}
-                  className={`px-3 py-2 border font-hud text-xs tracking-wider transition-all
+                  className={`px-3 py-2 border font-hud text-xs tracking-wider transition-all rounded
                     ${isPlaying
                       ? 'border-hud-accent text-hud-accent bg-hud-accent/10 animate-pulse cursor-not-allowed'
                       : `${colour} border-opacity-40 hover:border-opacity-100 hover:bg-white/5`
