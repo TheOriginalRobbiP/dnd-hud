@@ -553,6 +553,73 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
     }
   }
 
+  // ── Add safe room ──────────────────────────────────────────────
+  const addSafeRoom = async () => {
+    if (!activePlanId) return
+    const safeRooms = [
+      {
+        name: 'Taco Bell Safe Room',
+        description: 'A sterile, plastic-and-chrome Taco Bell franchise bolted into the cavern walls. Scent of artificial beef and warm tortillas fills the air. A flashing neon sign reads: "NOW SERVING CRAWLERS".\n\n### CHIEF BENEFIT\nComplete safety from level combat and hostiles. Perfect place to rest and heal.\n\n### MENU SPECIALS\n- Synthetic Quesadilla (5 Gold, restores 1d6 HP)\n- Baja Blast Potion (10 Gold, restores 1d4 MP)',
+        tags: 'safe,vending',
+        sceneArt: '/images/rooms/sector3_guild_scene.png',
+        battlemapArt: '/images/rooms/sector3_guild_battlemap.png',
+      },
+      {
+        name: "McDonald's Safe Room",
+        description: 'A brightly lit, yellow-and-red burger franchise. The golden arches gleam against the dark wet stones. The ice cream machine is out of order, but the fry cooker is active.\n\n### CHIEF BENEFIT\nProtected by the Traefik corporate defense shield. No mobs can penetrate.\n\n### MENU SPECIALS\n- Synthetic Big Mac (6 Gold, restores 1d8 HP)\n- Hot Apple Turnover (3 Gold, cures Queasy debuff)',
+        tags: 'safe,vending',
+        sceneArt: '/images/rooms/sector3_guild_scene.png',
+        battlemapArt: '/images/rooms/sector3_guild_battlemap.png',
+      },
+      {
+        name: 'Subway Safe Room',
+        description: 'A synthetic sandwich franchise where you can smell the artificial yeast from two corridors away. Clean white counters and fresh-looking synthetic lettuce.\n\n### CHIEF BENEFIT\nA secure, quiet space to open your loot boxes and sort your backpack.\n\n### MENU SPECIALS\n- Footlong Synth-Sub (8 Gold, full HP recovery over 1 room rest)',
+        tags: 'safe,vending',
+        sceneArt: '/images/rooms/sector3_guild_scene.png',
+        battlemapArt: '/images/rooms/sector3_guild_battlemap.png',
+      },
+      {
+        name: 'Marry-Out Saloon Safe Room',
+        description: 'A high-end hotel lobby from the Marriott chain, completely converted into a dusty Wild West Saloon. Comfortable armchairs, clean towels, and a water dispenser.\n\n### CHIEF BENEFIT\nResting here removes all active fatigue and moral exhaustion.\n\n### AMENITIES\n- Soft Couches: Removes Fatigued debuff automatically upon entry.',
+        tags: 'safe,hotel',
+        sceneArt: '/images/rooms/sector3_guild_scene.png',
+        battlemapArt: '/images/rooms/sector3_guild_battlemap.png',
+      },
+      {
+        name: 'Starbucks Safe Room',
+        description: 'A modern coffee bar with plush armchairs and low-volume jazz music. An overworked Bopca barista behind the counter completely mispronounces and misspells your crawler name.\n\n### CHIEF BENEFIT\nRelaxing space. No damage can be taken inside.\n\n### MENU SPECIALS\n- Synth-Espresso (5 Gold, restores 2 MP and grants +2 Initiative for the next fight)',
+        tags: 'safe,vending',
+        sceneArt: '/images/rooms/sector3_guild_scene.png',
+        battlemapArt: '/images/rooms/sector3_guild_battlemap.png',
+      }
+    ]
+
+    const selectedSafeRoom = safeRooms[Math.floor(Math.random() * safeRooms.length)]
+    const posX = 100 + (rooms.length % 5) * 160
+    const posY = 100 + Math.floor(rooms.length / 5) * 120
+
+    const res = await fetch(`/api/floor-plans/${activePlanId}/rooms`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: selectedSafeRoom.name,
+        description: selectedSafeRoom.description,
+        tags: selectedSafeRoom.tags,
+        sceneArt: selectedSafeRoom.sceneArt,
+        battlemapArt: selectedSafeRoom.battlemapArt,
+        posX,
+        posY,
+        roomTarget: 10,
+      }),
+    })
+    if (res.ok) {
+      const room: FloorRoom = await res.json()
+      const normRoom = { ...room, tags: normaliseTags(room.tags) }
+      setRooms(prev => [...prev, normRoom])
+      setNodes(prev => [...prev, roomToNode(normRoom)])
+    }
+  }
+
   // ── Node drag end — persist position ──────────────────────────
   const onNodeDragStop: OnNodeDrag = useCallback(async (_event, node) => {
     const planId = activePlanIdRef.current
@@ -643,12 +710,20 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
         </button>
 
         {activePlanId && (
-          <button
-            onClick={addRoom}
-            className="font-bold text-xs border border-hud-border rounded-md text-hud-muted px-4 py-2 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider uppercase"
-          >
-            + ADD ROOM
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={addRoom}
+              className="font-bold text-xs border border-hud-border rounded-md text-hud-muted px-4 py-2 hover:border-hud-accent hover:text-hud-accent transition-colors tracking-wider uppercase bg-hud-panel"
+            >
+              + ADD ROOM
+            </button>
+            <button
+              onClick={addSafeRoom}
+              className="font-bold text-xs border border-hud-success/50 rounded-md text-hud-success px-4 py-2 hover:border-hud-success hover:bg-hud-success/10 transition-colors tracking-wider uppercase bg-hud-panel"
+            >
+              + ADD SAFE ROOM
+            </button>
+          </div>
         )}
 
         {loadingPlan && (
