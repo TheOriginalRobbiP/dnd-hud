@@ -141,7 +141,7 @@ export function ItemDatabasePanel() {
                 }`}
               >
                 <div className="flex justify-between items-start gap-2">
-                  <span className="font-hud text-sm text-hud-text font-bold uppercase tracking-wider truncate">
+                  <span className="font-hud text-sm text-hud-text font-bold uppercase tracking-wider break-words min-w-0 flex-1">
                     {item.name}
                   </span>
                   <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end">
@@ -168,7 +168,7 @@ export function ItemDatabasePanel() {
                   </div>
                 </div>
                 <div className="font-hud text-xs text-hud-muted mt-1.5 leading-relaxed">
-                  {item.description}
+                  {item.description || 'No description provided by the System.'}
                 </div>
               </button>
             ))}
@@ -218,7 +218,7 @@ export function ItemDatabasePanel() {
 
               {/* Flavour / Desc */}
               <div className="bg-hud-bg/50 border border-hud-border/40 p-3 rounded text-xs leading-relaxed text-hud-muted italic">
-                "{selected.description}"
+                "{selected.description || 'No description provided by the System.'}"
               </div>
 
               {/* Mechanics & Bonuses */}

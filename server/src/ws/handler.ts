@@ -56,7 +56,12 @@ export function handleWsConnection(ws: WebSocket) {
 
       await applyMessage(message)
 
-      if (message.type === 'loot_opened' || message.type === 'bone_harvest_trigger') {
+      if (
+        message.type === 'loot_opened' || 
+        message.type === 'bone_harvest_trigger' || 
+        message.type === 'display_room_enter' || 
+        message.type === 'floor_update'
+      ) {
         const freshState = await getFullState()
         broadcast({ type: 'full_state_sync', state: freshState } as any, undefined)
 

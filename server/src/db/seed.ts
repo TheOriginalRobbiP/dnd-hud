@@ -1,5 +1,5 @@
 import { db } from './client.js'
-import { floorState } from './schema.js'
+import { floorState, items, mobTemplates } from './schema.js'
 import { seedBopcaMobs } from './bopca-mobs-seed.js'
 import { seedBopcaItems } from './bopca-items-seed.js'
 import { seedItems } from './items-seed.js'
@@ -7,6 +7,10 @@ import { seedTier2Items } from './items-seed-tier2.js'
 import { seedFloorPlans } from './floor-plan-seed.js'
 
 async function seed() {
+  console.log('[seed] Clearing items and mob templates databases to prevent stale/truncated entries...')
+  await db.delete(items)
+  await db.delete(mobTemplates)
+
   console.log('[seed] Initialising floor state...')
   await db.insert(floorState)
     .values({ id: 1 })

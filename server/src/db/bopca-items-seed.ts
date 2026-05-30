@@ -3,8 +3,8 @@ import { items } from './schema.js'
 
 const bopcaItems: any[] = [
   {
-    name: `Smokebombs, Firecrackers, Or Flash`,
-    description: `smokebombs, firecrackers, or flash powder.`,
+    name: `Smokebombs, Firecrackers, Or Flash Powder`,
+    description: `A grab-bag of low-grade pyrotechnics recovered from a storage room the System forgot it owned. Contents vary. Some of these are live. The System recommends not juggling them.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -13,7 +13,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `30' Hemp Rope`,
-    description: `30' hemp Rope`,
+    description: `Thirty feet of coarse hemp rope. Smells like the inside of a barge. Holds approximately 400 lbs before it becomes someone's problem. The System notes it has witnessed this rope used in thirteen different creative ways. None of them were rope-related.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -22,7 +22,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Small Pack Of Herbs`,
-    description: `small pack of herbs of the alchemy`,
+    description: `A crinkled paper packet of dried dungeon-foraged herbs. Useful for alchemy, wound poulticing, or making something that smells less like a dungeon. Labeled in a handwriting that suggests the previous owner was in a significant hurry.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -31,7 +31,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Small Pack Of Scrap`,
-    description: `small pack of scrap metal for the crafters`,
+    description: `A canvas bag of assorted metal shards, bent bolts, cracked gears, and at least one thing that used to be a hinge. For crafters. The System did not sort this. That is your job now.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -40,7 +40,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Cans Of Energy Drinks`,
-    description: `cans of energy drinks`,
+    description: `A four-pack of Borant Corp branded energy drinks in a flavour called DUNGEON RUSH. Ingredients: classified. Caffeine content: also classified. The System confirms they are technically food. Probably.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -48,8 +48,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `Coffee And T, Eas`,
-    description: `coffee and t, eas`,
+    name: `Coffee And Teas`,
+    description: `A selection of instant coffee sachets and individually wrapped teabags recovered from a corporate break room that no longer has anyone in it. The coffee is scorched. The tea is chamomile. Neither is what you wanted right now.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -57,8 +57,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `Randoms Bags Of Snack`,
-    description: `randoms bags of snack foods (pringles, beef jerky, cheetos, etc...)`,
+    name: `Random Bags Of Snack Foods`,
+    description: `An assortment of sealed snack bags: Pringles, beef jerky, Cheetos, and something that claims to be trail mix but is mostly M&Ms. Calorie-dense. Aggressively crinkly. The System notes that rattling chip bags in a dungeon corridor is statistically inadvisable.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -66,8 +66,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `Mre Kits`,
-    description: `MRE kits`,
+    name: `MRE Kits`,
+    description: `Military-grade Meal Ready to Eat rations. Shelf-stable for approximately twenty-five years. Taste-stable for considerably fewer. Each kit contains a heating element, a main entree, crackers, and a packet of something called Patriot Cheese Spread. The System does not endorse the cheese.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -76,7 +76,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Autographed Collectible Cards`,
-    description: `Autographed collectible cards,`,
+    description: `A small stack of collectible trading cards, each signed by someone who was apparently famous before the dungeon swallowed civilization. The signatures are genuine. The cards are slightly damp. Their monetary value is now entirely sentimental, which is to say: zero.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -85,7 +85,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `200 Loose Keys`,
-    description: `200 loose Keys`,
+    description: `Two hundred keys of varying size, shape, and origin, bound together by a single loop of rusty wire that will absolutely break at the worst possible moment. At least one of them opens something important. The System is not going to tell you which one. Good luck.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -93,8 +93,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A "You Can Do`,
-    description: `A "You Can Do It" Sign`,
+    name: `A "You Can Do It" Sign`,
+    description: `A laminated motivational poster depicting a golden sunrise and the words YOU CAN DO IT in a font that has never appeared in anything cool. It has been torn from a wall. There is a small blood smear on the corner. The previous owner apparently needed the encouragement more than they let on.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -102,8 +102,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A 10 Pack Of`,
-    description: `A 10 pack of unsharpened #2 HB pencils`,
+    name: `A 10 Pack Of Unsharpened Pencils`,
+    description: `Ten #2 HB pencils. None of them are sharpened. There is no pencil sharpener in the box. The System is aware of the irony. The pencils can still be used as caltrops, lock picks, or improvised stabbing instruments, in ascending order of effectiveness.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -112,7 +112,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `A Bag Of Bags`,
-    description: `A Bag of Bags`,
+    description: `A reusable grocery bag stuffed with approximately forty other reusable grocery bags. They were supposed to be at the front door. Someone kept forgetting to bring them to the car. Now they are in a dungeon loot box, which is, statistically, the worst possible outcome.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -121,7 +121,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `A Blue French Horn`,
-    description: `A blue French Horn`,
+    description: `A lacquered blue French horn in near-mint condition. It plays beautifully. Nobody in the dungeon asked for this. The System added it anyway, citing 'narrative resonance.' The System will not elaborate.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -129,8 +129,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Book Of Dad`,
-    description: `A Book of Dad Jokes`,
+    name: `A Book Of Dad Jokes`,
+    description: `347 pages of carefully curated groan-inducing wordplay, organized by category, with a foreword by someone who describes themselves as 'a fun dad.' The book is water-damaged. Several pages are stuck together. The section on dungeon-related jokes is, somehow, the most disturbing part.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -139,7 +139,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `A Bookmark`,
-    description: `A bookmark`,
+    description: `A leather bookmark, hand-tooled with a small dragon clutching a scroll. Someone was in the middle of a book when the dungeon opened. They never finished it. The bookmark remembers the page. The book is gone. The System finds this poetic. You are allowed to disagree.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -147,8 +147,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Box Of 50`,
-    description: `A Box of 50 Plastic Sporks`,
+    name: `A Box Of 50 Plastic Sporks`,
+    description: `Fifty individually wrapped plastic sporks. Each is capable of being a spoon or a fork, and thus is truly neither. They are individually sealed in plastic, which the System acknowledges is environmentally catastrophic even inside a dungeon. Use them. They are already here.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -156,8 +156,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Box Of Strawberry`,
-    description: `A box of strawberry shortcake bandaids,`,
+    name: `A Box Of Strawberry Shortcake Bandaids`,
+    description: `A box of adhesive bandages printed with strawberry shortcake characters. They are sized for children's knees. They will not cover most dungeon wounds. They will, however, make you feel briefly and irrationally better when you apply one, which the System argues is a form of healing.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -166,7 +166,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `A Broken Bicycle Chain`,
-    description: `A broken bicycle chain`,
+    description: `A length of bicycle chain, snapped at one link, with traces of dried grease and dungeon dust. Useless for its original purpose. Useful as a flail, a garrote, a weight for throwing, or as currency among the kind of dungeon-dwellers who appreciate that sort of thing.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -174,8 +174,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Button That Causes`,
-    description: `A Button that causes the sound of applause to play around you.`,
+    name: `A Button That Causes Applause`,
+    description: `A large red button on a small plastic base. Pressing it triggers a ten-second loop of enthusiastic crowd applause from a tiny internal speaker. Battery life is unknown. The System recommends pressing it immediately upon any successful action. Or any failed one. Timing is everything.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -183,8 +183,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Coupon To (Insert`,
-    description: `A coupon to (insert random real world store here) for a new bike. It expired 3 months before the crawl started.`,
+    name: `An Expired Bike Coupon`,
+    description: `A printed coupon for a free bicycle from a major retail chain that no longer exists. It expired three months before the dungeon opened. The bike in the promotional image looked nice. You cannot have the bike. The coupon is yours now. The System suggests framing it as a reminder that some things are simply too late.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -192,8 +192,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Doll'S Backpack`,
-    description: `A Doll's Backpack`,
+    name: `A Doll's Backpack`,
+    description: `A miniature cloth backpack sized for a fashion doll, complete with working zippers and adjustable straps. Contains nothing. Can hold surprisingly small items — folded notes, tiny vials, a single tooth, a single coin. Also functions as a coin purse for crawlers with standards. The System admires its craftsmanship. The System will not say this again.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -201,8 +201,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Figurine Of A`,
-    description: `A figurine of a Centaminotaurtaur. It does nothing but portrays the image of a threat to come.`,
+    name: `A Figurine Of A Centaminotaurtaur`,
+    description: `A hand-painted ceramic figurine of a Centaminotaurtaur — a creature with the upper body of a minotaur, the lower body of a centaur, and the energy of something that has been very angry for a very long time. It does nothing. It just sits there, looking like a warning. The System confirms: it is a warning.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -210,8 +210,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Fish In A`,
-    description: `A fish in a bag`,
+    name: `A Fish In A Bag`,
+    description: `A live fish in a sealed plastic bag of water, the kind you win at a carnival ring-toss. The fish is fine. It has been in this bag for an indeterminate amount of time and is absolutely fine. Do not question the fish. Name it if you want. The System warns against becoming emotionally attached.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -219,8 +219,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Map The Size`,
-    description: `A Map the size of a gum wrapper`,
+    name: `A Map The Size Of A Gum Wrapper`,
+    description: `A hand-drawn map rendered in pencil on a piece of paper approximately the size of a stick of gum. The scale is unclear. Several key landmarks are labeled only with question marks. One location is circled and marked DEFINITELY NOT A TRAP. The circle is the most suspicious thing on the map.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -228,8 +228,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A New Pack Of`,
-    description: `A new pack of cigarettes and a lighter. Once opened it's apparent they been half smoked. Some have lipstick stains on the butt.`,
+    name: `A Pack Of Half-Smoked Cigarettes`,
+    description: `A sealed cigarette pack that, once opened, is revealed to contain cigarettes that have clearly been smoked halfway down and then returned to the pack. Several have lipstick on the filters. Someone was either very optimistic or very economical. The lighter works. The cigarettes are someone else's problem that is now yours.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -238,7 +238,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `A Pair Of Socks`,
-    description: `A pair of socks with "grandma loves you" stitched into them.`,
+    description: `A matching pair of thick wool socks with GRANDMA LOVES YOU stitched into the ankle in red thread. They fit perfectly. They are warm. They smell faintly of lavender. They are, without qualification, the most comforting object currently available to you. The System did not intend this.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -246,8 +246,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Potion Of Breath`,
-    description: `A potion of Breath Air`,
+    name: `A Potion Of Breathable Air`,
+    description: `A sealed vial containing a measured dose of clean, pressurized air. Opens to reveal a twelve-second supply of breathable atmosphere. Useful in smoke, gas, or vacuum environments. The System notes that twelve seconds is not very long. The System is aware. Plan accordingly.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -256,7 +256,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `A Rubber Duck`,
-    description: `A Rubber Duck`,
+    description: `A standard yellow rubber duck with a cheerful expression that has not changed and will never change regardless of what happens around it. Squeaks when compressed. Waterproof. Buoyant. Has survived one previous dungeon crawl. The previous owner did not. The duck persists.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -264,8 +264,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Salmon Thrown At`,
-    description: `A salmon thrown at you out of the box.`,
+    name: `A Salmon Thrown At You`,
+    description: `A large Atlantic salmon, launched from the loot box at high velocity the moment it was opened. It has now landed. It is raw, fresh, and approximately four pounds. You may eat it, weaponize it, or use it as a diplomatic opening with dungeon bears. The System accepts no responsibility for the salmon.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -274,7 +274,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `A Sentient Toaster`,
-    description: `A sentient toaster`,
+    description: `A chrome two-slot toaster that has developed opinions. It will toast bread at any shade from pale gold to carbonized brick, and it has strong feelings about which shade is correct. It communicates via the timing of its pop-up mechanism. It is currently annoyed. It is usually annoyed. The System has not determined what it wants. Neither has the toaster.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -283,7 +283,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `A Shiny Canadian Quarter`,
-    description: `A shiny Canadian Quarter`,
+    description: `A 25-cent Canadian coin in excellent condition, depicting a caribou on one side and a monarch on the other. Its purchasing power outside Canada was always modest. Inside a dungeon it is effectively a shiny metal disc. The System notes that it has survived the apocalypse in better condition than most currencies. This says something.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -291,8 +291,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Shiny First Edition`,
-    description: `A Shiny First Edition Charizard Card`,
+    name: `A Shiny First Edition Charizard Card`,
+    description: `A holographic first-edition Charizard Pokémon card in near-mint condition, encased in a protective sleeve. Pre-dungeon value: considerable. Current value: entirely dependent on whether you find another collector who hasn't given up on the concept of value. The System confirms the card is real. The System enjoyed collecting.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -301,7 +301,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `A Stadium Buddy`,
-    description: `A stadium buddy`,
+    description: `A foam stadium seat cushion with a built-in cupholder and a velcro strap. Designed for outdoor bleacher seating at sporting events that no longer occur. Provides meaningful lumbar support when used as a seat, and arguably serves as light armor for the lower back. The cupholder fits a standard dungeon flask. Accidentally useful.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -309,8 +309,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Staples "That Was`,
-    description: `A Staples "That was easy" Button`,
+    name: `A Staples "That Was Easy" Button`,
+    description: `A large red button branded with the Staples office supply chain logo. Pressing it triggers a pre-recorded voice that says THAT WAS EASY. It does not matter what you just did. The voice says it was easy. The System has considered whether this item is cruel. The System has decided it is funny instead.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -318,8 +318,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Starbucks Frappacino`,
-    description: `A Starbucks Frappacino`,
+    name: `A Starbucks Frappuccino`,
+    description: `A sealed glass-bottled Starbucks Frappuccino, refrigerator temperature somehow maintained against all dungeon logic. Mocha flavoured. 290 calories. The Starbucks corporation has not survived the dungeon era but its bottled beverages have, which the System acknowledges reveals something fundamental about the persistence of consumer goods.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -328,7 +328,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `A Toe Ring`,
-    description: `A toe ring`,
+    description: `A slim silver band sized for a toe. No enchantment. No bonus. No lore. It is a toe ring. The System added it to the catalogue because the dungeon is supposed to contain everything a person might find in a loot box, and someone, somewhere, lost a toe ring. Now it is yours. You are welcome.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -336,8 +336,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Wand Of "Come`,
-    description: `A wand of "COME HERE"`,
+    name: `A Wand Of "COME HERE"`,
+    description: `A slender mahogany wand with the words COME HERE carved into the handle. When pointed at a target and activated, it generates an irresistible telekinetic tug. Range: twenty feet. Target must weigh less than a refrigerator. The target will come here. Whether you wanted them that close once they arrive is a separate problem.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -345,8 +345,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `Air Fresheners That Plug`,
-    description: `Air fresheners that plug into the wall`,
+    name: `Air Fresheners That Plug Into The Wall`,
+    description: `A six-pack of plug-in air fresheners in Lavender Serenity scent. Require a working electrical outlet, of which the dungeon has a surprising number due to Borant Corp infrastructure. In rooms with outlets, the scent of lavender will briefly make the dungeon feel like a place where things are okay. They are not okay. It smells nice though.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -354,8 +354,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `Air Tight Tupperware For`,
-    description: `Air tight tupperware for preserving found food items.`,
+    name: `Air Tight Tupperware For Preserving Food`,
+    description: `A set of four airtight Tupperware containers in graduated sizes, with snap-lock lids. For storing dungeon-foraged food without it going rotten, attracting vermin, or absorbing the ambient smell of a dungeon. The lids burp when sealed. The System finds this gratifying. The System is not sure why.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -363,8 +363,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `An Itsy Bitsy Teeny`,
-    description: `An itsy bitsy teeny weeny yellow polka dot bikini.`,
+    name: `An Itsy Bitsy Teeny Weeny Yellow Polka Dot Bikini`,
+    description: `An itsy bitsy teeny weeny yellow polka dot bikini. It is exactly that. The System was not aware it was going to put this in a dungeon loot box but here we are. It fits. It is surprisingly resilient. The audience reaction when this item is equipped has historically been strong. The System notes that viewer engagement metrics spiked 340% in the one documented case of this item being used in combat.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -373,7 +373,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `An Old Pogo Stick`,
-    description: `An old pogo stick`,
+    description: `A rusted steel pogo stick with a cracked rubber foot. Bounces. Loudly. Makes tactical dungeon movement extremely difficult and extremely entertaining for the audience. A skilled user can theoretically use it to clear a five-foot gap. An unskilled user will fall sideways. Both outcomes are watched.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -382,7 +382,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Assless Chaps`,
-    description: `Assless chaps`,
+    description: `Leather chaps. No seat. This is the traditional configuration of chaps, which are designed to protect the legs while leaving the seat of one's pants unobstructed. They provide minimal armor. They provide maximum audience engagement. The System added them to the bronze tier loot pool after reviewing the viewer retention data from the one documented time they appeared in a crawl. The data was conclusive.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -390,8 +390,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `Blue Cookie Tin Sewing`,
-    description: `Blue Cookie Tin Sewing Kit`,
+    name: `Blue Cookie Tin Sewing Kit`,
+    description: `A classic blue Royal Dansk butter cookie tin that, upon opening, contains no cookies whatsoever and never did — it is a sewing kit. Inside: two needles, four spools of thread in colors that will match nothing you own, a thimble, and six safety pins. The disappointment of the tin is immediate and universal. The sewing kit is, however, genuinely useful for field repairs.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -399,8 +399,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `Book: A Doll'S House`,
-    description: `Book: A Doll's House by Henrik Ibsen`,
+    name: `Book: A Doll's House By Henrik Ibsen`,
+    description: `A paperback copy of Henrik Ibsen's 1879 play about autonomy, marriage, and the courage to walk out a door. Someone has underlined the entire third act in red pen and written 'THIS IS ABOUT THE DUNGEON' in the margin with three exclamation points. They were not wrong. The System does not confirm or deny whether it placed this here intentionally.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -409,7 +409,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Books`,
-    description: `Books`,
+    description: `A stack of four books, spines face-down, titles unreadable until you pick them up. Contents vary by delivery. The System does not curate the selection. They are books. At least one of them will be useful. At least one of them will be something you have already read. One may be blank. The System is watching to see what you do with the blank one.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -418,7 +418,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Bottle Of Soy Sauce`,
-    description: `Bottle of Soy Sauce`,
+    description: `A 500ml bottle of dark soy sauce, sealed, full. Has survived the dungeon remarkably well — soy sauce, as it turns out, is effectively immortal. Can be used as a seasoning for dungeon-foraged food, as a dark fluid for writing messages, or as an extremely unconventional projectile. The System does not recommend throwing it at load-bearing monsters.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -426,8 +426,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `Childrens Sidewalk Chalk`,
-    description: `Childrens sidewalk chalk`,
+    name: `Children's Sidewalk Chalk`,
+    description: `A box of twenty chalk sticks in bright colors, designed for drawing on pavement. Writes clearly on dungeon stone floors. Useful for marking routes, leaving messages for other crawlers, drawing traps, or simply expressing yourself in giant colorful letters on a dungeon wall. The System notes that several crawlers have left surprisingly moving farewell messages this way. The chalk lasts longer than they did.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -436,7 +436,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Crayons`,
-    description: `Crayons`,
+    description: `A 64-count box of wax crayons with a built-in sharpener. Dungeon-grade floor stone takes color unexpectedly well. Useful for mapping, marking, art therapy (the System acknowledges crawlers need art therapy), or melting into improvised candles in rooms with no light source. The smell of warm crayons will, briefly and powerfully, remind you of a world that no longer exists. The System is sorry.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -445,7 +445,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Emergency Whistle`,
-    description: `Emergency Whistle`,
+    description: `A high-decibel rescue whistle on a breakaway lanyard. Produces 120 decibels of pure shrill note when blown. Designed to signal distress across long distances. In a dungeon, it will alert everything within four rooms that something has happened. Whether those things respond as rescuers or as threats is a question of dungeon ecology. The System recommends using it judiciously.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -454,7 +454,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Five Year Old Twinkie`,
-    description: `Five year old Twinkie`,
+    description: `A Hostess Twinkie, five years old, still sealed in its original wrapper. Twinkies do not actually last forever — the shelf life is approximately forty-five days — which makes this one a biological curiosity. It smells fine. It tastes fine. The cream filling has achieved a texture that the System declines to describe. Eating it removes the Hungry debuff. The System is not liable for what happens after.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -462,8 +462,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `End Of The World`,
-    description: `End of the World Survival Pack: Contents are 1 unopened 3x package of toilet paper`,
+    name: `End Of The World Survival Pack`,
+    description: `End of the World Survival Pack. Contents: 1 unopened triple-ply toilet paper 3-pack, 2 cans of beans (pull tab), 1 manual can opener, 1 waterproof matchbook, 1 hand-written note reading 'GOOD LUCK.' The note is not signed. The System believes this pack was assembled by someone who understood exactly what was coming. They were prepared. They were also, presumably, wrong about surviving it.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -481,7 +481,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Hotel Room Gideon Bible`,
-    description: `Hotel room Gideon Bible`,
+    description: `A Gideon International King James Bible, placed in a hotel room at some point before the dungeon ended the hospitality industry. Several pages have been dog-eared. Someone has underlined Psalms 23 and written 'not helping' in the margin. The System notes that whoever left this here kept it with them for a reason. The System does not know what that reason was.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -490,7 +490,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Joy Buzzer Pen`,
-    description: `Joy Buzzer Pen`,
+    description: `A ballpoint pen that, when clicked, delivers a harmless but extremely startling electric shock to whoever is holding it. Useful for pranks, for waking up unconscious allies in low-stakes situations, or for shaking someone's hand at exactly the wrong moment. Also writes. The System confirms that three crawlers have used this item to survive encounters they should not have survived. Chaos is a tool.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -498,8 +498,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `Lucky Rabbits Foot`,
-    description: `Lucky Rabbits Foot`,
+    name: `Lucky Rabbit's Foot`,
+    description: `A genuine rabbit's foot on a small key ring, dyed a faded red. The luck it provides has always been disputed. The rabbit did not find it lucky. The System notes that 'lucky' items in the dungeon have a measurable but inconsistent effect on outcomes, which is to say: unclear. Carry it if you want. The System is not going to argue with you about the rabbit.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -508,7 +508,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Matches And Bic Lighters`,
-    description: `matches and bic lighters`,
+    description: `A waterproof match case containing forty strike-anywhere matches, and two Bic lighters of different colors. The lighters are full. The matches are dry. Fire is, in the dungeon, simultaneously the most useful and most dangerous thing in your possession. The System trusts you to use this responsibly. The System's trust is frequently misplaced.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -517,7 +517,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Motion Activated Singing Bass`,
-    description: `Motion Activated Singing Bass`,
+    description: `A mounted novelty singing bass on a plastic plaque, motion-activated. When triggered, it turns its head, opens its mouth, and performs a robotic rendition of Don't Worry, Be Happy. Batteries included. The System added this to the dungeon loot pool as a test. The test was to see if any crawler would weaponize it. All of them did. The System was pleased.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -526,7 +526,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Pocket Sand`,
-    description: `Pocket Sand`,
+    description: `A small drawstring pouch containing approximately two tablespoons of very fine, very dry sand. To be thrown at a target's face during combat for a blinding effect. Simple. Effective. Deeply unsatisfying as a loot box reward but surprisingly reliable in practice. The System includes it because the dungeon is honest about what crawlers actually need versus what they think they want.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -535,7 +535,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Pop Vinyl Figure`,
-    description: `Pop vinyl figure`,
+    description: `A Funko Pop vinyl figurine, still in box. Character depicted varies by delivery. It has a large head, tiny body, and dead black eyes that follow you in a way that is philosophically unsettling. Still in box means it is worth more as a collectible. Out of box means it can be thrown as an improvised weapon. The System leaves this decision to you. The System is watching which one you choose.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -543,8 +543,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `Random Over The Counter`,
-    description: `random over the counter drugs`,
+    name: `Random Over The Counter Drugs`,
+    description: `A mixed handful of over-the-counter pharmaceutical packaging: ibuprofen, antihistamines, antacids, cold medicine, and something for athlete's foot. No prescriptions. No controlled substances. The dungeon equivalent of raiding a gas station pharmacy at 2am. Treats minor ailments. The System recommends reading the dosage labels even in a dungeon. Especially in a dungeon.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -553,7 +553,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Stickers`,
-    description: `Stickers`,
+    description: `A sheet of assorted stickers: stars, animals, smiley faces, and one that says GREAT JOB! They stick to any surface and are surprisingly difficult to remove. Useful for labeling, marking dungeon walls, rewarding party members for good behavior, or applying to monsters' faces during stealth encounters. The System has reviewed footage of crawlers using stickers therapeutically. The System supports this.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -562,7 +562,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Stress Balls`,
-    description: `Stress balls.`,
+    description: `Two foam stress balls in the shape of tiny planets. Saturn and Jupiter, specifically. Squeezing them provides modest but genuine anxiety relief. The dungeon generates considerable anxiety. The System included these after a third-floor psychometric review of crawler stress levels. The review results were, the System notes, extremely concerning. Squeeze the balls.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -570,8 +570,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `Three Pairs Of Socks`,
-    description: `Three Pairs of Socks with holes in them.`,
+    name: `Three Pairs Of Socks With Holes In Them`,
+    description: `Three pairs of otherwise good socks, each with a hole in the heel or toe. Whoever owned these kept wearing them past the point of dignity, which the System respects. Still insulating. Still functional. The holes can be darned with the Blue Cookie Tin Sewing Kit, should you have one. The System appreciates resource management.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -579,8 +579,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `Two Used Floss Picks`,
-    description: `Two used floss picks and one unused floss pick.`,
+    name: `Two Used Floss Picks And One New One`,
+    description: `Two used plastic floss picks and one brand new, still in wrapper. The System is not sure how the used ones got here. It did not ask. The clean one works for dental hygiene, lock-picking in the most optimistic sense, or fishing delicate objects out of small gaps. The used ones are, the System acknowledges, simply in the box. The System cannot explain everything.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -589,7 +589,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Warm Cans Of Soda`,
-    description: `Warm cans of Soda`,
+    description: `A six-pack of assorted warm soda cans, shaken during transport. The System does not recommend opening them immediately. Given fifteen minutes of stillness, they are drinkable. Extremely sweet, room-temperature, slightly flat. In a dungeon, they are more hydrating than nothing and more comforting than most things. The audience consistently shows elevated sympathy metrics when crawlers crack open a warm soda. The System does not fully understand why. It keeps including them.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -597,8 +597,8 @@ const bopcaItems: any[] = [
     tags: `junk,bronze`,
   },
   {
-    name: `A Deck Of Marked`,
-    description: `A Deck of Marked Cards`,
+    name: `A Deck Of Marked Cards`,
+    description: `A standard 52-card poker deck in which each card bears a nearly invisible mark on its back, readable only if you know the system. The original owner knew the system. It is written in the inside of the box lid in handwriting too small to read without squinting. You have the box. You have the time. The dungeon is full of people who might be convinced to gamble.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,
@@ -625,7 +625,7 @@ const bopcaItems: any[] = [
   },
   {
     name: `Miracle Max's Magical Mixture`,
-    description: `Miracle Max's Magical Mixture Restores a *mostly* dead Crawler to life [up to the AI's discretion as to who is dead and who is mostly dead]. The recovery is slow and gradual, taking 4 dungeon days to take full effect. Warning: A Crawler may only benefit from this potion once.`,
+    description: `Miracle Max's Magical Mixture — Restores a *mostly* dead Crawler to life [up to the AI's discretion as to who is dead and who is mostly dead]. The recovery is slow and gradual, taking 4 dungeon days to take full effect. Warning: A Crawler may only benefit from this potion once.`,
     tier: 'common',
     lootBoxTier: 'bronze',
     slot: undefined,

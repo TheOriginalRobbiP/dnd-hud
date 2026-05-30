@@ -298,7 +298,7 @@ export function LootAssignModal({ characterId, characterName, onClose, send }: L
               <button key={item.id} onClick={() => setSelectedItem(item)}
                 className={`text-left border p-3 transition-colors ${selectedItem?.id === item.id ? 'border-hud-accent bg-hud-bg' : 'border-hud-border hover:border-hud-accent'}`}>
                 <div className="flex justify-between items-start gap-2">
-                  <span className="font-hud text-sm text-hud-text">{item.name}</span>
+                  <span className="font-hud text-sm text-hud-text break-words min-w-0 flex-1">{item.name}</span>
                   <div className="flex gap-1 flex-shrink-0 flex-wrap justify-end">
                     <span className="font-hud text-xs px-1 border" style={{ borderColor: TIER_COLOURS_MAP[item.tier], color: TIER_COLOURS_MAP[item.tier] }}>
                       {item.tier.toUpperCase()}
@@ -307,7 +307,7 @@ export function LootAssignModal({ characterId, characterName, onClose, send }: L
                     {item.slot && !item.isConsumable && <span className="font-hud text-xs text-hud-muted border border-hud-border px-1">{item.slot}</span>}
                   </div>
                 </div>
-                <div className="font-hud text-xs text-hud-muted mt-1 italic">{item.description}</div>
+                <div className="font-hud text-xs text-hud-muted mt-1 italic">{item.description || 'No description provided by the System.'}</div>
                 {item.skillBonus && (
                   <div className="font-hud text-xs text-hud-cyan mt-1">{item.skillBonus}</div>
                 )}
