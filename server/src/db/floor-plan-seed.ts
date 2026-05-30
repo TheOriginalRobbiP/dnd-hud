@@ -1,14 +1,13 @@
 import { db } from './client.js'
 import { floorPlans, floorRooms, roomConnections } from './schema.js'
-import { eq } from 'drizzle-orm'
 
 export async function seedFloorPlans() {
   console.log('[seed] Wiping old floor plans and connections (cascade)...')
   await db.delete(floorPlans)
 
-  console.log('[seed] Pre-seeding Floor 1: "The Antechamber" (DCC 8-Sector Storyline Progression)...')
+  console.log('[seed] Pre-seeding Floor 1: "The Antechamber" (DCC Canonical Atlas Realignment)...')
 
-  // 1. Insert Floor Plan
+  // 1. Insert Floor 1 Plan
   const [plan] = await db.insert(floorPlans).values({
     name: 'Floor 1 — The Antechamber',
     theme: 'the-commons',
@@ -19,86 +18,90 @@ export async function seedFloorPlans() {
   // 2. Insert Rooms with Czepeku-style DCC Scene & Battlemap pairs
   const roomsData = [
     {
-      name: 'Sector 1 — Arrival Chamber',
-      description: 'The elevator shafts collapsed, plunging you into the cold sewers of the dungeon. Shattered concrete blocks, twisted cables, and crushed Earth vehicles litter the floor. Floating high-tech blue holographic Borant Corp ads cast a sickening glow.\n\n### CHIEF OBJECTIVE\nYour wetware is un-stabilized. You must crawl through the dark service tunnels to locate the glowing green registration terminal of the **Tutorial Guild** (Sector 4) to activate your character sheets, select classes, and unlock your inventories!\n\n### INITIAL TUNNEL FORK\nYou can proceed either through **The Corridor Market** (Sector 2 - Tunnel A) or squeeze into **The Ventilation Shafts** (Sector 3 - Tunnel B Shortcut).\n\n### INITIAL ENCOUNTER\n2x **Hatchling Rust Swarms** (very weak mechanical insects). DC 10.',
+      name: 'Sector 1 — Arrival Sewer & Outskirts',
+      description: 'You wake up in a collapsed concrete drainage pipe covered in sludge and debris. Flashing blue holographic advertisements cast a sickening corporate glow. In your eyes, chaotic unformatted green warnings flash across your vision, blocking your items, abilities, and inventory slots.\n\n### CHIEF OBJECTIVE\nYour wetware is un-stabilized! You must navigate through the sewer pipes to find the heavy security doors of **The Tutorial Guild (Sector 2)** to register as a crawler and activate your full VTT character sheets!\n\n### FIRST COMBAT ENCOUNTER\n2x **Hatchling Rust Swarms** (very weak mechanical insects) are chewing on copper wiring. Since your HUD is locked, you must execute raw **Attribute Checks** (STR to punch, DEX to dodge/slip past) to survive!',
       sceneArt: '/images/rooms/sector1_arrival_scene.png',
       battlemapArt: '/images/rooms/sector1_arrival_battlemap.png',
       roomTarget: 10,
       tags: 'start',
       posX: 100,
       posY: 220,
+      mobTemplateIds: 'Hatchling Rust Swarm',
     },
     {
-      name: 'Sector 2 — The Corridor Market',
-      description: 'A tiled subway maintenance corridor flashing with green fluorescent tubes. Heavy **System Merchandise Exchange vending machines** line the walls, flashing inflated prices. A canine Bopca guard watches from the shadows.\n\n### SYSTEM VENDING\nYou can attempt to hack the vending machines (DC 12 Thievery) or barter with the Bopca guard (DC 11 CHA).\n\n### GUARDIAN MARKERS\n2x **Gryla\'s Babes** (green, screeching goblin infants) are chewing on the copper wiring. Killing them triggers Gryla\'s permanent campaign rage and populates the bone pile!',
-      sceneArt: '/images/rooms/sector2_corridor_scene.png',
-      battlemapArt: '/images/rooms/sector2_corridor_battlemap.png',
-      roomTarget: 11,
-      tags: 'vending,hazard',
-      posX: 350,
-      posY: 100,
-    },
-    {
-      name: 'Sector 3 — The Ventilation Shafts',
-      description: 'A dusty, narrow emergency ventilation duct. Cobwebs hang thick, and you can hear the clicking of mandibles inside the dark metal shaft.\n\n### THE TRAP: SPORE VENTS & MOTHS\nTripping the rusty laser sensors (DC 11 DEX to spot/disable) triggers the ventilation valves to blast open, releasing a cloud of acidic spores and a swarm of **Decay Moths**.\n\n### EQUIPMENT DEGRADATION\nDecay Moths eat equipment and apply the *Pocket Full of Holes* debuff, causing you to drop inventory items until you replace your armor at Sector 2.',
-      sceneArt: '/images/rooms/sector3_ventilation_scene.png',
-      battlemapArt: '/images/rooms/sector3_ventilation_battlemap.png',
-      roomTarget: 11,
-      tags: 'trap,shortcut',
-      posX: 350,
-      posY: 220,
-    },
-    {
-      name: 'Sector 4 — The Tutorial Guild',
-      description: 'A sleek, chrome-and-steel Syndicate facility bolted directly into the cavern bedrock. In the center, a pedestal features a green glowing terminal reading **"SYSTEM CLASS SELECTION"**.\n\n### REGISTRATION STATION\nTouch the screen to stabilize your wetware! All crawlers can select starting classes (Doris, Flex, Quill, Miles), activate their starter gear/skills, and unlock their VTT inventory slots!\n\n### APTITUDE REWARDS\nRegistering awards your **Bronze Class Loot Box**.',
+      name: 'Sector 2 — The Tutorial Guild',
+      description: 'A heavy metal security door protected behind a shimmering blue **Traefik Forcefield** (which vaporizes any chasing mobs). Written in crude, neon green paint on the door is a hand-written sign: **"TUTORIAL GUILD"**.\n\n### THE STABILIZATION MOMENT\nStep up to the green terminal inside the safe room! The flashing Borant Corp warnings in your eyes will shatter and vanish. Your full VTT inventory, item grids, and actions light up in glowing orange!\n\n### REGISTRATION REWARDS\nStabilizing automatically registers you under the default **Human Class** (Class Selection unlocks on Floor 3) and awards your **Starter Class Loot Box** directly into your inventory!',
       sceneArt: '/images/rooms/sector3_guild_scene.png',
       battlemapArt: '/images/rooms/sector3_guild_battlemap.png',
       roomTarget: 10,
       tags: 'safe,guild',
-      posX: 350,
-      posY: 340,
+      posX: 300,
+      posY: 220,
     },
     {
-      name: 'Sector 5 — The Security Checkpoint',
-      description: 'A corporate toll-booth blockading the central junction leading deeper into the floor. Floating laser emitter arrays cast a red laser grid barrier across the path, and a security camera drone watches.\n\n### THE TERMINAL TOLL\nThe gate demands "10 Gold per Crawler" or a valid biometric scan.\n\n### BYPASS CHECKS\nYou can pay, attempt to hack the console (DC 13 INT/Thievery), or sneak past camera blind spots. Failure triggers a **High-Voltage Taser Trap** (1d6 electrical damage) and alerts nearby **Queue Jumpers** (displacement gremlins).',
-      sceneArt: '/images/rooms/sector5_checkpoint_scene.png',
-      battlemapArt: '/images/rooms/sector5_checkpoint_battlemap.png',
-      roomTarget: 12,
-      tags: 'trap,puzzle',
-      posX: 600,
-      posY: 340,
+      name: 'Sector 3 — The Corridor Market',
+      description: 'A tiled subway maintenance tunnel flashing with green fluorescent lights. Heavy, flashing **System Merchandise Exchange vending machines** line the walls, flashing inflated prices. A canine Bopca guard watches from the shadows.\n\n### CHATTER & TRADE: SERGEANT BARKLES\nYou meet **Guard Sergeant Barkles** (a weary bipedal golden retriever in a dirty security uniform) eating a dry biscuit. Talk to him for gossip about the Goblins in Sector 6 or to trade. He can give you hints about the roach hazard in Sector 7!\n\n### SYSTEM VENDING\nYou can attempt to hack the vending machines (DC 12 Thievery) or barter with Sergeant Barkles (DC 11 CHA).',
+      sceneArt: '/images/rooms/sector2_corridor_scene.png',
+      battlemapArt: '/images/rooms/sector2_corridor_battlemap.png',
+      roomTarget: 11,
+      tags: 'vending,safe',
+      posX: 500,
+      posY: 100,
     },
     {
-      name: 'Sector 6 — The Goblin Trash Nest',
-      description: 'A trash-filled natural cavern packed with hoarded human garbage (crushed beer cans, old suitcases, plastic waste). Flashing red emergency alarm lights indicate a hostile threat has marked you.\n\n### BOSS ENCOUNTER: GRYLA\'S FAVORITE CHILD\n**Gryla\'s Favorite Child** (a hulking, rage-gland-infected goblin berserker wearing a dirty football helmet) commands this nest alongside 2x **Goblin Scouts**.\n\n### LORE CONSEQUENCES\nKilling Gryla\'s favorite child grants a Bronze Loot Box, but flags you with **"Gryla\'s Target"** (permanent campaign modifier). His bones will be harvested by the Bone Collector!',
+      name: 'Sector 4 — The Ventilation Shafts',
+      description: 'A dusty, narrow emergency ventilation duct. Cobwebs hang thick, and you can hear the clicking of mandibles inside the dark metal shaft.\n\n### THE TRAP: SPORE VENTS & MOTHS\nTripping the rusty laser sensors (DC 11 DEX to spot/disable) triggers the ventilation valves to blast open, releasing a cloud of acidic spores and a swarm of **Decay Moths**.\n\n### EQUIPMENT DEGRADATION\nDecay Moths apply the *Pocket Full of Holes* debuff, causing random unequipped items to fall out of your bag until you clear the debuff in a Safe Room!',
+      sceneArt: '/images/rooms/sector3_ventilation_scene.png',
+      battlemapArt: '/images/rooms/sector3_ventilation_battlemap.png',
+      roomTarget: 11,
+      tags: 'trap,shortcut',
+      posX: 500,
+      posY: 340,
+      mobTemplateIds: 'Decay Moths',
+    },
+    {
+      name: 'Sector 5 — The Caravan Park',
+      description: 'A massive open cavern crammed with deluxe mobile trailers and caravans, littered with Burger King wrappers and empty cans of Full Throttle. This is the heart of the Goblin Neighborhood.\n\n### THE MORAL CHOICE\nIn a cardboard box, you hear cooing. Inside are tiny, slimy green **Goblin Babies**. If you blow them up, the System AI will be highly amused (granting +500 galactic views), but the entire neighborhood goes on permanent high alert, raising all room targets on the floor by +2!',
+      sceneArt: '/images/rooms/sector4_nest_scene.png',
+      battlemapArt: '/images/rooms/sector4_nest_battlemap.png',
+      roomTarget: 11,
+      tags: 'hazard,goblin',
+      posX: 500,
+      posY: 220,
+      mobTemplateIds: 'Goblin Scout',
+    },
+    {
+      name: 'Sector 6 — The Goblin Workshop',
+      description: 'A cluttered workshop smelling of sulfur and gasoline, operated by Goblins. Stacks of crude explosives, pipes, and metal scrap cover every surface.\n\n### THE HAZARD: RED BARRELS\nThe workshop is packed with red barrels of **Funpowder**. A single stray fire spell or explosive will detonate the whole room, dealing massive fire damage to players and goblins alike!\n\n### COMBAT BEATS\nFace a **Goblin Engineer** (who throws pipe bombs) and a **Goblin Bomb Bard** who screams heavy-metal lute songs, buffing all goblins. Target the Bard first!',
       sceneArt: '/images/rooms/sector4_nest_scene.png',
       battlemapArt: '/images/rooms/sector4_nest_battlemap.png',
       roomTarget: 12,
-      tags: 'mob-room,boss',
-      posX: 850,
-      posY: 340,
-      mobTemplateIds: 'Goblin Scout,Goblin Shaman',
+      tags: 'mob-room,hazard',
+      posX: 700,
+      posY: 220,
+      mobTemplateIds: 'Goblin Engineer,Goblin Bomb Bard',
     },
     {
-      name: 'Sector 7 — The Borant Disposal Chute',
-      description: 'A slide where upper-level offices dump discarded corporate paperwork, shredded documents, and defective products into the side of the Goblin Trash Nest.\n\n### THE ENCOUNTER: THE CHEROMB NURSERY\nA cluster of sad, volatile **Cherombs** sitting in a pile of corporate documents.\n\n### THE RISK/REWARD SCRAP\nYou can search the trash for high-value gear (Borant\'s garbage is your treasure), but avoid insulting the depressed Cherombs to prevent a massive chain-reaction explosion!',
+      name: 'Sector 7 — The Disposal Chutes',
+      description: 'A massive industrial garbage slide where upper-level offices dump corporate paperwork, shredded documents, and defective products into the sewer caverns.\n\n### CHATTER & TRAGEDY: BARNABY\nYou meet **Barnaby** (a tiny, sad, potato-shaped Cheromb) crying in a pile of shredded papers. Talk to him! You can cheer him up for information, or insult him severely (DC 11 CHA) to turn him into a volatile grenade (3d6 explosive damage)!\n\n### ENVIRONMENTAL HAZARD: TRASH AVALANCHE\nSearching the garbage piles for rare discarded loot requires a DC 11 Agility check. On a fail, a Trash Avalanche collapses, dealing 1d4 bludgeoning damage and burying your active weapon (requiring an action to retrieve)!',
       sceneArt: '/images/rooms/sector7_disposal_scene.png',
       battlemapArt: '/images/rooms/sector7_disposal_battlemap.png',
-      roomTarget: 10,
-      tags: 'safe,loot-room',
-      posX: 850,
-      posY: 460,
+      roomTarget: 11,
+      tags: 'loot-room,hazard',
+      posX: 900,
+      posY: 340,
+      mobTemplateIds: 'Scatterer',
     },
     {
       name: 'Sector 8 — The Subway Platform',
-      description: 'A ruined, tiled subway platform. A bottomless, pitch-black chasm splits the concrete tracks, bridged only by a rusted, derailed subway train car. At the far side is a glowing green sign: **"STAIRWELL TO FLOOR 2: THE CASTLE FLOOR"**.\n\n### FLOOR BOSS: THE BONE COLLECTOR\nA towering, multi-limbed monstrosity made of interlocking skeletal frames patrols the exit platform.\n\n### SPECIAL MECHANIC: BONE HARVEST\nDuring combat, the Bone Collector will harvest the bones of any goblins/mobs you killed in Sector 2 or 6, summoning them as **Skeletal Goblins** directly onto the derailed subway tracks, blocking player movement. You must fight across the train car to reach the exit stairwell.',
+      description: 'A ruined, tiled subway platform split in half by a bottomless chasm bridged only by a rusted, derailed subway train car. At the far side is the glowing green sign: **"STAIRWELL TO FLOOR 2: THE CASTLE FLOOR"**.\n\n### BOROUGH BOSS: THE HOARDER BOSS\nA massive, bloated genetic slug-beast made of unwashed clothes, old magazines, and corporate waste blocks the exit chasm.\n\n### COMBAT MECHANIC: SLIPPERY CHASM\nIf a player runs blindly across the train car bridge without caution, they must pass a DC 12 Agility (DEX) check or slip on oil, sliding toward the chasm edge!',
       sceneArt: '/images/rooms/sector5_subway_scene.png',
       battlemapArt: '/images/rooms/sector5_subway_battlemap.png',
       roomTarget: 14,
       tags: 'boss,exit',
-      posX: 850,
+      posX: 900,
       posY: 220,
-      mobTemplateIds: 'Centaminotaur',
+      mobTemplateIds: 'The Hoarder Boss',
     },
   ]
 
@@ -108,94 +111,94 @@ export async function seedFloorPlans() {
       floorPlanId: plan.id,
       name: r.name,
       description: r.description,
-      flavourArt: r.battlemapArt, // fallback
+      flavourArt: r.battlemapArt,
       sceneArt: r.sceneArt,
       battlemapArt: r.battlemapArt,
       roomTarget: r.roomTarget,
       tags: r.tags,
       mobTemplateIds: r.mobTemplateIds ?? '',
-      lootTier: r.name.includes('Guild') ? 'bronze' : r.name.includes('Nest') ? 'bronze' : r.name.includes('Chute') ? 'silver' : null,
+      lootTier: r.name.includes('Guild') ? 'bronze' : r.name.includes('Workshop') ? 'bronze' : r.name.includes('Chutes') ? 'silver' : null,
       posX: r.posX,
       posY: r.posY,
       isVisited: r.name.includes('Arrival'),
-      isCurrentRoom: r.name.includes('Arrival'), // Default start in Sector 1
+      isCurrentRoom: r.name.includes('Arrival'),
     }).returning()
     createdRooms.push(room)
   }
 
-  // 3. Connect Rooms (Choice of tunnels -> Tutorial Guild -> Rest of the floor)
+  // Connect Rooms
   const room = (name: string) => createdRooms.find(r => r.name.includes(name))!
 
   await db.insert(roomConnections).values([
     {
       floorPlanId: plan.id,
       fromRoomId: room('Arrival').id,
-      toRoomId: room('Corridor Market').id,
-      label: 'maintenance corridor',
+      toRoomId: room('Tutorial Guild').id,
+      label: 'green flashing beacon',
     },
     {
       floorPlanId: plan.id,
-      fromRoomId: room('Arrival').id,
+      fromRoomId: room('Tutorial Guild').id,
+      toRoomId: room('Corridor Market').id,
+      label: 'commercial tunnel',
+    },
+    {
+      floorPlanId: plan.id,
+      fromRoomId: room('Tutorial Guild').id,
       toRoomId: room('Ventilation Shafts').id,
-      label: 'rusty ventilation hatch',
+      label: 'exhaust duct',
+    },
+    {
+      floorPlanId: plan.id,
+      fromRoomId: room('Tutorial Guild').id,
+      toRoomId: room('Caravan Park').id,
+      label: 'ghetto passage',
     },
     {
       floorPlanId: plan.id,
       fromRoomId: room('Corridor Market').id,
-      toRoomId: room('Tutorial Guild').id,
-      label: 'neon-lit corridors',
+      toRoomId: room('Workshop').id,
+      label: 'workshop door',
     },
     {
       floorPlanId: plan.id,
       fromRoomId: room('Ventilation Shafts').id,
-      toRoomId: room('Tutorial Guild').id,
-      label: 'exhaust grate exit',
+      toRoomId: room('Workshop').id,
+      label: 'vent grate',
     },
     {
       floorPlanId: plan.id,
-      fromRoomId: room('Tutorial Guild').id,
-      toRoomId: room('Security Checkpoint').id,
-      label: 'toll corridor',
+      fromRoomId: room('Caravan Park').id,
+      toRoomId: room('Workshop').id,
+      label: 'trailer park exit',
     },
     {
       floorPlanId: plan.id,
-      fromRoomId: room('Security Checkpoint').id,
-      toRoomId: room('Goblin Trash Nest').id,
-      label: 'security blast gate',
+      fromRoomId: room('Workshop').id,
+      toRoomId: room('Disposal Chutes').id,
+      label: 'trash conveyor chute',
     },
     {
       floorPlanId: plan.id,
-      fromRoomId: room('Goblin Trash Nest').id,
-      toRoomId: room('Disposal Chute').id,
-      label: 'trash disposal pipe',
-    },
-    {
-      floorPlanId: plan.id,
-      fromRoomId: room('Disposal Chute').id,
+      fromRoomId: room('Workshop').id,
       toRoomId: room('Subway Platform').id,
-      label: 'ventilation slide',
+      label: 'derailed tracks bypass',
     },
     {
       floorPlanId: plan.id,
-      fromRoomId: room('Goblin Trash Nest').id,
+      fromRoomId: room('Disposal Chutes').id,
       toRoomId: room('Subway Platform').id,
-      label: 'derailed subway tracks',
-    },
-    {
-      floorPlanId: plan.id,
-      fromRoomId: room('Tutorial Guild').id,
-      toRoomId: room('Subway Platform').id,
-      label: 'elevator shaft bypass',
+      label: 'sliding chute pipe',
     },
   ])
 
-  console.log('[seed] Successfully pre-seeded Floor 1: Antechamber DCC 8-sector map.');
+  console.log('[seed] Successfully pre-seeded Floor 1: Antechamber DCC canonical map.');
 
-  console.log('[seed] Pre-seeding Floor 2: "The Iron Gavel Court" (DCC 4-Sector Narrative Playbook)...');
+  console.log('[seed] Pre-seeding Floor 2: "The Castle Tutorial" (Canonical Krakaren Realignment)...');
 
   // 1. Insert Floor 2 Plan
   const [plan2] = await db.insert(floorPlans).values({
-    name: 'Floor 2 — The Iron Gavel Court',
+    name: 'Floor 2 — The Castle Tutorial',
     theme: 'iron-foundry',
     themeColour: '#991b1b',
     isActive: false, // Inactive by default, GM selects it
@@ -204,8 +207,8 @@ export async function seedFloorPlans() {
   // 2. Insert Rooms
   const floor2RoomsData = [
     {
-      name: 'Sector 1 — The Marry-Out Saloon',
-      description: 'Players exit the Floor 1 stairwell and find a secure Safe Room that looks like a high-end hotel lobby (Marriott themed) that has been completely converted into a dusty Wild West Saloon.\n\n### LORE & RP\n- No mobs can enter due to Traefik shields.\n- You meet **Faction Enforcers** drinking lukewarm beer and a **Desperado Crime Boss** NPC who operates a black market shop.\n- The Crime Boss offers to trade their Floor 1 junk items for useful potions.\n- This is a secure safe room to open any earned loot boxes!',
+      name: 'Sector 1 — The Production Trailer',
+      description: 'You exit the Floor 1 stairwell directly onto a high-tech chrome **Syndicate Production Trailer** floating on Earth\'s surface water. Shimmering Traefik shields render you 100% safe from monsters.\n\n### THE INTERVIEW EVENT\nYour HUD menus, inventory, and weapon controls are locked. You undergo a live guest appearance on **Dungeon Crawler World** or **After Hours with Odette**! Pitch your answers to their sassy questions. Based on your entertainment value, you will walk away with **Galactic Followers** and a **Silver Item Box** as you step back into the active dungeon halls!',
       sceneArt: '/images/rooms/sector3_guild_scene.png',
       battlemapArt: '/images/rooms/sector3_guild_battlemap.png',
       roomTarget: 10,
@@ -214,34 +217,56 @@ export async function seedFloorPlans() {
       posY: 220,
     },
     {
-      name: 'Sector 2 — The Gallows Keep',
-      description: 'A medieval castle courtyard where a corrupt faction is holding a public "hanging" of custom loot boxes.\n\n### THE TENSION\n2x **Outlaw Gunslingers** (who shoot from behind stone crenellations) and 1x **Faction Enforcer**.\n\n### TACTICAL FOCUS\nUsing cover to dodge suppressing fire while crawling up the scaffolding to secure the loot before the timer collapses the platform.',
+      name: 'Sector 2 — The White Lichen Halls',
+      description: 'Sterile white stone tiled corridors with cinder block walls covered in glowing, wet orange lichen. Neon Syndicate ads blink along the stone arches. In the center, a flashing **Bounty Board** displays active crawler bounties.\n\n### CHATTER & QUEST: V\'KORMAS AEGISBANE\nYou meet **V\'Kormas Aegisbane** (an aged level 90 Orc Barbarian in a wizard robe) walking his skeletal mastiff **Poe** on a chain leash. He hates mages (especially Andrews) but is forced to use scrolls because his magic is terrible. You can teach him simple spells or trade spell scrolls for potions!',
       sceneArt: '/images/rooms/sector2_altar_scene.png',
       battlemapArt: '/images/rooms/sector2_altar_battlemap.png',
-      roomTarget: 12,
+      roomTarget: 11,
       tags: 'trap,hazard',
-      posX: 350,
-      posY: 100,
+      posX: 300,
+      posY: 220,
     },
     {
-      name: 'Sector 3 — The Ambush Gulch',
-      description: 'A narrow, sand-swept rock passage where you hear a voice calling for help. It’s a trap!\n\n### THE ENCOUNTER\n1x **Player Killer (Rookie)** acting as bait, and 1x **Player Killer (Veteran)** hiding in the shadows.\n\n### NARRATIVE BEAT\nThis is a major emotional beat. Up until now, they fought monsters. Now, they are attacked by other humans. The Veteran PK has been sponsored and carries upgraded gear.',
+      name: 'Sector 3 — The Appalachian Pine Trail',
+      description: 'A massive simulated indoor mountain forest with towering pine trees, dirt paths, and an artificial sunset sky. Nailed to the trees are creepy framed Polaroids of Clurichauns.\n\n### CHATTER & ESCORT: FETIN THE FRUGAL FELINE\nYou meet **Fetin** (a level 42 Tabaxi chef) looking exhausted. He offers you a massive feast with permanent/temporary stat buffs if you help him collect Gecko Green Beans (guarded by geckos) and Minotoads.\n\n### THE AMBUSH TRAP\nThe Minotoads are hidden in a dark cavern. Entering it triggers a dangerous ambush by **Feral Gremlocks**!',
       sceneArt: '/images/rooms/sector2_corridor_scene.png',
       battlemapArt: '/images/rooms/sector2_corridor_battlemap.png',
       roomTarget: 11,
       tags: 'trap,combat',
-      posX: 350,
+      posX: 500,
+      posY: 100,
+      mobTemplateIds: 'Gremlock',
+    },
+    {
+      name: 'Sector 4 — The Ruined Temple of the Mantis',
+      description: 'Collapsed, ancient marble columns overgrown with glowing orange weeds.\n\n### CHATTER & CHIEFTAIN QUEST: JAYNE CABOOSE\nYou meet **Captain Jayne Caboose** (a very friendly, dim-witted level 50 guard in leather plate armor) investigating a headless corpse. \n\n### THE "KINK" ACHIEVEMENT\nIf a player reaches their arm down the neck-hole of the corpse (DC 13 STR/CON), they pull out the holy symbol, triggering the unhinged System AI achievement: **"No Kink Shaming"**. The clues lead to a rogue summoning ritual of a paper-mache Mantis Goddess, where Caboose must be rescued from being sacrificed!',
+      sceneArt: '/images/rooms/sector2_altar_scene.png',
+      battlemapArt: '/images/rooms/sector2_altar_battlemap.png',
+      roomTarget: 12,
+      tags: 'hazard,combat',
+      posX: 500,
       posY: 340,
     },
     {
-      name: 'Sector 4 — The Grand Courtroom',
-      description: 'A massive marble courtroom. The jury box is packed with staring, hovering camera drones transmitting live to the Syndicate network.\n\n### FLOOR BOSS: THE COURT JUDGE\nA 12ft stone construct with a tree-trunk gavel.\n\n### BOSS MECHANICS\n- **ORDER:** The Judge slams his gavel, silencing all crawlers for 1 round.\n- **JUDGMENT:** Double damage dealt to one target.\n- **RECESS:** At 50% HP, the Judge heals slightly and resets positions (commercial break).',
+      name: 'Sector 5 — The Clurichaun Distillery',
+      description: 'A rowdy settlement inside a ruined castle courtyard run by the Clurichaun Syndicate. Copper stills fill the air with thick alcohol fumes. This is a Safe Room.\n\n### SHOP & TRADING\nMeet **Seamus MacGuffin** behind the bar. You can buy specialized gear or drink **Clurichaun Moonshine** (restores HP/mana but inflicts a *Drunken Debuff* reducing DEX by -2).\n\n### THE SCRATCH-OFF SCAM\nShady merchants sell "discounted" scratch-offs (90% chance to blow up, 10% chance to win a Silver loot box).',
+      sceneArt: '/images/rooms/sector3_guild_scene.png',
+      battlemapArt: '/images/rooms/sector3_guild_battlemap.png',
+      roomTarget: 11,
+      tags: 'safe,vending',
+      posX: 700,
+      posY: 220,
+    },
+    {
+      name: 'Sector 6 — The Krakaren Decoy Chamber',
+      description: 'A magnificent, marble-lined gothic throne room that screams "BOSS ROOM." It is completely silent and packed with chest panels.\n\n### THE TRAP DAIS\nOpening a chest or stepping on the throne triggers massive floor fire-vents and dart traps (DC 12 Agility to dodge).\n\n### BOROUGH BOSS: THE KRAKAREN\nThe moment the trap triggers, **The Krakaren** (a giant mutant squid with a blocky blonde haircut and a screaming HOA attitude) crashes through the wall! She uses sonic screeching (silencing spells) and flings players across the room. Defeating her shatters the throne to reveal the exit stairs to Floor 3!',
       sceneArt: '/images/rooms/sector5_checkpoint_scene.png',
       battlemapArt: '/images/rooms/sector5_checkpoint_battlemap.png',
       roomTarget: 14,
       tags: 'boss,exit',
-      posX: 600,
+      posX: 900,
       posY: 220,
+      mobTemplateIds: 'The Krakaren',
     }
   ]
 
@@ -256,12 +281,12 @@ export async function seedFloorPlans() {
       battlemapArt: r.battlemapArt,
       roomTarget: r.roomTarget,
       tags: r.tags,
-      mobTemplateIds: '',
-      lootTier: r.name.includes('Saloon') ? 'silver' : r.name.includes('Courtroom') ? 'gold' : null,
+      mobTemplateIds: r.mobTemplateIds ?? '',
+      lootTier: r.name.includes('Distillery') ? 'silver' : r.name.includes('Chamber') ? 'gold' : null,
       posX: r.posX,
       posY: r.posY,
-      isVisited: r.name.includes('Saloon'),
-      isCurrentRoom: r.name.includes('Saloon'),
+      isVisited: r.name.includes('Trailer'),
+      isCurrentRoom: r.name.includes('Trailer'),
     }).returning()
     createdFloor2Rooms.push(room)
   }
@@ -271,29 +296,41 @@ export async function seedFloorPlans() {
   await db.insert(roomConnections).values([
     {
       floorPlanId: plan2.id,
-      fromRoomId: roomF2('Saloon').id,
-      toRoomId: roomF2('Gallows Keep').id,
-      label: 'keep stairs',
+      fromRoomId: roomF2('Trailer').id,
+      toRoomId: roomF2('White Lichen').id,
+      label: 'crossroads hatch',
     },
     {
       floorPlanId: plan2.id,
-      fromRoomId: roomF2('Saloon').id,
-      toRoomId: roomF2('Ambush Gulch').id,
-      label: 'gulch path',
+      fromRoomId: roomF2('White Lichen').id,
+      toRoomId: roomF2('Pine Trail').id,
+      label: 'wooden archway',
     },
     {
       floorPlanId: plan2.id,
-      fromRoomId: roomF2('Gallows Keep').id,
-      toRoomId: roomF2('Courtroom').id,
-      label: 'gothic doors',
+      fromRoomId: roomF2('White Lichen').id,
+      toRoomId: roomF2('Mantis').id,
+      label: 'ruined marble stairs',
     },
     {
       floorPlanId: plan2.id,
-      fromRoomId: roomF2('Ambush Gulch').id,
-      toRoomId: roomF2('Courtroom').id,
-      label: 'court entrance',
+      fromRoomId: roomF2('Pine Trail').id,
+      toRoomId: roomF2('Distillery').id,
+      label: 'stone guard gate',
+    },
+    {
+      floorPlanId: plan2.id,
+      fromRoomId: roomF2('Mantis').id,
+      toRoomId: roomF2('Distillery').id,
+      label: 'distillery tunnel',
+    },
+    {
+      floorPlanId: plan2.id,
+      fromRoomId: roomF2('Distillery').id,
+      toRoomId: roomF2('Chamber').id,
+      label: 'gothic cathedral doors',
     }
   ])
 
-  console.log('[seed] Successfully pre-seeded Floor 2: The Iron Gavel Court.');
+  console.log('[seed] Successfully pre-seeded Floor 2: The Castle Tutorial.');
 }
