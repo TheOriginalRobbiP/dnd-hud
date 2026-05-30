@@ -10,5 +10,8 @@
 2026-05-30 | Wipe Static Database Catalogs on Server Startup | Added automatic deletion of items and mobTemplates tables to seed.ts right before inserting. This permanently eliminates ghost/duplicate and truncated database items left over from previous iterations, while remaining 100% safe as player inventories are stored as self-contained inline JSON snapshots in the characters table.
 2026-05-30 | Click-to-Load Dynamic Action Roller | Unified the character action interface by passing a parent selectedAction state down to DiceHero, SkillsTab, and InventoryTab. This allows players to click any skill, equipped item, backpack item, or primary attribute (STR, DEX, CON, INT, CHA) to automatically load it with its custom modifiers, stat names, and effort dice into the roller, replacing hardcoded weapon-only elements.
 2026-05-30 | Correct Campaign Stat Modifier Formula | Fixed a discrepancy where DiceHero and DiceRoller were using the outdated formula Math.floor((score - 4) / 2) for stat modifiers. Updated them to use score - 4, aligning the dice calculations 100% with the player HUD attribute panel and character creation module.
+2026-05-30 | Compact, Multi-Mode GM Quick Roller | Conceived and implemented GMDiceRoller.tsx inside the GM RoomPanel layout to allow the GM to quickly roll dice without swapping screens. Features modifier selectors, custom roll labels, physical/digital toggling, and a classic VTT Public vs Blind/Private roll toggle for secret rolls.
+2026-05-30 | Real-time Active Mob Abilities Tracker | Exposed mob.notes as a cyan "⚡ abilities" text block below each active mob in the GM MobTracker card, and added an abilities input field to the custom manual mob spawning form.
+
 
 
