@@ -104,7 +104,8 @@ export function LootBox({ lootBox, charId, send, floorState, onLogAction }: Loot
 
     setOpenState('opening-1')
     
-    // Play satisfying mechanical opening click locally on player's device
+    // Satisfying mechanical opening click was turned off per user request
+    /*
     try {
       const audio = new Audio('/audio/loot_box.mp3')
       audio.volume = 0.6
@@ -112,12 +113,13 @@ export function LootBox({ lootBox, charId, send, floorState, onLogAction }: Loot
     } catch {
       // Autoplay or audio initialization blocked
     }
+    */
 
     setTimeout(() => setOpenState('opening-2'), 400)
     setTimeout(() => {
       setOpenState('revealed')
-      // Broadcast the voice announcement to the main TV / Display screen only!
-      send({ type: 'play_sound', soundId: 'loot_legendary' })
+      // Voice announcements turned off per user request
+      // send({ type: 'play_sound', soundId: 'loot_legendary' })
     }, 800)
   }
 
