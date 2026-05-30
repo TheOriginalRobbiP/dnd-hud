@@ -56,6 +56,60 @@ interface RoomConnection {
 const WS_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`
 const RECONNECT_MS = 2000
 
+// ── Looping Synced BGM Crossfader ──
+let currentBgmAudio: HTMLAudioElement | null = null
+let fadeInterval: NodeJS.Timeout | null = null
+
+function crossfadeBgm(trackUrl: string | null) {
+  // Clear any existing fade intervals
+  if (fadeInterval) {
+    clearInterval(fadeInterval)
+    fadeInterval = null
+  }
+
+  // If same track is already playing, do nothing
+  if (currentBgmAudio && currentBgmAudio.src.endsWith(trackUrl || '___nonexistent___')) {
+    return
+  }
+
+  const fadeOutAudio = currentBgmAudio
+  if (fadeOutAudio) {
+    let vol = fadeOutAudio.volume
+    fadeInterval = setInterval(() => {
+      vol -= 0.05
+      if (vol <= 0) {
+        fadeOutAudio.pause()
+        fadeOutAudio.currentTime = 0
+        clearInterval(fadeInterval!)
+        fadeInterval = null
+      } else {
+        fadeOutAudio.volume = vol
+      }
+    }, 100)
+  }
+
+  if (trackUrl) {
+    const fadeInAudio = new Audio(trackUrl)
+    fadeInAudio.loop = true
+    fadeInAudio.volume = 0
+    fadeInAudio.play().catch(() => {/* autoplay blocked */})
+    currentBgmAudio = fadeInAudio
+
+    let volIn = 0
+    const inInterval = setInterval(() => {
+      volIn += 0.05
+      if (volIn >= 0.5) { // clamp background volume to 50% max
+        fadeInAudio.volume = 0.5
+        clearInterval(inInterval)
+      } else {
+        fadeInAudio.volume = volIn
+      }
+    }, 100)
+  } else {
+    currentBgmAudio = null
+  }
+}
+
 function normaliseTags(tags: unknown): string[] {
   if (Array.isArray(tags)) return tags as string[]
   if (typeof tags === 'string') return tags.split(',').map(t => t.trim()).filter(Boolean)
@@ -154,6 +208,11 @@ export function DisplayScreen() {
               const audio = new Audio(`/audio/${msg.soundId}.mp3`)
               audio.volume = 0.85
               audio.play().catch(() => {/* autoplay blocked */})
+              break
+            }
+            case 'play_bgm': {
+              const trackUrl = msg.soundId ? `/audio/${msg.soundId}.mp3` : null
+              crossfadeBgm(trackUrl)
               break
             }
             case 'collapse_timer_start':

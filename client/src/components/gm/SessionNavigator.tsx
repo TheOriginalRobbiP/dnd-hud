@@ -337,6 +337,26 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
         <span className="font-hud text-xs text-hud-accent tracking-widest">SESSION NAVIGATOR</span>
         <span className="font-hud text-xs text-hud-text truncate max-w-[120px] sm:max-w-none">{activePlan.name}</span>
         <span className="font-hud text-[10px] text-hud-muted border border-hud-border px-1 hidden sm:inline">{activePlan.theme}</span>
+        
+        {/* Real-time BGM Sync Dropdown */}
+        <div className="flex items-center gap-2 border-l border-hud-border/30 pl-3">
+          <span className="font-hud text-[9px] text-hud-muted tracking-widest uppercase">MUSIC BGM:</span>
+          <select
+            onChange={(e) => {
+              const trackId = e.target.value
+              send({ type: 'play_bgm', soundId: trackId || null })
+            }}
+            defaultValue=""
+            className="bg-hud-bg border border-hud-border text-hud-accent font-hud text-[10px] font-bold p-1 rounded focus:border-hud-accent outline-none"
+          >
+            <option value="">🛑 STOP MUSIC</option>
+            <option value="f1_sewer_ambient">🎛️ FLOOR 1 AMBIENT</option>
+            <option value="f1_goblin_combat">⚔️ GOBLIN BATTLE</option>
+            <option value="f2_castle_ambient">🏰 FLOOR 2 AMBIENT</option>
+            <option value="f2_krakaren_boss">🐙 KRAKAREN BOSS</option>
+          </select>
+        </div>
+
         <div className="ml-auto font-hud text-[10px] text-hud-muted">
           {rooms.filter(r => r.isVisited).length}/{rooms.length} rooms visited
         </div>

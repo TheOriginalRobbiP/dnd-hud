@@ -234,6 +234,7 @@ export type WSMessage =
   | { type: 'display_clear' }
   | { type: 'presence_sync'; activeCharIds: string[] }
   | { type: 'play_sound'; soundId: string }
+  | { type: 'play_bgm'; soundId: string | null }
   | { type: 'token_move'; charId?: string; mobId?: string; posX: number; posY: number }
   | { type: 'display_view_mode_update'; mode: string }
   | { type: 'bone_harvest_trigger' }
