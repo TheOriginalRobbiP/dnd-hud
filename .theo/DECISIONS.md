@@ -8,4 +8,7 @@
 2026-05-29 | Client-side Decryption & Claim Reward Flow | Separated the unboxing process into local decryption and server-side claiming, preventing boxes from instantly vanishing upon trigger and letting players enjoy custom AI commentaries.
 2026-05-29 | Local Mechanical Sound & Remote Voice Broadcast | Routed mechanical loot_box opening sound locally to the player HUD and kept voice-line announcements as broadcasted room sounds to prevent dual-overlapping audio collisions.
 2026-05-30 | Wipe Static Database Catalogs on Server Startup | Added automatic deletion of items and mobTemplates tables to seed.ts right before inserting. This permanently eliminates ghost/duplicate and truncated database items left over from previous iterations, while remaining 100% safe as player inventories are stored as self-contained inline JSON snapshots in the characters table.
+2026-05-30 | Click-to-Load Dynamic Action Roller | Unified the character action interface by passing a parent selectedAction state down to DiceHero, SkillsTab, and InventoryTab. This allows players to click any skill, equipped item, or backpack item to automatically load it with its custom modifiers, stat names, and effort dice into the roller, replacing hardcoded weapon-only elements.
+2026-05-30 | Correct Campaign Stat Modifier Formula | Fixed a discrepancy where DiceHero and DiceRoller were using the outdated formula Math.floor((score - 4) / 2) for stat modifiers. Updated them to use score - 4, aligning the dice calculations 100% with the player HUD attribute panel and character creation module.
+
 
