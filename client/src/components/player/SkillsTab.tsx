@@ -107,8 +107,30 @@ export function SkillsTab({
               diffStr = `(${diff})`
             }
 
+            const isSelected = selectedActionId === `attribute-${stat}`
+            const borderStyle = isSelected 
+              ? 'border-hud-accent ring-1 ring-hud-accent/60 bg-hud-accent/5 shadow-md' 
+              : 'border-hud-border hover:border-hud-accent cursor-pointer'
+
+            const handleClick = () => {
+              onSelectAction?.(isSelected ? null : {
+                id: `attribute-${stat}`,
+                name: `${STAT_LABELS[stat]} Check`,
+                type: stat === 'INT' ? 'magic' : 'basic',
+                skillLevel: 0,
+                description: `Pure ${STAT_LABELS[stat]} ability check (raw d20 roll plus modifier).`,
+                isAttribute: true,
+                statName: stat,
+                statVal: val
+              })
+            }
+
             return (
-              <div key={stat} className="border border-hud-border py-2 text-center bg-hud-panel rounded">
+              <div 
+                key={stat} 
+                onClick={handleClick}
+                className={`border py-2 text-center bg-hud-panel rounded transition-all duration-150 select-none ${borderStyle}`}
+              >
                 <div className="font-hud text-[10px] text-hud-muted uppercase" title={STAT_LABELS[stat]}>{stat}</div>
                 <div className={`font-hud text-sm font-bold mt-0.5 ${valColor}`}>
                   {val} <span className="text-[10px] font-normal block sm:inline">{diffStr}</span>

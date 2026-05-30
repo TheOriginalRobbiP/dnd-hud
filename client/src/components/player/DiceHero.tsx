@@ -82,7 +82,12 @@ export function DiceHero({ character, floor, send, selectedAction, onClearSelect
 
     skillRank = activeAction.skillLevel ?? 0
 
-    if (activeAction.type === 'weapon') {
+    if (activeAction.isAttribute) {
+      statName = activeAction.statName
+      statVal = activeAction.statVal
+      effortDie = 4
+      skillRank = 0
+    } else if (activeAction.type === 'weapon') {
       if (activeAction.isRanged) {
         statName = 'DEX'
         statVal = dexVal
