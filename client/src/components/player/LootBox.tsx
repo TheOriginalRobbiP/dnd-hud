@@ -79,8 +79,13 @@ export function LootBox({ lootBox, charId, send, floorState, onLogAction }: Loot
   const item = lootBox.contents[0]
   const boxImg = LOOTBOX_IMAGES[lootBox.tier] ?? LOOTBOX_IMAGES.bronze
 
-  const tags = floorState?.currentRoomData?.tags || ''
-  const isSafeRoom = tags.toLowerCase().includes('safe')
+  const currentTags = floorState?.currentRoomData?.tags || ''
+  const isSafeRoom = Array.isArray(currentTags)
+    ? currentTags.map(t => String(t).toLowerCase()).some(t => t.includes('safe'))
+    : typeof currentTags === 'string'
+    ? currentTags.toLowerCase().includes('safe')
+    : false
+
   const hasActiveMobs = (floorState?.activeMobs || []).length > 0
   const isSecureArea = isSafeRoom && !hasActiveMobs
 

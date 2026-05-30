@@ -4,3 +4,4 @@
 2026-05-29 | Interactive Rules Presentation on TV Display | Integrated a multi-slide tutorial into DisplayScreen.tsx powered by a GM dashboard controller, avoiding DB schema changes by overloading the text-based displayViewMode column with tutorial state strings (e.g. tutorial_0, tutorial_1).
 2026-05-29 | Dynamic Details Toggle on Rules Presentation | Extended rules slideshow to support on-demand detailed mechanics overlays on the TV, controlled live by a GM toggle checkbox.
 2026-05-29 | Persistent JSONB Lootbox Specialty Storage | Saved boxType inside the contents jsonb column in PostgreSQL, avoiding table schema migrations and maintaining perfect backward-compatibility.
+2026-05-29 | Robust Room Tag Safe Evaluation | Upgraded current room tags parsing in LootBox.tsx to support both raw strings and string arrays safely, resolving TypeError crashes in isSafeRoom checks.
