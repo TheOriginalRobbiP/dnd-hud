@@ -1,5 +1,37 @@
 
-export function GMRulesPanel() {
+import { useState } from 'react'
+
+interface GMRulesPanelProps {
+  send?: (msg: any) => void
+}
+
+export function GMRulesPanel({ send }: GMRulesPanelProps) {
+  const [activeSlide, setActiveSlide] = useState<number | null>(null)
+
+  const handleStartPresentation = () => {
+    setActiveSlide(0)
+    send?.({ type: 'display_view_mode_update', mode: 'tutorial_0' })
+  }
+
+  const handleNextSlide = () => {
+    if (activeSlide === null) return
+    const next = Math.min(activeSlide + 1, 9)
+    setActiveSlide(next)
+    send?.({ type: 'display_view_mode_update', mode: `tutorial_${next}` })
+  }
+
+  const handlePrevSlide = () => {
+    if (activeSlide === null) return
+    const prev = Math.max(activeSlide - 1, 0)
+    setActiveSlide(prev)
+    send?.({ type: 'display_view_mode_update', mode: `tutorial_${prev}` })
+  }
+
+  const handleEndPresentation = () => {
+    setActiveSlide(null)
+    send?.({ type: 'display_view_mode_update', mode: 'scene' })
+  }
+
   return (
     <div className="flex flex-col h-full bg-hud-panel border border-hud-border font-hud text-hud-text overflow-hidden">
       <div className="p-2 border-b border-hud-border bg-hud-bg flex justify-between items-center">
@@ -7,6 +39,53 @@ export function GMRulesPanel() {
       </div>
       
       <div className="p-3 overflow-y-auto space-y-4 text-xs flex-1">
+        {/* TV SLIDESHOW TUTORIAL CONTROLLER */}
+        <section className="bg-[#121214] border border-[#f59e0b]/30 rounded p-3 mb-2 flex flex-col gap-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-[#f59e0b] font-bold tracking-widest uppercase">
+              📺 TV DISPLAY QUICKSTART SLIDESHOW
+            </span>
+            {activeSlide !== null && (
+              <span className="text-[9px] text-hud-muted font-bold px-2 py-0.5 border border-hud-border bg-black/40 rounded">
+                SLIDE {activeSlide + 1} / 10
+              </span>
+            )}
+          </div>
+          
+          {activeSlide === null ? (
+            <button
+              onClick={handleStartPresentation}
+              className="w-full font-hud text-[10px] text-hud-bg font-extrabold bg-[#f59e0b] border border-[#f59e0b] py-2 rounded uppercase tracking-widest hover:bg-[#d97706] transition-all"
+            >
+              ▶ START TV presentation
+            </button>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={handlePrevSlide}
+                  disabled={activeSlide === 0}
+                  className="font-hud text-[9px] text-hud-text border border-hud-border py-1.5 rounded uppercase tracking-wider disabled:opacity-30 hover:border-hud-accent hover:text-hud-accent transition-colors"
+                >
+                  ◀ PREV SLIDE
+                </button>
+                <button
+                  onClick={handleNextSlide}
+                  disabled={activeSlide === 9}
+                  className="font-hud text-[9px] text-hud-text border border-hud-border py-1.5 rounded uppercase tracking-wider disabled:opacity-30 hover:border-hud-accent hover:text-hud-accent transition-colors"
+                >
+                  NEXT SLIDE ▶
+                </button>
+              </div>
+              <button
+                onClick={handleEndPresentation}
+                className="w-full font-hud text-[9px] text-red-400 border border-red-900/40 bg-red-950/10 py-1.5 rounded uppercase tracking-wider hover:bg-red-950/35 hover:border-red-800 transition-colors"
+              >
+                ⏹️ END PRESENTATION
+              </button>
+            </div>
+          )}
+        </section>
         
         {/* 1. SETTING THE TARGET */}
         <section className="space-y-1">

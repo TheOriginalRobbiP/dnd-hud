@@ -210,7 +210,7 @@ export function GMDashboard({
 
         {gmMode === 'rules' && (
           <div className="flex-1 overflow-hidden flex flex-col pb-12 md:pb-0">
-            <GMRulesPanel />
+            <GMRulesPanel send={send} />
           </div>
         )}
 

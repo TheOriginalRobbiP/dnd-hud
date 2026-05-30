@@ -224,6 +224,6 @@ export type WSMessage =
   | { type: 'presence_sync'; activeCharIds: string[] }
   | { type: 'play_sound'; soundId: string }
   | { type: 'token_move'; charId?: string; mobId?: string; posX: number; posY: number }
-  | { type: 'display_view_mode_update'; mode: 'scene' | 'battlemap' }
+  | { type: 'display_view_mode_update'; mode: string }
   | { type: 'bone_harvest_trigger' }
   | { type: 'system_alert'; text: string }

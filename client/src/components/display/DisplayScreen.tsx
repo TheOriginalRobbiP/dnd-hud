@@ -79,7 +79,7 @@ export function DisplayScreen() {
   const [achievementUnlock, setAchievementUnlock] = useState<{ characterName: string; achievement: Achievement } | null>(null)
   const [showRoomTarget, setShowRoomTarget] = useState(true)
   const [activeCharIds, setActiveCharIds] = useState<string[]>([])
-  const [displayViewMode, setDisplayViewMode] = useState<'scene' | 'battlemap'>('scene')
+  const [displayViewMode, setDisplayViewMode] = useState<string>('scene')
   const [systemAlert, setSystemAlert] = useState<string | null>(null)
   const [isShaking, setIsShaking] = useState(false)
   
@@ -562,7 +562,9 @@ export function DisplayScreen() {
           
           {/* Live SVG Node Map or Cinematic Battleboard Container */}
           <div className="flex-1 bg-[#121214]/40 border border-[#1f1f23] rounded-[4px] relative overflow-hidden min-h-0">
-            {room && (room.sceneArt || room.battlemapArt || room.flavourArt) ? (
+            {displayViewMode.startsWith('tutorial_') ? (
+              <TutorialSlideshow viewMode={displayViewMode} />
+            ) : room && (room.sceneArt || room.battlemapArt || room.flavourArt) ? (
               <>
                 {/* Layer 1: Cinematic Narrative Scene Art */}
                 <div 
@@ -833,6 +835,201 @@ export function DisplayScreen() {
           )}
         </div>
 
+      </div>
+    </div>
+  )
+}
+
+const TUTORIAL_SLIDES = [
+  {
+    title: "WELCOME TO THE SURFACE",
+    subtitle: "INDEX CARD RPG & DCC OVERVIEW",
+    bullets: [
+      "No massive rulebooks, no complex math. Just clean stats and rapid choices.",
+      "THE MINDSET: Take what is useful, toss the rest. Keep the action fast and loose.",
+      "CLOCKWISE TURNS: We play in turn order, always clockwise around the table.",
+      "ONE TARGET: Every check, attack, or challenge rolls against a single number.",
+      "EFFORT: You don't just succeed; you roll different dice to see how much work you get done."
+    ],
+    accent: "FIND PERFECTION IN THE IMPERFECT. IN BATTLE, CONFUSION IS DEATH!"
+  },
+  {
+    title: "ACTION IN TURNS",
+    subtitle: "DESCRIBE, ROLL, RESOLVE",
+    bullets: [
+      "THE SPOTLIGHT: When it is your turn, the scene becomes yours to change or explore.",
+      "DESCRIBE IT: Tell the Game Master exactly what you want to attempt or search.",
+      "ROLL THE BONES: Roll a D20 + your core Stat modifier.",
+      "GET RESULTS: Meet or Beat the Room Target to succeed and change the story.",
+      "GM TURN: The GM has a turn too—this is when hazards activate and monsters strike!"
+    ],
+    accent: "CLOCKWISE TURN ORDER KEEPS EVERYONE IN THE SPOTLIGHT!"
+  },
+  {
+    title: "THREE KINDS OF TURNS",
+    subtitle: "HOW TO USE YOUR SPOTLIGHT TIME",
+    bullets: [
+      "1. ACTION ONLY: You stay put. Cast a spell, attack a foe, or crack a terminal.",
+      "2. MOVE NEAR + ACTION: Take a few steps to a nearby console/enemy, then act.",
+      "3. MOVE FAR: Spend your entire turn running twice as far as normal. No action allowed.",
+      "NEVER STALL: If you don't know what to do, ask details or take a risk!"
+    ],
+    accent: "CHOOSE WISELY. TIME IS YOUR MOST PRECIOUS RESOURCE."
+  },
+  {
+    title: "THREE KINDS OF ACTIONS",
+    subtitle: "SIMPLE, CHECKS, AND ATTEMPTS",
+    bullets: [
+      "SIMPLE ACTIONS (Auto-Success): No roll needed. Flip a switch, start an engine, draw a sword.",
+      "CHECKS (Instant Win/Fail): Roll D20 + Stat vs Target. Success is instantaneous (e.g. leap a gap, spot a trap).",
+      "ATTEMPTS (Sustained Effort): Roll D20 + Stat to hit/succeed. If you pass, roll your EFFORT die to wear down the task or enemy."
+    ],
+    accent: "ROLL D20 + STAT VS ROOM TARGET TO PASS CHECKS & ATTEMPTS!"
+  },
+  {
+    title: "THE ROOM TARGET",
+    subtitle: "ONE NUMBER TO RULE THEM ALL",
+    bullets: [
+      "A SINGLE NUMBER: Displayed prominently on your screen. It applies to everything in the room.",
+      "EASY ROLLS (Target -3): If you have specialized tools, training, or an ally's help.",
+      "HARD ROLLS (Target +3): Improvised gear, extreme haste, chaotic surroundings, or high-risk feats.",
+      "THE ESCALATION DIE: The Target can increase if a room catches fire, collapses, or triggers security locks."
+    ],
+    accent: "WATCH THE TARGET CLOSELY—IT DECLARES YOUR RAW CHANCE OF SURVIVAL!"
+  },
+  {
+    title: "HEARTS & EFFORT",
+    subtitle: "HOW MUCH WORK DID YOU GET DONE?",
+    bullets: [
+      "1 HEART = 10 EFFORT POINTS: Tasks, obstacles, and mobs are measured in Hearts.",
+      "BASIC (D4): Bare hands, raw muscle, or pure intellect.",
+      "WEAPONS & TOOLS (D6): Swords, spears, or hacking tools.",
+      "GUNS (D8): Heavy-yield firearms or tactical lasers.",
+      "MAGIC & ENERGY (D10): Spells, plasma weapons, or medical nanites.",
+      "ULTIMATE (D12): Rolled when you score a Critical Success (Natural 20) on your D20 check! Added to your standard Effort!"
+    ],
+    accent: "WEAR DOWN MOB HEALTH AND TASK SECURE BLOCKS HEART-BY-HEART!"
+  },
+  {
+    title: "MOVEMENT AND DISTANCE",
+    subtitle: "LOOSE AND INTUITIVE RANGE SPACES",
+    bullets: [
+      "CLOSE: Within arm's reach. Hand-to-hand combat, touch spells, picking a pocket.",
+      "NEAR: A few steps away. Long spear distance, quick-draw, or a standard Move.",
+      "FAR: Beyond Near, up to a basic bowshot or terminal sprint. Takes an entire turn to run here.",
+      "OUT OF RANGE: Too far to reach in a single turn. You are on your own."
+    ],
+    accent: "NO RULERS OR EXTREME MATH—KEEP IT THEMATIC AND KEEP MOVING!"
+  },
+  {
+    title: "DEATH, DYING & RECOVERY",
+    subtitle: "0 HP IS NOT THE END... YET",
+    bullets: [
+      "REACHING 0 HP: You drop unconscious. Active spells vanish. You are bleeding out.",
+      "ROLL FOR DYING (D4): On your next turn, roll 1D4. You have exactly that many rounds to be saved.",
+      "MIRACLE (Natural 20): On your turn while dying, roll a D20. A natural 20 brings you back to life with 1 HP!",
+      "RECOVERY check (D20+CON vs Target): Spend your turn to catch your breath and heal CON + 1 HP.",
+      "FIRST AID check (D20+INT/WIS vs Target): Touch a dying ally to stop their death clock instantly."
+    ],
+    accent: "PERMADEATH IS REAL ON FLOOR 1. DONT SPLIT THE GROUP!"
+  },
+  {
+    title: "THE LEGENDARY HERO COIN",
+    subtitle: "DCC / SYNDICATE SPECIAL ADVANTAGE",
+    bullets: [
+      "CELEBRATING EPIC PLAY: Awarded by the GM for heroic action, roleplay, or hilarious failures.",
+      "MAX 1 AT A TIME: Use it or lose it! No hoarding allowed.",
+      "RE-ROLL: Cash it in to re-roll any single die check.",
+      "ADD A D12: Spend it to add an ultimate D12 to any check or effort roll.",
+      "GIFT IT: Give your Hero Coin to any fellow Crawler at any moment to save their life."
+    ],
+    accent: "WITNESS ME! HERO COINS SHIFT THE BALANCES OF FATE."
+  },
+  {
+    title: "TUTORIAL: GREY HILL INFERNO",
+    subtitle: "PRACTICE RUN",
+    bullets: [
+      "STAGE 1: ESCAPE THE CELL: Flames consume the block. Roll 1D4 for rounds limit. Do 1 Heart of Basic Effort (10 points) vs Target 10 using D4 to break the bars.",
+      "STAGE 2: WEAPON 13: A mutant guard blocks the exit. You have 1 Heart HP. Weapon 13 has 1 Heart HP. Attack with Weapons (D6) vs Target 10 to survive.",
+      "STAGE 3: FLEE THE AREA: Roll 1D4 for scanning lanterns. Make Dexterity checks vs Target 10 to stay hidden in the dark."
+    ],
+    accent: "DID YOU ESCAPE THE GREY HILL INFERNO? EARN YOUR FIRST HERO COIN!"
+  }
+]
+
+export function TutorialSlideshow({ viewMode }: { viewMode: string }) {
+  const slideIndex = parseInt(viewMode.split('_')[1], 10) || 0
+  const slide = TUTORIAL_SLIDES[slideIndex] || TUTORIAL_SLIDES[0]
+
+  return (
+    <div className="absolute inset-0 bg-[#0d0d0f] flex flex-col justify-between p-12 overflow-hidden">
+      {/* Grid Pattern Background overlay */}
+      <div 
+        className="absolute inset-0 opacity-[0.035] pointer-events-none"
+        style={{
+          backgroundSize: '40px 40px',
+          backgroundImage: 'linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)'
+        }}
+      />
+
+      {/* Slide Header */}
+      <div className="flex justify-between items-center border-b border-[#1f1f23] pb-4 z-10">
+        <div className="flex flex-col gap-0.5">
+          <span className="font-mono-dcc text-[10px] font-bold text-[#f59e0b] tracking-[0.3em] uppercase">
+            CRAWLER INDUCTION PROGRAM
+          </span>
+          <span className="font-mono-dcc text-xs text-[#71717a] tracking-widest uppercase">
+            SYSTEM TELEMETRY & BASIC INSTRUCTION
+          </span>
+        </div>
+        <div className="font-mono-dcc text-[10px] font-bold text-[#f59e0b] border border-[#f59e0b]/30 bg-[#f59e0b]/5 px-3 py-1.5 rounded uppercase">
+          SLIDE {slideIndex + 1} OF {TUTORIAL_SLIDES.length}
+        </div>
+      </div>
+
+      {/* Main Slide Content - Split Layout */}
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-5 gap-12 items-center my-6 min-h-0 z-10">
+        {/* Title Card (2/5 cols) */}
+        <div className="md:col-span-2 flex flex-col gap-3 justify-center">
+          <span className="font-mono-dcc text-[11px] font-semibold text-[#f59e0b] tracking-[0.25em] uppercase">
+            {slide.subtitle}
+          </span>
+          <h1 className="font-serif-dcc text-5xl font-normal text-[#f4eee2] uppercase tracking-wide leading-tight">
+            {slide.title}
+          </h1>
+          <div className="w-16 h-1 bg-[#f59e0b] mt-2 rounded-[2px]" />
+        </div>
+
+        {/* Content Bullets Card (3/5 cols) */}
+        <div className="md:col-span-3 bg-[#161619]/65 border border-[#1f1f23] rounded p-8 flex flex-col justify-center gap-5 shadow-2xl h-full overflow-y-auto">
+          {slide.bullets.map((bullet, idx) => {
+            const [boldPart, rest] = bullet.includes(':') ? bullet.split(':') : [null, bullet]
+            return (
+              <div key={idx} className="flex gap-4 items-start text-[#f4eee2] font-sans text-[15px] leading-relaxed">
+                <span className="text-[#f59e0b] font-mono-dcc mt-1 font-bold text-sm">▶</span>
+                <p>
+                  {boldPart ? (
+                    <>
+                      <strong className="text-[#f59e0b] font-mono-dcc text-xs tracking-wider uppercase font-bold mr-1.5">
+                        {boldPart.trim()}:
+                      </strong>
+                      <span className="text-zinc-300">{rest.trim()}</span>
+                    </>
+                  ) : (
+                    <span className="text-zinc-300">{bullet}</span>
+                  )}
+                </p>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Bottom Accent / Quote Box */}
+      <div className="border border-[#f59e0b]/15 bg-[#f59e0b]/[0.01] p-4 rounded text-center z-10">
+        <p className="font-serif-dcc text-lg italic text-[#f59e0b]/90 tracking-wide">
+          "{slide.accent}"
+        </p>
       </div>
     </div>
   )
