@@ -6,3 +6,4 @@
 2026-05-29 | Persistent JSONB Lootbox Specialty Storage | Saved boxType inside the contents jsonb column in PostgreSQL, avoiding table schema migrations and maintaining perfect backward-compatibility.
 2026-05-29 | Robust Room Tag Safe Evaluation | Upgraded current room tags parsing in LootBox.tsx to support both raw strings and string arrays safely, resolving TypeError crashes in isSafeRoom checks.
 2026-05-29 | Client-side Decryption & Claim Reward Flow | Separated the unboxing process into local decryption and server-side claiming, preventing boxes from instantly vanishing upon trigger and letting players enjoy custom AI commentaries.
+2026-05-29 | Local Mechanical Sound & Remote Voice Broadcast | Routed mechanical loot_box opening sound locally to the player HUD and kept voice-line announcements as broadcasted room sounds to prevent dual-overlapping audio collisions.

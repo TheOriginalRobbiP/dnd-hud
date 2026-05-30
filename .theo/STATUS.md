@@ -1,6 +1,6 @@
 # DnD HUD Status
 
-## Session checkpoint 2026-05-29T18:00:00Z
+## Session checkpoint 2026-05-29T18:15:00Z
 - **Focus**: Game-Night Quickstart core system slideshow presentation on the TV Display and Specialty Loot Box expansion.
 - **Done this session**:
   - Extracted the entire Core Quickstart Rules section (Pages 5-19) from the local `ICRPG_Master_Edition_Quickstart_Core_Update_1.3.pdf` file.
@@ -14,6 +14,7 @@
   - **OVERHAULED UNBOXING UX**: Patched `LootBox.tsx` with color-coded borders, custom glowing shadows (e.g. green for Goblin, pink for Lucky Bitch, blood red for Savage), and automated **unhinged System AI commentaries** displayed inside a specialized terminal window upon box decryption.
   - **BUG FIX**: Resolved a critical TypeError crash in `LootBox.tsx`'s `isSafeRoom` evaluation. The system normalises room tags to string arrays in some modules (like the API) and strings in others. When tags were stored as arrays (e.g. `['safe', 'guild']`), `tags.toLowerCase()` crashed the render loop and blocked unboxing. Replaced with a bulletproof checker supporting both structures.
   - **DCC CLAIM MOMENT**: Replaced instant server-side deletion during decryption with an interactive **Two-Stage Decryption & Claim Flow**. Decrypting now runs completely locally first—giving the players as much time as they want to read item cards, watch unboxing animations, and enjoy the unhinged AI commentaries. Clicking a new flashing **`[ ⚡ CLAIM REWARDS (ADD TO BACKPACK) ]`** button pushes the update to Postgres and moves it to inventory.
+  - **AUDIO COEXISTENCE OVERHAUL**: Patched unboxing sound triggers to play the physical, mechanical `loot_box.mp3` open click **locally on the player's device**, while only broadcasting the voice announcement `loot_legendary.mp3` over websockets to the room's main TV Display screen. This prevents ear-splitting, echoing overlapping audio feedback when testing or running multiple HUD tabs in the same room.
 - **Open / Next**:
   - Integrate local ComfyUI text-to-speech generation pipeline (e.g. Kokoro-82M or F5-TTS) to generate free custom voice lines.
   - Set up workflow to save generated audio directly to the client's public sound assets.

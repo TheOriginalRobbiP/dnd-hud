@@ -103,11 +103,21 @@ export function LootBox({ lootBox, charId, send, floorState, onLogAction }: Loot
     }
 
     setOpenState('opening-1')
-    send({ type: 'play_sound', soundId: 'loot_box' }) // Play mechanical unboxing lock sound!
+    
+    // Play satisfying mechanical opening click locally on player's device
+    try {
+      const audio = new Audio('/audio/loot_box.mp3')
+      audio.volume = 0.6
+      audio.play().catch(() => {})
+    } catch {
+      // Autoplay or audio initialization blocked
+    }
+
     setTimeout(() => setOpenState('opening-2'), 400)
     setTimeout(() => {
       setOpenState('revealed')
-      send({ type: 'play_sound', soundId: 'loot_legendary' }) // Play epic drop sound!
+      // Broadcast the voice announcement to the main TV / Display screen only!
+      send({ type: 'play_sound', soundId: 'loot_legendary' })
     }, 800)
   }
 
