@@ -190,4 +190,110 @@ export async function seedFloorPlans() {
   ])
 
   console.log('[seed] Successfully pre-seeded Floor 1: Antechamber DCC 8-sector map.');
+
+  console.log('[seed] Pre-seeding Floor 2: "The Iron Gavel Court" (DCC 4-Sector Narrative Playbook)...');
+
+  // 1. Insert Floor 2 Plan
+  const [plan2] = await db.insert(floorPlans).values({
+    name: 'Floor 2 — The Iron Gavel Court',
+    theme: 'iron-foundry',
+    themeColour: '#991b1b',
+    isActive: false, // Inactive by default, GM selects it
+  }).returning()
+
+  // 2. Insert Rooms
+  const floor2RoomsData = [
+    {
+      name: 'Sector 1 — The Marry-Out Saloon',
+      description: 'Players exit the Floor 1 stairwell and find a secure Safe Room that looks like a high-end hotel lobby (Marriott themed) that has been completely converted into a dusty Wild West Saloon.\n\n### LORE & RP\n- No mobs can enter due to Traefik shields.\n- You meet **Faction Enforcers** drinking lukewarm beer and a **Desperado Crime Boss** NPC who operates a black market shop.\n- The Crime Boss offers to trade their Floor 1 junk items for useful potions.\n- This is a secure safe room to open any earned loot boxes!',
+      sceneArt: '/images/rooms/sector3_guild_scene.png',
+      battlemapArt: '/images/rooms/sector3_guild_battlemap.png',
+      roomTarget: 10,
+      tags: 'safe,hotel',
+      posX: 100,
+      posY: 220,
+    },
+    {
+      name: 'Sector 2 — The Gallows Keep',
+      description: 'A medieval castle courtyard where a corrupt faction is holding a public "hanging" of custom loot boxes.\n\n### THE TENSION\n2x **Outlaw Gunslingers** (who shoot from behind stone crenellations) and 1x **Faction Enforcer**.\n\n### TACTICAL FOCUS\nUsing cover to dodge suppressing fire while crawling up the scaffolding to secure the loot before the timer collapses the platform.',
+      sceneArt: '/images/rooms/sector2_altar_scene.png',
+      battlemapArt: '/images/rooms/sector2_altar_battlemap.png',
+      roomTarget: 12,
+      tags: 'trap,hazard',
+      posX: 350,
+      posY: 100,
+    },
+    {
+      name: 'Sector 3 — The Ambush Gulch',
+      description: 'A narrow, sand-swept rock passage where you hear a voice calling for help. It’s a trap!\n\n### THE ENCOUNTER\n1x **Player Killer (Rookie)** acting as bait, and 1x **Player Killer (Veteran)** hiding in the shadows.\n\n### NARRATIVE BEAT\nThis is a major emotional beat. Up until now, they fought monsters. Now, they are attacked by other humans. The Veteran PK has been sponsored and carries upgraded gear.',
+      sceneArt: '/images/rooms/sector2_corridor_scene.png',
+      battlemapArt: '/images/rooms/sector2_corridor_battlemap.png',
+      roomTarget: 11,
+      tags: 'trap,combat',
+      posX: 350,
+      posY: 340,
+    },
+    {
+      name: 'Sector 4 — The Grand Courtroom',
+      description: 'A massive marble courtroom. The jury box is packed with staring, hovering camera drones transmitting live to the Syndicate network.\n\n### FLOOR BOSS: THE COURT JUDGE\nA 12ft stone construct with a tree-trunk gavel.\n\n### BOSS MECHANICS\n- **ORDER:** The Judge slams his gavel, silencing all crawlers for 1 round.\n- **JUDGMENT:** Double damage dealt to one target.\n- **RECESS:** At 50% HP, the Judge heals slightly and resets positions (commercial break).',
+      sceneArt: '/images/rooms/sector5_checkpoint_scene.png',
+      battlemapArt: '/images/rooms/sector5_checkpoint_battlemap.png',
+      roomTarget: 14,
+      tags: 'boss,exit',
+      posX: 600,
+      posY: 220,
+    }
+  ]
+
+  const createdFloor2Rooms: any[] = []
+  for (const r of floor2RoomsData) {
+    const [room] = await db.insert(floorRooms).values({
+      floorPlanId: plan2.id,
+      name: r.name,
+      description: r.description,
+      flavourArt: r.battlemapArt,
+      sceneArt: r.sceneArt,
+      battlemapArt: r.battlemapArt,
+      roomTarget: r.roomTarget,
+      tags: r.tags,
+      mobTemplateIds: '',
+      lootTier: r.name.includes('Saloon') ? 'silver' : r.name.includes('Courtroom') ? 'gold' : null,
+      posX: r.posX,
+      posY: r.posY,
+      isVisited: r.name.includes('Saloon'),
+      isCurrentRoom: r.name.includes('Saloon'),
+    }).returning()
+    createdFloor2Rooms.push(room)
+  }
+
+  const roomF2 = (name: string) => createdFloor2Rooms.find(r => r.name.includes(name))!
+
+  await db.insert(roomConnections).values([
+    {
+      floorPlanId: plan2.id,
+      fromRoomId: roomF2('Saloon').id,
+      toRoomId: roomF2('Gallows Keep').id,
+      label: 'keep stairs',
+    },
+    {
+      floorPlanId: plan2.id,
+      fromRoomId: roomF2('Saloon').id,
+      toRoomId: roomF2('Ambush Gulch').id,
+      label: 'gulch path',
+    },
+    {
+      floorPlanId: plan2.id,
+      fromRoomId: roomF2('Gallows Keep').id,
+      toRoomId: roomF2('Courtroom').id,
+      label: 'gothic doors',
+    },
+    {
+      floorPlanId: plan2.id,
+      fromRoomId: roomF2('Ambush Gulch').id,
+      toRoomId: roomF2('Courtroom').id,
+      label: 'court entrance',
+    }
+  ])
+
+  console.log('[seed] Successfully pre-seeded Floor 2: The Iron Gavel Court.');
 }
