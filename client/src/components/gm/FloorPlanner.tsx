@@ -144,6 +144,7 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
   )
   const [mobTemplates, setMobTemplates] = useState<MobTemplate[]>([])
   const [deleting, setDeleting] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
 
   // Fetch mob templates once on mount
   useEffect(() => {
@@ -162,6 +163,7 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
     setLootTier(room.lootTier ?? '')
     setSelectedMobs(room.mobTemplateIds ? room.mobTemplateIds.split(',').map(s => s.trim()).filter(Boolean) : [])
     setDeleting(false)
+    setSaveSuccess(false)
   }, [room.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleMob = (id: string) => {
@@ -181,8 +183,23 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
     if (res.ok) {
       const updated: FloorRoom = await res.json()
       onUpdated(updated)
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 2000)
     }
   }, [planId, room.id, onUpdated])
+
+  const handleSaveAll = () => {
+    save({
+      name: name.trim(),
+      description: description.trim(),
+      tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+      roomTarget: parseInt(roomTarget) || 10,
+      flavourArt: flavourArt.trim() || null,
+      sceneArt: sceneArt.trim() || null,
+      battlemapArt: battlemapArt.trim() || null,
+      lootTier: lootTier || null,
+    })
+  }
 
   const handleDelete = async () => {
     if (!deleting) { setDeleting(true); return }
@@ -192,11 +209,11 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
   }
 
   return (
-    <div className="w-[340px] flex-shrink-0 border-l border-hud-border bg-hud-panel flex flex-col overflow-hidden">
+    <div className="w-full md:w-[340px] flex-shrink-0 border-l border-hud-border bg-hud-panel flex flex-col overflow-hidden h-full">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-hud-border flex-shrink-0">
         <span className="font-bold text-[11px] text-hud-muted tracking-[0.1em] uppercase">ROOM INSPECTOR</span>
-        <button onClick={onClose} className="font-bold text-hud-muted hover:text-hp-low transition-colors text-xs">✕</button>
+        <button onClick={onClose} className="font-bold text-hud-muted hover:text-hp-low transition-colors text-xs">✕ CLOSE</button>
       </div>
 
       <div className="flex-1 overflow-y-auto flex flex-col gap-5 p-5">
@@ -258,7 +275,7 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
             onChange={e => setFlavourArt(e.target.value)}
             onBlur={() => save({ flavourArt: flavourArt || null })}
             onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
-            placeholder="https://..."
+            placeholder="/images/..."
             className="bg-hud-bg border border-hud-border rounded-md text-hud-text font-sans text-sm p-3 focus:border-hud-accent outline-none"
           />
         </label>
@@ -271,7 +288,7 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
             onChange={e => setSceneArt(e.target.value)}
             onBlur={() => save({ sceneArt: sceneArt || null })}
             onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
-            placeholder="https://..."
+            placeholder="/images/..."
             className="bg-hud-bg border border-[#1f1f23] rounded-md text-hud-text font-sans text-sm p-3 focus:border-hud-accent outline-none focus:border-dashed"
           />
         </label>
@@ -284,7 +301,7 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
             onChange={e => setBattlemapArt(e.target.value)}
             onBlur={() => save({ battlemapArt: battlemapArt || null })}
             onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
-            placeholder="https://..."
+            placeholder="/images/..."
             className="bg-hud-bg border border-[#1f1f23] rounded-md text-hud-text font-sans text-sm p-3 focus:border-hud-accent outline-none focus:border-dashed"
           />
         </label>
@@ -310,11 +327,11 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
             <span className="font-mono text-[11px] font-bold text-hud-muted tracking-[0.1em]">PRE-SEEDED MOBS</span>
             <div className="flex flex-col gap-1 max-h-36 overflow-y-auto border border-hud-border rounded-md p-2 bg-hud-bg">
               {mobTemplates.map(mob => {
-                const active = selectedMobs.includes(mob.id)
+                const active = selectedMobs.includes(mob.id) || selectedMobs.includes(mob.name)
                 return (
                   <button
                     key={mob.id}
-                    onClick={() => toggleMob(mob.id)}
+                    onClick={() => toggleMob(mob.name)}
                     className={`text-left font-sans font-semibold text-xs px-2 py-2 border rounded transition-colors ${
                       active
                         ? 'border-hud-accent text-hud-accent bg-hud-accent/10'
@@ -332,10 +349,22 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
           </div>
         )}
 
+        {/* Save Button (Critical for Mobile) */}
+        <button
+          onClick={handleSaveAll}
+          className={`font-sans font-bold text-xs border rounded-md py-3.5 transition-all tracking-wider uppercase flex items-center justify-center gap-1.5 shadow-md ${
+            saveSuccess
+              ? 'border-hud-success text-hud-success bg-hud-success/10 animate-bounce'
+              : 'border-hud-accent text-hud-accent bg-hud-accent/5 hover:bg-hud-accent hover:text-white'
+          }`}
+        >
+          {saveSuccess ? '✓ ROOM SAVED SUCCESSFULLY' : '💾 SAVE ROOM DETAILS'}
+        </button>
+
         {/* Delete */}
         <button
           onClick={handleDelete}
-          className={`mt-auto font-sans font-bold text-xs border rounded-md py-3 transition-colors tracking-wider uppercase ${
+          className={`mt-4 font-sans font-bold text-xs border rounded-md py-3 transition-colors tracking-wider uppercase ${
             deleting
               ? 'border-red-600 text-red-400 bg-red-950'
               : 'border-hud-border text-hud-muted hover:border-red-700 hover:text-red-400'
@@ -347,6 +376,7 @@ function RoomEditPanel({ room, planId, onClose, onUpdated, onDeleted }: RoomEdit
     </div>
   )
 }
+
 // ── Connection Panel ───────────────────────────────────────────
 
 interface ConnectionPanelProps {
@@ -392,7 +422,7 @@ function ConnectionPanel({ planId, rooms, connections, onConnectionAdded, onConn
   const roomName = (id: string) => rooms.find(r => r.id === id)?.name ?? id
 
   return (
-    <div className="border-t border-hud-border p-5 flex flex-col gap-4">
+    <div className="border-t border-hud-border p-5 flex flex-col gap-4 bg-black/10">
       <div className="font-mono text-[11px] font-bold text-hud-muted tracking-[0.1em]">CONNECTIONS</div>
 
       {/* Add connection controls */}
@@ -732,7 +762,7 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
       </div>
 
       {/* Body: canvas + optional edit sidebar */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
 
         {/* React Flow canvas */}
         <div className="flex-1 relative">
@@ -766,9 +796,9 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
           )}
         </div>
 
-        {/* Edit sidebar — slides in when a node is selected */}
-        {selectedRoom && activePlanId ? (
-          <div className="hidden md:flex flex-col border-l border-hud-border overflow-hidden bg-hud-panel z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.5)]">
+        {/* Edit sidebar — slides in as responsive modal on mobile, inline panel on desktop */}
+        {selectedRoom && activePlanId && (
+          <div className="absolute md:relative inset-y-0 right-0 z-50 md:z-auto w-full sm:w-[340px] md:w-auto flex flex-col border-l border-hud-border overflow-hidden bg-hud-panel shadow-2xl md:shadow-none">
             <RoomEditPanel
               room={selectedRoom}
               planId={activePlanId}
@@ -783,12 +813,6 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
               onConnectionAdded={handleConnectionAdded}
               onConnectionRemoved={handleConnectionRemoved}
             />
-          </div>
-        ) : activePlanId && (
-          <div className="hidden md:flex w-[340px] flex-shrink-0 border-l border-hud-border bg-hud-panel flex-col p-6 items-center justify-center text-center">
-            <span className="text-4xl mb-4">🔍</span>
-            <span className="font-sans font-bold text-hud-muted text-sm tracking-wide">Select a room node</span>
-            <span className="font-sans text-xs text-hud-muted mt-2 opacity-70">Click on any room in the graph to inspect and edit its details.</span>
           </div>
         )}
       </div>

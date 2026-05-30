@@ -173,6 +173,7 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [entering, setEntering] = useState<string | null>(null)
+  const [mobileShowDetails, setMobileShowDetails] = useState(false)
 
   // Reset view mode back to notes when selected room changes
   useEffect(() => {
@@ -236,6 +237,7 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
         isVisited: r.isVisited || r.id === roomId
       })))
       setSelectedRoomId(roomId) // auto-focus notes on the room we just entered
+      setMobileShowDetails(true) // auto-focus detail view on mobile too
 
       send({
         type: 'display_room_enter',
@@ -331,19 +333,21 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
   return (
     <div className="flex flex-col h-full overflow-hidden bg-hud-bg">
       {/* Toolbar */}
-      <div className="flex-shrink-0 border-b border-hud-border bg-hud-panel px-4 py-2 flex items-center gap-3 flex-wrap">
+      <div className="flex-shrink-0 border-b border-hud-border bg-hud-panel px-4 py-3 flex items-center gap-3 flex-wrap">
         <span className="font-hud text-xs text-hud-accent tracking-widest">SESSION NAVIGATOR</span>
-        <span className="font-hud text-xs text-hud-text">{activePlan.name}</span>
-        <span className="font-hud text-[10px] text-hud-muted border border-hud-border px-1">{activePlan.theme}</span>
+        <span className="font-hud text-xs text-hud-text truncate max-w-[120px] sm:max-w-none">{activePlan.name}</span>
+        <span className="font-hud text-[10px] text-hud-muted border border-hud-border px-1 hidden sm:inline">{activePlan.theme}</span>
         <div className="ml-auto font-hud text-[10px] text-hud-muted">
           {rooms.filter(r => r.isVisited).length}/{rooms.length} rooms visited
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden min-h-0">
+      <div className="flex flex-1 overflow-hidden min-h-0 relative">
         
         {/* Left Col: Navigator List */}
-        <div className="flex-[40] min-w-0 border-r border-hud-border flex flex-col overflow-y-auto bg-hud-bg p-4 gap-6">
+        <div className={`flex-[40] min-w-0 border-r border-hud-border flex flex-col overflow-y-auto bg-hud-bg p-4 gap-6 transition-all duration-300 ${
+          mobileShowDetails ? 'hidden md:flex' : 'flex'
+        }`}>
           
           {/* Current Room Section */}
           <div className="flex flex-col gap-2">
@@ -353,7 +357,7 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
                 room={currentRoom} 
                 isCurrent={true} 
                 isVisited={true} 
-                onClick={() => setSelectedRoomId(currentRoom.id)}
+                onClick={() => { setSelectedRoomId(currentRoom.id); setMobileShowDetails(true); }}
                 onEnter={() => enterRoom(currentRoom.id)}
                 entering={entering === currentRoom.id}
                 selected={selectedRoomId === currentRoom.id}
@@ -378,7 +382,7 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
                     room={r} 
                     isCurrent={false} 
                     isVisited={r.isVisited} 
-                    onClick={() => setSelectedRoomId(r.id)}
+                    onClick={() => { setSelectedRoomId(r.id); setMobileShowDetails(true); }}
                     onEnter={() => enterRoom(r.id)}
                     entering={entering === r.id}
                     selected={selectedRoomId === r.id}
@@ -388,7 +392,7 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
             </div>
           )}
 
-          {/* Other Rooms Section (Collapsed logic / simple list) */}
+          {/* Other Rooms Section */}
           {otherRooms.length > 0 && (
             <div className="flex flex-col gap-2 mt-4 opacity-70 hover:opacity-100 transition-opacity">
               <span className="font-hud text-xs tracking-widest text-hud-muted pl-1 flex items-center gap-2">
@@ -401,7 +405,7 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
                     room={r} 
                     isCurrent={false} 
                     isVisited={r.isVisited} 
-                    onClick={() => setSelectedRoomId(r.id)}
+                    onClick={() => { setSelectedRoomId(r.id); setMobileShowDetails(true); }}
                     onEnter={() => enterRoom(r.id)}
                     entering={entering === r.id}
                     selected={selectedRoomId === r.id}
@@ -412,11 +416,22 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
           )}
         </div>
 
-        {/* Right Col: Selected Room Notes (similar to old RoomNotesPanel) */}
-        <div className="flex-[60] min-w-0 flex flex-col bg-hud-panel overflow-hidden">
+        {/* Right Col: Selected Room Notes */}
+        <div className={`flex-[60] min-w-0 flex flex-col bg-hud-panel overflow-hidden transition-all duration-300 ${
+          mobileShowDetails ? 'flex' : 'hidden md:flex'
+        }`}>
           {selectedRoom ? (
             <div className="flex flex-col h-full overflow-hidden">
               <div className="flex-shrink-0 border-b border-hud-border px-5 py-3 flex flex-col gap-2 bg-black/20">
+                
+                {/* Mobile Back Button */}
+                <button
+                  onClick={() => setMobileShowDetails(false)}
+                  className="font-hud text-[10px] border border-hud-accent text-hud-accent bg-hud-accent/5 px-3 py-1.5 hover:bg-hud-accent hover:text-black transition-colors md:hidden self-start rounded-[2px] font-bold tracking-wider uppercase mb-1"
+                >
+                  ← BACK TO ROOM LIST
+                </button>
+
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex flex-col gap-1 min-w-0">
                     <h2 className="font-hud text-xl text-hud-text leading-tight truncate">{selectedRoom.name}</h2>
@@ -434,21 +449,21 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
                     {selectedRoom.isCurrentRoom && selectedRoom.mobTemplateIds && (
                       <button
                         onClick={() => spawnEncounter(selectedRoom)}
-                        className="font-hud text-[10px] border border-red-500 text-red-500 bg-red-500/5 px-2.5 py-1.5 tracking-wider hover:bg-red-500 hover:text-black transition-colors rounded-[2px] font-bold uppercase animate-pulse"
+                        className="font-hud text-[9px] sm:text-[10px] border border-red-500 text-red-500 bg-red-500/5 px-2 py-1 sm:px-2.5 sm:py-1.5 tracking-wider hover:bg-red-500 hover:text-black transition-colors rounded-[2px] font-bold uppercase animate-pulse"
                         title="Spawn this room's mobs onto the Display Screen"
                       >
-                        ⚡ Spawn Encounter
+                        ⚡ Spawn
                       </button>
                     )}
-                    <div className="font-hud text-2xl font-bold text-hud-accent leading-none border border-hud-border px-2 py-1">
+                    <div className="font-hud text-xl sm:text-2xl font-bold text-hud-accent leading-none border border-hud-border px-2 py-1">
                       T:{selectedRoom.roomTarget}
                     </div>
                   </div>
                 </div>
 
                 {selectedRoom.isCurrentRoom && selectedRoom.mobTemplateIds && (
-                  <div className="flex items-center gap-2 flex-wrap pt-1.5 border-t border-hud-border/20">
-                    <span className="font-hud text-[9px] text-hud-muted tracking-widest uppercase mr-1">Spawn Individual:</span>
+                  <div className="flex items-center gap-1.5 flex-wrap pt-1.5 border-t border-hud-border/20 max-h-20 overflow-y-auto">
+                    <span className="font-hud text-[9px] text-hud-muted tracking-widest uppercase mr-1">Spawn:</span>
                     {selectedRoom.mobTemplateIds.split(',').map(s => s.trim()).filter(Boolean).map(mName => (
                       <button
                         key={mName}
@@ -464,7 +479,7 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
 
                 {/* Mode Toggles: NOTES vs BATTLEMAP */}
                 {(selectedRoom.flavourArt || selectedRoom.sceneArt || selectedRoom.battlemapArt) && (
-                  <div className="flex gap-4 border-t border-hud-border/25 pt-2.5 mt-1.5 flex-shrink-0 flex-wrap items-center">
+                  <div className="flex gap-3 border-t border-hud-border/25 pt-2.5 mt-1 border-b border-transparent pb-1 flex-shrink-0 flex-wrap items-center">
                     <div className="flex gap-2">
                       <button
                         onClick={() => setViewMode('notes')}
@@ -488,17 +503,17 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
                       </button>
                     </div>
 
-                    {/* TV Display viewport controller (GM Only - active on current room) */}
+                    {/* TV Display viewport controller */}
                     {selectedRoom.isCurrentRoom && (
-                      <div className="flex items-center gap-2 border-l border-hud-border/30 pl-4">
-                        <span className="font-hud text-[8px] text-hud-muted tracking-widest uppercase">TV DISPLAY VIEW:</span>
+                      <div className="flex items-center gap-1.5 border-l border-hud-border/30 pl-3">
+                        <span className="font-hud text-[8px] text-hud-muted tracking-widest uppercase">TV DISPLAY:</span>
                         <div className="flex bg-black/45 border border-hud-border/30 p-0.5 rounded select-none">
                           <button
                             onClick={async () => {
                               setDisplayViewMode('scene')
                               send({ type: 'display_view_mode_update', mode: 'scene' })
                             }}
-                            className={`px-2.5 py-1 rounded text-[8px] font-bold tracking-widest uppercase transition-colors leading-none ${
+                            className={`px-2 py-0.5 rounded text-[8px] font-bold tracking-widest uppercase transition-colors leading-none ${
                               displayViewMode === 'scene' ? 'bg-[#f59e0b] text-hud-bg font-extrabold shadow-sm' : 'text-hud-muted hover:text-hud-text'
                             }`}
                           >
@@ -509,11 +524,11 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
                               setDisplayViewMode('battlemap')
                               send({ type: 'display_view_mode_update', mode: 'battlemap' })
                             }}
-                            className={`px-2.5 py-1 rounded text-[8px] font-bold tracking-widest uppercase transition-colors leading-none ${
+                            className={`px-2 py-0.5 rounded text-[8px] font-bold tracking-widest uppercase transition-colors leading-none ${
                               displayViewMode === 'battlemap' ? 'bg-[#f59e0b] text-hud-bg font-extrabold shadow-sm' : 'text-hud-muted hover:text-hud-text'
                             }`}
                           >
-                            ⚔️ BATTLEMAP
+                            ⚔️ MAP
                           </button>
                         </div>
                       </div>
@@ -523,7 +538,7 @@ export function SessionNavigator({ send, notesTextSize = 'md', characters, activ
               </div>
               
               {viewMode === 'map' && (selectedRoom.battlemapArt || selectedRoom.flavourArt) ? (
-                <div className="flex-1 p-5 pb-24">
+                <div className="flex-1 p-3 pb-24 md:p-5">
                   <Battlemap
                     mapUrl={selectedRoom.battlemapArt || selectedRoom.flavourArt}
                     characters={characters}
