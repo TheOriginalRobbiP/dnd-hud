@@ -717,6 +717,33 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
           ))}
         </select>
 
+        {activePlanId && (
+          <input
+            value={plans.find(p => p.id === activePlanId)?.name || ''}
+            onChange={(e) => {
+              const newName = e.target.value
+              setPlans(prev => prev.map(p => p.id === activePlanId ? { ...p, name: newName } : p))
+            }}
+            onBlur={async (e) => {
+              const newName = e.target.value.trim()
+              if (!newName) return
+              await fetch(`/api/floor-plans/${activePlanId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newName }),
+              })
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.currentTarget.blur()
+              }
+            }}
+            placeholder="Rename Floor Plan..."
+            title="Type here to rename the active Floor Plan"
+            className="bg-hud-bg border border-hud-border text-hud-text font-sans text-xs md:text-sm p-2 rounded-md focus:border-hud-accent outline-none max-w-[120px] md:max-w-[200px]"
+          />
+        )}
+
         {activePlanId && !plans.find(p => p.id === activePlanId)?.isActive && (
           <button
             onClick={activatePlan}
