@@ -103,11 +103,16 @@ export function LootBox({ lootBox, charId, send, floorState, onLogAction }: Loot
     }
 
     setOpenState('opening-1')
+    send({ type: 'play_sound', soundId: 'loot_box' }) // Play mechanical unboxing lock sound!
     setTimeout(() => setOpenState('opening-2'), 400)
     setTimeout(() => {
       setOpenState('revealed')
-      send({ type: 'loot_opened', lootBoxId: lootBox.id, charId })
+      send({ type: 'play_sound', soundId: 'loot_legendary' }) // Play epic drop sound!
     }, 800)
+  }
+
+  const handleClaim = () => {
+    send({ type: 'loot_opened', lootBoxId: lootBox.id, charId })
   }
 
   if (lootBox.state === 'pending') {
@@ -153,6 +158,17 @@ export function LootBox({ lootBox, charId, send, floorState, onLogAction }: Loot
             "{aiCommentary}"
           </p>
         </div>
+
+        {/* CLAIM REWARDS BUTTON (Only shown during active local unboxing!) */}
+        {lootBox.state !== 'opened' && (
+          <button
+            onClick={handleClaim}
+            className="w-full font-hud text-[10px] text-hud-bg font-extrabold py-2.5 mt-1 rounded uppercase tracking-widest hover:brightness-110 transition-all cursor-pointer shadow-lg"
+            style={{ backgroundColor: specialtyColour, border: `1px solid ${specialtyColour}` }}
+          >
+            ⚡ CLAIM REWARDS (ADD TO BACKPACK)
+          </button>
+        )}
       </div>
     )
   }
