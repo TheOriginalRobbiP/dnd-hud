@@ -16,15 +16,16 @@ export function MobTracker({ floor, send }: MobTrackerProps) {
   const [name, setName] = useState('')
   const [maxHp, setMaxHp] = useState('10')
   const [effort, setEffort] = useState<'basic'|'weapon'|'magic'>('basic')
+  const [notes, setNotes] = useState('')
 
   const addMob = () => {
     if (!name.trim()) return
     send({ type: 'mob_add', mob: {
       id: crypto.randomUUID(), name: name.trim(),
       hp: parseInt(maxHp) || 10, maxHp: parseInt(maxHp) || 10,
-      effortType: effort, notes: ''
+      effortType: effort, notes: notes.trim()
     }})
-    setName(''); setMaxHp('10'); setAdding(false)
+    setName(''); setMaxHp('10'); setNotes(''); setAdding(false)
   }
 
   const adjustHp = (mob: Mob, delta: number) => {
@@ -63,6 +64,8 @@ export function MobTracker({ floor, send }: MobTrackerProps) {
       {adding && (
         <div className="flex flex-col gap-2 mb-3 border border-hud-border p-2">
           <input value={name} onChange={e => setName(e.target.value)} placeholder="Mob name..."
+            className="bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-1 outline-none focus:border-hud-accent" />
+          <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Abilities / Notes..."
             className="bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-1 outline-none focus:border-hud-accent" />
           <div className="flex gap-2">
             <input value={maxHp} onChange={e => setMaxHp(e.target.value)} type="number" placeholder="HP"
@@ -124,6 +127,14 @@ export function MobTracker({ floor, send }: MobTrackerProps) {
                       </button>
                     ))}
                   </div>
+
+                  {/* Mob Abilities / Notes */}
+                  {mob.notes && (
+                    <div className="mt-2 text-xs text-cyan-400 font-hud leading-relaxed border-t border-hud-border/20 pt-2 flex items-start gap-1.5 select-text">
+                      <span className="text-hud-muted leading-none shrink-0 mt-0.5">⚡</span>
+                      <span>{mob.notes}</span>
+                    </div>
+                  )}
                 </div>
               )
             })}

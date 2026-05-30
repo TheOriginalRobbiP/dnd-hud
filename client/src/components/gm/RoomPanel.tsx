@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import type { FloorState, WSMessage } from '../../types'
 import { MobTracker } from './MobTracker'
+import { GMDiceRoller } from './GMDiceRoller'
 
 interface RoomPanelProps {
   floor: FloorState
@@ -126,6 +127,11 @@ export function RoomPanel({ floor, send }: RoomPanelProps) {
 
         {/* Room notes — collapsed into a small button that opens inline */}
         <RoomNotesButton notes={roomNotes} onChange={setRoomNotes} />
+      </div>
+
+      {/* GM Quick Roller Panel */}
+      <div className="p-3 border-b border-hud-border flex-shrink-0 bg-hud-bg/25">
+        <GMDiceRoller send={send} />
       </div>
 
       {/* ── Mob tracker — gets all remaining space ─────────── */}
