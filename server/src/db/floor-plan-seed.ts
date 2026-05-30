@@ -209,8 +209,8 @@ export async function seedFloorPlans() {
     {
       name: 'Sector 1 — The Production Trailer',
       description: 'You exit the Floor 1 stairwell directly onto a high-tech chrome **Syndicate Production Trailer** floating on Earth\'s surface water. Shimmering Traefik shields render you 100% safe from monsters.\n\n### THE INTERVIEW EVENT\nYour HUD menus, inventory, and weapon controls are locked. You undergo a live guest appearance on **Dungeon Crawler World** or **After Hours with Odette**! Pitch your answers to their sassy questions. Based on your entertainment value, you will walk away with **Galactic Followers** and a **Silver Item Box** as you step back into the active dungeon halls!',
-      sceneArt: '/images/rooms/sector3_guild_scene.png',
-      battlemapArt: '/images/rooms/sector3_guild_battlemap.png',
+      sceneArt: '/images/rooms/f2_production_trailer_scene.png',
+      battlemapArt: '/images/rooms/f2_production_trailer_battlemap.png',
       roomTarget: 10,
       tags: 'safe,hotel',
       posX: 100,
@@ -229,8 +229,8 @@ export async function seedFloorPlans() {
     {
       name: 'Sector 3 — The Appalachian Pine Trail',
       description: 'A massive simulated indoor mountain forest with towering pine trees, dirt paths, and an artificial sunset sky. Nailed to the trees are creepy framed Polaroids of Clurichauns.\n\n### CHATTER & ESCORT: FETIN THE FRUGAL FELINE\nYou meet **Fetin** (a level 42 Tabaxi chef) looking exhausted. He offers you a massive feast with permanent/temporary stat buffs if you help him collect Gecko Green Beans (guarded by geckos) and Minotoads.\n\n### THE AMBUSH TRAP\nThe Minotoads are hidden in a dark cavern. Entering it triggers a dangerous ambush by **Feral Gremlocks**!',
-      sceneArt: '/images/rooms/sector2_corridor_scene.png',
-      battlemapArt: '/images/rooms/sector2_corridor_battlemap.png',
+      sceneArt: '/images/rooms/f2_appalachian_trail_scene.png',
+      battlemapArt: '/images/rooms/f2_appalachian_trail_battlemap.png',
       roomTarget: 11,
       tags: 'trap,combat',
       posX: 500,
@@ -250,8 +250,8 @@ export async function seedFloorPlans() {
     {
       name: 'Sector 5 — The Clurichaun Distillery',
       description: 'A rowdy settlement inside a ruined castle courtyard run by the Clurichaun Syndicate. Copper stills fill the air with thick alcohol fumes. This is a Safe Room.\n\n### SHOP & TRADING\nMeet **Seamus MacGuffin** behind the bar. You can buy specialized gear or drink **Clurichaun Moonshine** (restores HP/mana but inflicts a *Drunken Debuff* reducing DEX by -2).\n\n### THE SCRATCH-OFF SCAM\nShady merchants sell "discounted" scratch-offs (90% chance to blow up, 10% chance to win a Silver loot box).',
-      sceneArt: '/images/rooms/sector3_guild_scene.png',
-      battlemapArt: '/images/rooms/sector3_guild_battlemap.png',
+      sceneArt: '/images/rooms/f2_clurichaun_distillery_scene.png',
+      battlemapArt: '/images/rooms/f2_clurichaun_distillery_battlemap.png',
       roomTarget: 11,
       tags: 'safe,vending',
       posX: 700,
@@ -260,8 +260,8 @@ export async function seedFloorPlans() {
     {
       name: 'Sector 6 — The Krakaren Decoy Chamber',
       description: 'A magnificent, marble-lined gothic throne room that screams "BOSS ROOM." It is completely silent and packed with chest panels.\n\n### THE TRAP DAIS\nOpening a chest or stepping on the throne triggers massive floor fire-vents and dart traps (DC 12 Agility to dodge).\n\n### BOROUGH BOSS: THE KRAKAREN\nThe moment the trap triggers, **The Krakaren** (a giant mutant squid with a blocky blonde haircut and a screaming HOA attitude) crashes through the wall! She uses sonic screeching (silencing spells) and flings players across the room. Defeating her shatters the throne to reveal the exit stairs to Floor 3!',
-      sceneArt: '/images/rooms/sector5_checkpoint_scene.png',
-      battlemapArt: '/images/rooms/sector5_checkpoint_battlemap.png',
+      sceneArt: '/images/rooms/f2_krakaren_decoy_scene.png',
+      battlemapArt: '/images/rooms/f2_krakaren_decoy_battlemap.png',
       roomTarget: 14,
       tags: 'boss,exit',
       posX: 900,
