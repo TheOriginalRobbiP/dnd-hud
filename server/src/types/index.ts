@@ -5,6 +5,10 @@
 
 export type EffortType = 'basic' | 'weapon' | 'magic' | 'ultimate'
 export type LootBoxTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'legendary' | 'celestial'
+export type LootBoxType =
+  | 'adventurer' | 'assassin' | 'lucky_bitch' | 'asshole' | 'goblin'
+  | 'looter' | 'lucky_bastard' | 'mechanic' | 'pet' | 'quest'
+  | 'savage' | 'survivor'
 export type LootBoxState = 'pending' | 'authorised' | 'opened'
 export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'celestial'
 export type StatusEffectType = 'buff' | 'debuff' | 'mixed'
@@ -75,6 +79,7 @@ export interface InventoryItem {
 export interface LootBox {
   id: string
   tier: LootBoxTier
+  boxType?: LootBoxType
   contents: InventoryItem[]
   state: LootBoxState
   assignedTo: string   // character id

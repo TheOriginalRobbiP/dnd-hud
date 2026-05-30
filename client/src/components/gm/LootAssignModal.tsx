@@ -1,9 +1,39 @@
 import { useState, useEffect, useCallback } from 'react'
-import type { WSMessage } from '../../types'
+import type { WSMessage, LootBoxType } from '../../types'
 import { tierColour, TIER_LABELS } from '../../utils/colours'
 
 const TIERS = ['bronze','silver','gold','platinum','legendary','celestial'] as const
 type LootBoxTier = typeof TIERS[number]
+
+const BOX_TYPES = [
+  { id: 'adventurer', label: '📦 Adventurer Box', description: 'Standard low-level gear' },
+  { id: 'assassin', label: '🗡️ Assassin Box', description: 'Stealth and poison tools' },
+  { id: 'lucky_bitch', label: '🎀 Lucky Bitch Box', description: 'For little bitch gameplay' },
+  { id: 'asshole', label: '💩 Asshole Box', description: 'Prizes for terrible decisions' },
+  { id: 'goblin', label: '💣 Goblin Box', description: 'Explosives and tools' },
+  { id: 'looter', label: '💎 Looter Box', description: 'For materialistic kleptos' },
+  { id: 'lucky_bastard', label: '🎲 Lucky Bastard Box', description: 'Scratch-offs & chips' },
+  { id: 'mechanic', label: '⚙️ Mechanic Box', description: 'Crafting parts & tools' },
+  { id: 'pet', label: '🍖 Pet Box', description: 'Companion food & scrolls' },
+  { id: 'quest', label: '🛡️ Quest Box', description: 'Quest reward drops' },
+  { id: 'savage', label: '🩸 Savage Box', description: 'Crawler-slaying PVP tools' },
+  { id: 'survivor', label: '🩹 Survivor Box', description: 'Last-second escape supplies' }
+] as const
+
+const TYPE_TAGS_MAP: Record<LootBoxType, string[]> = {
+  adventurer: ['armor', 'potion', 'basic', 'utility', 'gear', 'biscuit'],
+  assassin: ['dagger', 'poison', 'stealth', 'speed', 'blade'],
+  lucky_bitch: ['luck', 'scroll', 'gamble', 'healing', 'revive'],
+  asshole: ['curse', 'junk', 'unreliable', 'hazard'],
+  goblin: ['explosive', 'fire', 'demolition', 'tools', 'dynamite', 'bomb'],
+  looter: ['bag', 'scroll', 'chest', 'jewelry', 'loot'],
+  lucky_bastard: ['chips', 'ticket', 'token', 'luck'],
+  mechanic: ['crafting', 'tool', 'engine', 'vehicle', 'parts'],
+  pet: ['biscuit', 'summon', 'pet', 'feed', 'critter'],
+  quest: ['quest-reward', 'relic', 'key'],
+  savage: ['blade', 'net', 'trap', 'blood', 'pvp'],
+  survivor: ['heal', 'shield', 'barrier', 'medic', 'potion']
+}
 
 interface DBItem {
   id: string
@@ -33,6 +63,7 @@ interface LootAssignModalProps {
 
 export function LootAssignModal({ characterId, characterName, onClose, send }: LootAssignModalProps) {
   const [tier, setTier] = useState<LootBoxTier>('bronze')
+  const [boxType, setBoxType] = useState<LootBoxType>('adventurer')
   const [mode, setMode] = useState<'pick' | 'random' | 'custom'>('random')
   const [search, setSearch] = useState('')
   const [dbItems, setDbItems] = useState<DBItem[]>([])
@@ -48,16 +79,31 @@ export function LootAssignModal({ characterId, characterName, onClose, send }: L
       if (search) params.set('q', search)
       const res = await fetch(`/api/items?${params}`)
       const data = await res.json()
-      // Filter to items appropriate for this loot box tier
+      
       // Strict tier filter: only show items that drop from this exact box tier
-      setDbItems(data.filter((i: DBItem) => {
+      const tierItems = data.filter((i: DBItem) => {
         if (!i.lootBoxTier) return false // items with no loot box tier are GM-only
         return i.lootBoxTier === tier
-      }))
+      })
+
+      // Specialty-tag filter: prioritizes items matching the specialty tags if there are any!
+      const tagsToMatch = TYPE_TAGS_MAP[boxType] || []
+      const matchedBySpecialty = tierItems.filter((i: DBItem) => {
+        const itemTags = i.tags ? i.tags.toLowerCase() : ''
+        const itemName = i.name ? i.name.toLowerCase() : ''
+        const itemDesc = i.description ? i.description.toLowerCase() : ''
+        return tagsToMatch.some(tag => itemTags.includes(tag) || itemName.includes(tag) || itemDesc.includes(tag))
+      })
+
+      if (matchedBySpecialty.length > 0) {
+        setDbItems(matchedBySpecialty)
+      } else {
+        setDbItems(tierItems)
+      }
     } finally {
       setLoading(false)
     }
-  }, [search, tier])
+  }, [search, tier, boxType])
 
   useEffect(() => { fetchItems() }, [fetchItems])
 
@@ -91,6 +137,7 @@ export function LootAssignModal({ characterId, characterName, onClose, send }: L
       lootBox: {
         id: crypto.randomUUID(),
         tier,
+        boxType,
         contents: [{
           id: crypto.randomUUID(),
           name,
@@ -100,11 +147,12 @@ export function LootAssignModal({ characterId, characterName, onClose, send }: L
           equippedSlot: itemSlot as any ?? null,
           fromLootBox: true,
           lootBoxTier: tier,
+          boxType, // Also save inside item contents for backup!
         }],
         state: 'pending',
         assignedTo: characterId,
         assignedAt: Date.now(),
-      }
+      } as any
     })
     onClose()
   }
@@ -135,6 +183,22 @@ export function LootAssignModal({ characterId, characterName, onClose, send }: L
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Specialty Box Type Selector */}
+        <div>
+          <div className="font-hud text-xs text-hud-muted mb-2 tracking-wider">SELECT SPECIALTY BOX TYPE</div>
+          <select
+            value={boxType}
+            onChange={(e) => { setBoxType(e.target.value as LootBoxType); setSelectedItem(null) }}
+            className="w-full bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2.5 focus:border-hud-accent outline-none uppercase"
+          >
+            {BOX_TYPES.map(bt => (
+              <option key={bt.id} value={bt.id} className="bg-hud-bg text-hud-text">
+                {bt.label.toUpperCase()} — {bt.description.toUpperCase()}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Mode toggle */}
