@@ -542,7 +542,7 @@ export function DisplayScreen() {
             )}
             <h2 className="font-mono-dcc text-lg font-bold tracking-widest text-[#f4eee2] uppercase">
               <span className="text-[#71717a] font-normal mr-2">FLOOR {timer.active ? '1' : activePlan?.name.split(' ')[1] || '1'} —</span> 
-              {activePlan?.name.toUpperCase() || 'THE COMMONS'}
+              {(activePlan?.name.replace(/Floor \d+\s*[—-]\s*/i, '') || 'THE COMMONS').toUpperCase()}
             </h2>
           </div>
           <div className="flex items-center gap-4">
