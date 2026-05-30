@@ -45,6 +45,7 @@ interface PlayerHUDProps {
 
 export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, onDMRead, onDMEcho, activeCharIds }: PlayerHUDProps) {
   const [tab, setTab] = useState<Tab>('status')
+  const [selectedAction, setSelectedAction] = useState<any>(null)
   const [showRulesModal, setShowRulesModal] = useState(false)
   const [showInventoryModal, setShowInventoryModal] = useState(false)
   const [showJournalModal, setShowJournalModal] = useState(false)
@@ -262,7 +263,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
               />
             </div>
             <div className={tab === 'skills' ? 'block' : 'hidden'}>
-              <SkillsTab character={character} />
+              <SkillsTab character={character} onSelectAction={setSelectedAction} selectedActionId={selectedAction?.id} />
             </div>
             <div className={tab === 'fame' ? 'block' : 'hidden md:hidden'}>
               <FameTab character={character} floorNumber={state.floor.floorNumber} locked={state.floor.preTutorialActive} />
@@ -319,7 +320,13 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
           <div className="hidden md:flex md:flex-col md:p-8 md:gap-8 md:overflow-y-auto bg-hud-bg">
              {/* Middle column contains the dice roller + skills on desktop */}
              <div className="flex-1 flex flex-col gap-8">
-               <DiceHero character={character} floor={state.floor} send={send} />
+               <DiceHero 
+                 character={character} 
+                 floor={state.floor} 
+                 send={send} 
+                 selectedAction={selectedAction} 
+                 onClearSelection={() => setSelectedAction(null)} 
+               />
                
                <Hotlist 
                  character={character} 
@@ -330,7 +337,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                
                <div className="bg-hud-panel border border-hud-border rounded-xl p-6">
                  <div className="font-mono text-xs text-hud-muted tracking-[0.2em] mb-4 uppercase border-b border-hud-border pb-2">Skills & Abilities</div>
-                 <SkillsTab character={character} />
+                 <SkillsTab character={character} onSelectAction={setSelectedAction} selectedActionId={selectedAction?.id} />
                </div>
              </div>
           </div>
@@ -357,6 +364,8 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                    onLogAction={addLogEntry}
                    locked={state.floor.preTutorialActive}
                    floorState={state.floor}
+                   onSelectAction={setSelectedAction}
+                   selectedActionId={selectedAction?.id}
                  />
                </div>
 
@@ -451,6 +460,8 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                 onLogAction={addLogEntry}
                 locked={state.floor.preTutorialActive}
                 floorState={state.floor}
+                onSelectAction={setSelectedAction}
+                selectedActionId={selectedAction?.id}
               />
             </div>
           </div>

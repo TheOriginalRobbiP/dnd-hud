@@ -33,6 +33,12 @@ export interface Skill {
   level: number          // 1–15 standard; 16–20 with racial unlock
   description: string
   effortType: EffortType
+  isWeapon?: boolean
+  isRanged?: boolean
+  slot?: string
+  isGranted?: boolean
+  grantedBy?: string
+  specialisation?: string | null
 }
 
 // ── Equipment ────────────────────────────────────────────────

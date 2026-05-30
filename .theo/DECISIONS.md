@@ -7,3 +7,5 @@
 2026-05-29 | Robust Room Tag Safe Evaluation | Upgraded current room tags parsing in LootBox.tsx to support both raw strings and string arrays safely, resolving TypeError crashes in isSafeRoom checks.
 2026-05-29 | Client-side Decryption & Claim Reward Flow | Separated the unboxing process into local decryption and server-side claiming, preventing boxes from instantly vanishing upon trigger and letting players enjoy custom AI commentaries.
 2026-05-29 | Local Mechanical Sound & Remote Voice Broadcast | Routed mechanical loot_box opening sound locally to the player HUD and kept voice-line announcements as broadcasted room sounds to prevent dual-overlapping audio collisions.
+2026-05-30 | Wipe Static Database Catalogs on Server Startup | Added automatic deletion of items and mobTemplates tables to seed.ts right before inserting. This permanently eliminates ghost/duplicate and truncated database items left over from previous iterations, while remaining 100% safe as player inventories are stored as self-contained inline JSON snapshots in the characters table.
+

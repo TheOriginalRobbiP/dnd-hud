@@ -5,11 +5,13 @@ interface DiceHeroProps {
   character: Character
   floor: FloorState
   send: (msg: WSMessage) => void
+  selectedAction?: any
+  onClearSelection?: () => void
 }
 
 const DICE = [4, 6, 8, 10, 12, 20] as const
 
-export function DiceHero({ character, floor, send }: DiceHeroProps) {
+export function DiceHero({ character, floor, send, selectedAction, onClearSelection }: DiceHeroProps) {
   const [rolling, setRolling] = useState(false)
   const [result, setResult] = useState<any>(null)
   
@@ -22,19 +24,34 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
   const [targetMobId, setTargetMobId] = useState<string>('')
 
   const mainHand = character.equipment?.mainHand
-
-  // Classify equipped weapon as ranged (guns) vs melee
-  const isRanged = mainHand
+  const isMainHandRanged = mainHand
     ? /shotgun|pistol|rifle|gun|bow|blunderbuss|ranged|firearm|musket|revolver|laser/i.test(mainHand.name + ' ' + mainHand.description)
     : false
 
+  const weaponSkill = character.skills.find(s => s.name.toLowerCase().includes('weapon') || s.name.toLowerCase().includes('combat'))
+  const weaponSkillRank = weaponSkill?.level ?? 0
+
+  // Resolve active action: selectedAction or fallback to equipped weapon
+  const activeAction = selectedAction || (mainHand ? {
+    id: `weapon-${mainHand.id}`,
+    name: mainHand.name,
+    type: 'weapon',
+    skillLevel: weaponSkillRank,
+    description: mainHand.description || '',
+    isWeapon: true,
+    isRanged: isMainHandRanged,
+    slot: 'mainHand'
+  } : null)
+
   const targetMob = floor.activeMobs?.find(m => m.id === targetMobId) || null
-  const weaponRange = (mainHand as any)?.range || (isRanged ? 'near' : 'melee')
+  const weaponRange = activeAction?.isWeapon 
+    ? (activeAction.isRanged ? 'near' : 'melee') 
+    : 'unlimited'
   
   let targetDistance = 0
   let isOutOfRange = false
   
-  if (targetMob) {
+  if (targetMob && activeAction && activeAction.type === 'weapon') {
     const charX = character.tokenPosX ?? 50
     const charY = character.tokenPosY ?? 50
     const mobX = (targetMob as any).posX ?? 50
@@ -51,16 +68,52 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
     }
   }
 
-  const statVal = isRanged ? (character.stats.DEX ?? 4) : (character.stats.STR ?? 4)
-  const statName = isRanged ? 'DEX' : 'STR'
-  const statMod = Math.floor((statVal - 4) / 2)
+  // Calculate dynamic modifiers
+  let statName = 'STR'
+  let statVal = 4
+  let effortDie = 4
+  let skillRank = 0
 
-  // Find general Weapon check skill level if trained
-  const weaponSkill = character.skills.find(s => s.name.toLowerCase().includes('weapon') || s.name.toLowerCase().includes('combat'))
-  const skillRank = weaponSkill?.level ?? 0
+  if (activeAction) {
+    const strVal = character.stats.STR ?? 4
+    const dexVal = character.stats.DEX ?? 4
+    const intVal = character.stats.INT ?? 4
+    const chaVal = character.stats.CHA ?? 4
 
+    skillRank = activeAction.skillLevel ?? 0
+
+    if (activeAction.type === 'weapon') {
+      if (activeAction.isRanged) {
+        statName = 'DEX'
+        statVal = dexVal
+        effortDie = 8
+      } else {
+        // Melee uses higher of STR or DEX
+        statName = strVal >= dexVal ? 'STR' : 'DEX'
+        statVal = Math.max(strVal, dexVal)
+        effortDie = 6
+      }
+    } else if (activeAction.type === 'magic') {
+      statName = 'INT'
+      statVal = intVal
+      effortDie = 10
+    } else if (activeAction.type === 'ultimate') {
+      const maxVal = Math.max(strVal, dexVal, intVal, chaVal)
+      statName = strVal === maxVal ? 'STR' : dexVal === maxVal ? 'DEX' : intVal === maxVal ? 'INT' : 'CHA'
+      statVal = maxVal
+      effortDie = 12
+    } else {
+      // basic
+      const maxVal = Math.max(strVal, dexVal, intVal, chaVal)
+      statName = strVal === maxVal ? 'STR' : dexVal === maxVal ? 'DEX' : intVal === maxVal ? 'INT' : 'CHA'
+      statVal = maxVal
+      effortDie = 4
+    }
+  }
+
+  const statMod = activeAction ? (statVal - 4) : 0
   const checkMod = statMod + skillRank
-  const effortDie = isRanged ? 8 : 6
+  const isRanged = activeAction?.isRanged || false
 
   const resolve = (raw: number, sides: number, isPhysical = false) => {
     const target = floor.roomTarget
@@ -99,7 +152,7 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
     }, 150)
   }
 
-  const triggerWeaponAttack = () => {
+  const triggerActionCheck = () => {
     if (rollMode === 'manual') {
       setManualSides(20)
       setManualType('attack')
@@ -111,12 +164,12 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
     setRolling(true)
     setTimeout(() => {
       const raw = Math.floor(Math.random() * 20) + 1
-      resolveWeaponAttack(raw, false)
+      resolveActionCheck(raw, false)
     }, 150)
   }
 
-  const resolveWeaponAttack = (raw: number, isPhysical: boolean) => {
-    if (!mainHand) return
+  const resolveActionCheck = (raw: number, isPhysical: boolean) => {
+    if (!activeAction) return
     const total = raw + checkMod
     const target = floor.roomTarget
     const pass = total >= target
@@ -134,13 +187,13 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
     setRolling(false)
 
     const modParts = [`${statName}(${statMod >= 0 ? '+' : ''}${statMod})`]
-    if (skillRank > 0) modParts.push(`Rank(${skillRank})`)
-    const targetText = targetMob ? ` targeting **${targetMob.name}**` : ''
-    const text = `[${character.crawlerName}] attacked ${isPhysical ? 'physically' : 'digitally'} with **${mainHand.name}**${targetText}: ${isPhysical ? 'physical' : 'd20'}(${raw}) + ${modParts.join('+')} = **${total}** vs Room Target ${target} — ${pass ? 'HIT ✓' : 'MISS ✗'}`
-    send({ type: 'announcement', label: 'Combat', text })
+    if (skillRank > 0) modParts.push(`Skill(${skillRank})`)
+    const targetText = targetMob && activeAction.type === 'weapon' ? ` targeting **${targetMob.name}**` : ''
+    const text = `[${character.crawlerName}] checked **${activeAction.name}**${targetText}: ${isPhysical ? 'physical' : 'd20'}(${raw}) + ${modParts.join('+')} = **${total}** vs Room Target ${target} — ${pass ? 'PASS ✓' : 'FAIL ✗'}`
+    send({ type: 'announcement', label: 'Check', text })
   }
 
-  const triggerWeaponDamage = () => {
+  const triggerEffortRoll = () => {
     if (rollMode === 'manual') {
       setManualSides(effortDie)
       setManualType('damage')
@@ -152,12 +205,12 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
     setRolling(true)
     setTimeout(() => {
       const raw = Math.floor(Math.random() * effortDie) + 1
-      resolveWeaponDamage(raw, false)
+      resolveEffortRoll(raw, false)
     }, 150)
   }
 
-  const resolveWeaponDamage = (raw: number, isPhysical: boolean) => {
-    if (!mainHand) return
+  const resolveEffortRoll = (raw: number, isPhysical: boolean) => {
+    if (!activeAction) return
     const total = raw + statMod
     
     setResult({ 
@@ -172,9 +225,10 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
     })
     setRolling(false)
 
-    const targetText = targetMob ? ` targeting **${targetMob.name}**` : ''
-    const text = `[${character.crawlerName}] rolled ${isPhysical ? 'physical' : 'digital'} damage for **${mainHand.name}**${targetText}: d${effortDie}(${raw}) + ${statName}(${statMod >= 0 ? '+' : ''}${statMod}) = **${total} ${isRanged ? 'Guns' : 'Weapon'} Effort** 💥`
-    send({ type: 'announcement', label: 'Combat', text })
+    const targetText = targetMob && activeAction.type === 'weapon' ? ` targeting **${targetMob.name}**` : ''
+    const effortTypeLabel = activeAction.type.toUpperCase()
+    const text = `[${character.crawlerName}] rolled **${activeAction.name}** effort${targetText}: d${effortDie}(${raw}) + ${statName}(${statMod >= 0 ? '+' : ''}${statMod}) = **${total} ${effortTypeLabel} Effort** 💥`
+    send({ type: 'announcement', label: 'Effort', text })
   }
 
   const submitManualRoll = () => {
@@ -186,9 +240,9 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
     if (manualType === 'raw') {
       resolve(raw, manualSides, true)
     } else if (manualType === 'attack') {
-      resolveWeaponAttack(raw, true)
+      resolveActionCheck(raw, true)
     } else if (manualType === 'damage') {
-      resolveWeaponDamage(raw, true)
+      resolveEffortRoll(raw, true)
     }
   }
 
@@ -297,24 +351,54 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
             ))}
           </div>
 
-          {/* Dynamic Equipped Weapon Action Card */}
-          {mainHand && (
-            <div className="w-full border border-hud-accent/20 bg-hud-accent/5 p-4 rounded-lg flex flex-col gap-3 border-dashed">
-              <div className="flex items-center justify-between border-b border-hud-border/20 pb-2">
+          {/* Dynamic Action Roller Card */}
+          {activeAction && (
+            <div className={`w-full border p-4 rounded-lg flex flex-col gap-3 border-dashed transition-all duration-300 ${
+              selectedAction 
+                ? 'border-hud-accent/60 bg-hud-accent/5 ring-1 ring-hud-accent/20' 
+                : 'border-hud-border/40 bg-hud-panel/10 hover:border-hud-accent/20'
+            }`}>
+              <div className="flex items-start justify-between border-b border-hud-border/20 pb-2 gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-base shrink-0">{isRanged ? '🔫' : '⚔️'}</span>
+                  <span className="text-lg shrink-0">
+                    {activeAction.type === 'magic' ? '🔮'
+                      : activeAction.type === 'ultimate' ? '⚡'
+                      : activeAction.type === 'weapon' ? (activeAction.isRanged ? '🔫' : '⚔️')
+                      : '📊'}
+                  </span>
                   <div className="min-w-0">
-                    <span className="font-hud text-[8px] text-hud-accent tracking-widest uppercase block leading-none">EQUIPPED MAIN HAND</span>
-                    <span className="font-hud text-xs text-hud-text font-bold leading-tight truncate block" title={mainHand.name}>{mainHand.name}</span>
+                    <span className="font-hud text-[8px] text-hud-accent tracking-widest uppercase block leading-none font-bold">
+                      {selectedAction ? 'ACTIVE ACTION SELECTED' : 'EQUIPPED MAIN HAND'}
+                    </span>
+                    <span className="font-hud text-sm text-hud-text font-extrabold leading-tight truncate block" title={activeAction.name}>
+                      {activeAction.name}
+                    </span>
                   </div>
                 </div>
-                <span className="font-hud text-[8px] px-1.5 py-0.5 border border-hud-accent/30 text-hud-accent rounded-sm uppercase font-bold shrink-0 bg-hud-accent/5">
-                  {isRanged ? 'RANGED / GUN' : 'MELEE / WEAPON'}
-                </span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="font-hud text-[8px] px-1.5 py-0.5 border border-hud-border/40 text-hud-muted rounded-sm uppercase font-bold bg-hud-panel/40">
+                    {activeAction.type}
+                  </span>
+                  {selectedAction && onClearSelection && (
+                    <button
+                      onClick={() => onClearSelection()}
+                      className="font-hud text-[8px] px-1.5 py-0.5 border border-red-900/60 hover:border-red-600 text-red-400 bg-red-950/15 rounded-sm uppercase font-extrabold hover:text-hud-text transition-colors"
+                      title="Reset back to equipped weapon"
+                    >
+                      ✕ RESET
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {/* Target Selector and Range checks */}
-              {floor.activeMobs && floor.activeMobs.length > 0 && (
+              {activeAction.description && (
+                <div className="font-hud text-[11px] text-hud-muted italic leading-relaxed line-clamp-2" title={activeAction.description}>
+                  {activeAction.description}
+                </div>
+              )}
+
+              {/* Target Selector and Range checks — only active for Weapon attacks */}
+              {activeAction.type === 'weapon' && floor.activeMobs && floor.activeMobs.length > 0 && (
                 <div className="flex flex-col gap-1.5 bg-black/25 border border-hud-border/20 p-2.5 rounded">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-hud text-[9px] text-hud-muted tracking-widest uppercase">Target Threat:</span>
@@ -342,9 +426,9 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
               )}
 
               <div className="grid grid-cols-2 gap-2 mt-1">
-                {/* Roll Attack Check Button */}
+                {/* Roll Action Check Button */}
                 <button
-                  onClick={triggerWeaponAttack}
+                  onClick={triggerActionCheck}
                   disabled={rolling || isOutOfRange}
                   className={`font-hud text-[10px] border rounded py-2 flex flex-col items-center justify-center gap-0.5 font-bold tracking-wider leading-none transition-all ${
                     isOutOfRange
@@ -352,15 +436,15 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
                       : 'border-hud-accent text-hud-accent bg-hud-accent/15 hover:bg-hud-accent/30'
                   }`}
                 >
-                  <span>{isOutOfRange ? '❌ OUT OF RANGE' : rollMode === 'manual' ? '🎯 ENTER ATTACK' : '🎯 ROLL ATTACK'}</span>
+                  <span>{isOutOfRange ? '❌ OUT OF RANGE' : rollMode === 'manual' ? '🎯 ENTER CHECK' : '🎯 ROLL CHECK'}</span>
                   <span className="text-[7.5px] font-normal opacity-70 leading-none mt-1">
                     d20 {checkMod >= 0 ? '+' : ''}{checkMod} ({statName} {statMod >= 0 ? '+' : ''}{statMod}{skillRank > 0 ? `, Lv${skillRank}` : ''})
                   </span>
                 </button>
 
-                {/* Roll Damage / Effort Button */}
+                {/* Roll Effort / Progress Button */}
                 <button
-                  onClick={triggerWeaponDamage}
+                  onClick={triggerEffortRoll}
                   disabled={rolling || isOutOfRange}
                   className={`font-hud text-[10px] border rounded py-2 flex flex-col items-center justify-center gap-0.5 font-bold tracking-wider leading-none transition-all ${
                     isOutOfRange
@@ -368,7 +452,7 @@ export function DiceHero({ character, floor, send }: DiceHeroProps) {
                       : 'border-amber-600 text-amber-400 bg-amber-950/20 hover:bg-amber-950/40'
                   }`}
                 >
-                  <span>{isOutOfRange ? '❌ OUT OF RANGE' : rollMode === 'manual' ? '💥 ENTER DAMAGE' : '💥 ROLL DAMAGE'}</span>
+                  <span>{isOutOfRange ? '❌ OUT OF RANGE' : rollMode === 'manual' ? '💥 ENTER EFFORT' : '💥 ROLL EFFORT'}</span>
                   <span className="text-[7.5px] font-normal opacity-70 leading-none mt-1">
                     d{effortDie} {statMod >= 0 ? '+' : ''}{statMod} ({statName} mod)
                   </span>

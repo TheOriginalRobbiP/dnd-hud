@@ -29,11 +29,43 @@ function LevelPips({ level, max = 15 }: { level: number; max?: number }) {
   )
 }
 
-export function SkillsTab({ character: rawCharacter }: { character: Character }) {
+export function SkillsTab({ 
+  character: rawCharacter,
+  onSelectAction,
+  selectedActionId
+}: { 
+  character: Character;
+  onSelectAction?: (action: any) => void;
+  selectedActionId?: string;
+}) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [showHandbook, setShowHandbook] = useState(false)
   
   const character = getModifiedCharacter(rawCharacter)
+  const equipment = character.equipment as Record<string, any> || {}
+
+  // Gather active actions from equipped items
+  const gearSkills = [...character.skills]
+
+  // Add the main hand weapon as an active weapon skill if equipped
+  if (equipment.mainHand) {
+    const weapon = equipment.mainHand
+    const isAlreadyListed = gearSkills.some(s => s.id === `weapon-${weapon.id}`)
+    if (!isAlreadyListed) {
+      const isRanged = /shotgun|pistol|rifle|gun|bow|blunderbuss|ranged|firearm|musket|revolver|laser/i.test(weapon.name + ' ' + weapon.description)
+      
+      gearSkills.push({
+        id: `weapon-${weapon.id}`,
+        name: weapon.name,
+        level: 0,
+        description: weapon.description || 'Equipped main hand weapon.',
+        effortType: 'weapon',
+        isWeapon: true,
+        isRanged: isRanged,
+        slot: 'mainHand'
+      })
+    }
+  }
 
   const toggle = (id: string) => setExpanded(p => {
     const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n
@@ -41,7 +73,7 @@ export function SkillsTab({ character: rawCharacter }: { character: Character })
 
   // Group by effort type for clarity
   const grouped = (['weapon','magic','ultimate','basic'] as const).reduce((acc, type) => {
-    const skills = (character.skills as any[]).filter(s => s.effortType === type)
+    const skills = (gearSkills as any[]).filter(s => s.effortType === type)
     if (skills.length) acc.push({ type, skills })
     return acc
   }, [] as { type: string; skills: any[] }[])
@@ -166,11 +198,33 @@ export function SkillsTab({ character: rawCharacter }: { character: Character })
                       diffStr = ` (+${diff})`
                     }
 
+                    const isSelected = selectedActionId === s.id
+
                     return (
-                      <div key={s.id} onClick={() => toggle(s.id)}
-                        className={`border px-3 py-2 cursor-pointer bg-hud-panel transition-colors rounded ${
+                      <div key={s.id} onClick={() => {
+                        toggle(s.id)
+                        onSelectAction?.(isSelected ? null : {
+                          id: s.id,
+                          name: s.name,
+                          type: type,
+                          skillLevel: s.level,
+                          description: s.description || '',
+                          isGranted: s.isGranted,
+                          grantedBy: s.grantedBy,
+                          isWeapon: s.isWeapon,
+                          isRanged: s.isRanged,
+                          slot: s.slot
+                        })
+                      }}
+                        className={`border px-3 py-2 cursor-pointer bg-hud-panel transition-all duration-150 rounded ${
                           s.isGranted ? 'border-yellow-700/50 bg-yellow-950/5' : ''
-                        } ${expanded.has(s.id) ? style.border : 'border-hud-border hover:border-hud-accent'}`}>
+                        } ${
+                          isSelected 
+                            ? 'border-hud-accent ring-1 ring-hud-accent/60 bg-hud-accent/5 shadow-md' 
+                            : expanded.has(s.id) 
+                            ? style.border 
+                            : 'border-hud-border hover:border-hud-accent'
+                        }`}>
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-1.5 min-w-0">
                             <span className="font-hud text-sm text-hud-text leading-tight font-bold truncate">{s.name}</span>
@@ -179,12 +233,17 @@ export function SkillsTab({ character: rawCharacter }: { character: Character })
                                 <span>✦</span> GEAR
                               </span>
                             )}
+                            {s.isWeapon && (
+                              <span className="font-hud text-[8px] border border-red-700 text-red-400 px-1 font-bold bg-red-950/20 rounded-sm leading-none py-0.5 uppercase tracking-wider flex items-center gap-0.5 shrink-0">
+                                <span>✦</span> WEAPON
+                              </span>
+                            )}
                           </div>
                           <span className={`font-hud text-xs flex-shrink-0 mt-0.5 ${levelColor}`}>
-                            Lv {s.level}{diffStr}
+                            {s.isWeapon ? 'EQUIPPED' : `Lv ${s.level}${diffStr}`}
                           </span>
                         </div>
-                        <LevelPips level={s.level} />
+                        {!s.isWeapon && <LevelPips level={s.level} />}
                         {s.level >= 15 && s.specialisation && (
                           <div className="font-hud text-xs text-yellow-400 mt-1">✦ {s.specialisation}</div>
                         )}
@@ -207,7 +266,18 @@ export function SkillsTab({ character: rawCharacter }: { character: Character })
                                 let checkStr = ""
                                 let effortStr = ""
 
-                                if (type === 'weapon') {
+                                if (s.isWeapon) {
+                                  const statName = s.isRanged ? 'DEX' : 'STR'
+                                  const statVal = character.stats[statName] ?? 4
+                                  const mod = statVal - 4
+                                  const effortDie = s.isRanged ? 8 : 6
+                                  
+                                  const weaponSkill = character.skills.find(sk => sk.name.toLowerCase().includes('weapon') || sk.name.toLowerCase().includes('combat'))
+                                  const skillRank = weaponSkill?.level ?? 0
+                                  
+                                  checkStr = `d20 + ${statName}(${mod >= 0 ? '+' : ''}${mod})` + (skillRank > 0 ? ` + CombatSkill(${skillRank})` : '') + ` = d20 + ${mod + skillRank}`
+                                  effortStr = `1d${effortDie} (${s.isRanged ? 'Guns' : 'Melee'} Dice) + ${statName}(${mod >= 0 ? '+' : ''}${mod})`
+                                } else if (type === 'weapon') {
                                   const higherVal = Math.max(strVal, dexVal)
                                   const higherStat = strVal >= dexVal ? 'STR' : 'DEX'
                                   const mod = higherVal - 4

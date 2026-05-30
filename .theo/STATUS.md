@@ -1,5 +1,16 @@
 # DnD HUD Status
 
+## Session checkpoint 2026-05-30T10:45:00Z
+- **Focus**: Elimination of duplicate/truncated items database entries, layout polishing, and real-time safe-room state synchronization.
+- **Done this session**:
+  - **CSS Name Clipping Fix**: Fixed visual truncation of long item names in both `ItemDatabasePanel.tsx` and `LootAssignModal.tsx` by replacing the rigid truncate classes with a wrapping layout combining `break-words min-w-0 flex-1`.
+  - **Database Cleanup & Robust Seeding**: Overhauled the server's `seed.ts` script to proactively wipe (`db.delete(items)` and `db.delete(mobTemplates)`) the static items and mob-templates database lookup catalogs right before inserting new seed items. This removes all stale, duplicate, or truncated items (such as the legacy "A Fish In A" entry) left behind in previous database iterations, while preserving existing character states (as inventories are saved inline as JSONB in character rows).
+  - **Real-Time Safe Room Lock/Unlock (No Refreshes)**: Resolved a player synchronization issue where changing rooms on the GM map required players to refresh their HUD to make loot boxes available. Updated the websocket server `server/src/ws/handler.ts` to trigger a `full_state_sync` broadcast whenever room state, coordinates, or floor plans update, causing player HUDs to lock/unlock instantly in real-time.
+  - **Build & Live Deploy**: Successfully compiled the workspace with zero TypeScript or Vite warnings/errors and deployed live to `dnd.rjp.digital` via Dokploy.
+- **Open / Next**:
+  - Set up local ComfyUI text-to-speech voice generation using Kokoro-82M or F5-TTS to allow unlimited credit-free voice acting.
+- **Blockers**: None.
+
 ## Session checkpoint 2026-05-29T18:15:00Z
 - **Focus**: Game-Night Quickstart core system slideshow presentation on the TV Display and Specialty Loot Box expansion.
 - **Done this session**:

@@ -56,9 +56,23 @@ interface InventoryTabProps {
   onLogAction?: (text: string, type: 'roll' | 'item' | 'equip' | 'status' | 'system') => void
   locked?: boolean
   floorState?: FloorState
+  onSelectAction?: (action: any) => void;
+  selectedActionId?: string;
 }
 
-export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hideSections = [], compact = false, onLogAction, locked = false, floorState }: InventoryTabProps) {
+export function InventoryTab({ 
+  character, 
+  lootQueue, 
+  send, 
+  onCharacterUpdate, 
+  hideSections = [], 
+  compact = false, 
+  onLogAction, 
+  locked = false, 
+  floorState,
+  onSelectAction,
+  selectedActionId
+}: InventoryTabProps) {
   const [equipping, setEquipping] = useState<string | null>(null)
   const [expandedItem, setExpandedItem] = useState<string | null>(null)
   const [using, setUsing] = useState<string | null>(null)
@@ -235,8 +249,35 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
               <p className="font-hud text-xs text-hud-muted italic leading-relaxed">{item.description}</p>
             )}
 
-            {/* Pin / Unpin to Hotlist Button */}
-            <div className="flex justify-start border-t border-hud-border/40 pt-2.5">
+            {/* Action buttons (Pin & Load to Roller) */}
+            <div className="flex gap-2 justify-start border-t border-hud-border/40 pt-2.5 items-center flex-wrap">
+              <button
+                onClick={() => {
+                  const isSelected = selectedActionId === item.id
+                  if (isSelected) {
+                    onSelectAction?.(null)
+                  } else {
+                    const isRanged = /shotgun|pistol|rifle|gun|bow|blunderbuss|ranged|firearm|musket|revolver|laser/i.test(item.name + ' ' + item.description)
+                    onSelectAction?.({
+                      id: item.id,
+                      name: item.name,
+                      type: item.slot === 'mainHand' ? 'weapon' : 'basic',
+                      skillLevel: 0,
+                      description: item.description || '',
+                      isWeapon: false,
+                      isRanged: isRanged
+                    })
+                  }
+                }}
+                className={`font-hud text-[10px] border px-2.5 py-1 rounded transition-colors flex items-center gap-1 bg-hud-panel ${
+                  selectedActionId === item.id 
+                    ? 'border-hud-accent text-hud-accent bg-hud-accent/15 ring-1 ring-hud-accent/40 font-bold' 
+                    : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'
+                }`}
+              >
+                <span>⚡</span>
+                <span>{selectedActionId === item.id ? 'ACTIVE ACTION' : 'LOAD TO DICE ROLLER'}</span>
+              </button>
               <button
                 onClick={() => toggleHotlist(item)}
                 className="font-hud text-[10px] border border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent px-2.5 py-1 rounded transition-colors flex items-center gap-1 bg-hud-panel"
@@ -379,7 +420,35 @@ export function InventoryTab({ character, lootQueue, send, onCharacterUpdate, hi
                     {item.description}
                   </p>
                 )}
-                <div className="flex gap-3 justify-end mt-2 border-t border-hud-border/40 pt-3">
+                <div className="flex gap-3 justify-end mt-2 border-t border-hud-border/40 pt-3 items-center">
+                  <button
+                    onClick={() => {
+                      const isSelected = selectedActionId === item.id
+                      if (isSelected) {
+                        onSelectAction?.(null)
+                      } else {
+                        const isRanged = /shotgun|pistol|rifle|gun|bow|blunderbuss|ranged|firearm|musket|revolver|laser/i.test(item.name + ' ' + item.description)
+                        onSelectAction?.({
+                          id: item.id,
+                          name: item.name,
+                          type: selectedSlot === 'mainHand' ? 'weapon' : 'basic',
+                          skillLevel: 0,
+                          description: item.description || '',
+                          isWeapon: true,
+                          isRanged: isRanged,
+                          slot: selectedSlot
+                        })
+                      }
+                    }}
+                    className={`font-hud text-[10px] border px-3 py-1.5 rounded transition-colors flex items-center gap-1 bg-hud-panel ${
+                      selectedActionId === item.id 
+                        ? 'border-hud-accent text-hud-accent bg-hud-accent/15 ring-1 ring-hud-accent/40 font-bold' 
+                        : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'
+                    }`}
+                  >
+                    <span>⚡</span>
+                    <span>{selectedActionId === item.id ? 'ACTIVE ACTION' : 'LOAD TO DICE ROLLER'}</span>
+                  </button>
                   <button
                     onClick={() => {
                       unequipItem(selectedSlot)
