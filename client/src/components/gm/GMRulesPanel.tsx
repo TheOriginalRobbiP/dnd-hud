@@ -7,24 +7,32 @@ interface GMRulesPanelProps {
 
 export function GMRulesPanel({ send }: GMRulesPanelProps) {
   const [activeSlide, setActiveSlide] = useState<number | null>(null)
+  const [showDetails, setShowDetails] = useState(false)
 
   const handleStartPresentation = () => {
     setActiveSlide(0)
-    send?.({ type: 'display_view_mode_update', mode: 'tutorial_0' })
+    send?.({ type: 'display_view_mode_update', mode: `tutorial_0${showDetails ? '_detail' : ''}` })
   }
 
   const handleNextSlide = () => {
     if (activeSlide === null) return
     const next = Math.min(activeSlide + 1, 9)
     setActiveSlide(next)
-    send?.({ type: 'display_view_mode_update', mode: `tutorial_${next}` })
+    send?.({ type: 'display_view_mode_update', mode: `tutorial_${next}${showDetails ? '_detail' : ''}` })
   }
 
   const handlePrevSlide = () => {
     if (activeSlide === null) return
     const prev = Math.max(activeSlide - 1, 0)
     setActiveSlide(prev)
-    send?.({ type: 'display_view_mode_update', mode: `tutorial_${prev}` })
+    send?.({ type: 'display_view_mode_update', mode: `tutorial_${prev}${showDetails ? '_detail' : ''}` })
+  }
+
+  const handleToggleDetails = (checked: boolean) => {
+    setShowDetails(checked)
+    if (activeSlide !== null) {
+      send?.({ type: 'display_view_mode_update', mode: `tutorial_${activeSlide}${checked ? '_detail' : ''}` })
+    }
   }
 
   const handleEndPresentation = () => {
@@ -85,6 +93,19 @@ export function GMRulesPanel({ send }: GMRulesPanelProps) {
               </button>
             </div>
           )}
+
+          {/* Details toggle */}
+          <div className="flex items-center justify-between border-t border-hud-border/30 pt-2.5 mt-0.5 select-none">
+            <span className="text-[9px] text-hud-muted font-bold tracking-wider uppercase">
+              ⚡ SHOW DETAILED MECHANICS ON TV
+            </span>
+            <input
+              type="checkbox"
+              checked={showDetails}
+              onChange={(e) => handleToggleDetails(e.target.checked)}
+              className="w-4 h-4 rounded border-hud-border bg-black text-hud-accent focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#f59e0b]"
+            />
+          </div>
         </section>
         
         {/* 1. SETTING THE TARGET */}
