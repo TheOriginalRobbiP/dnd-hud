@@ -80,6 +80,14 @@ const ITEMS = [
   { name: 'Bandage Roll', description: 'Stops bleeding. Does not restore HP. Stops the bleeding. That is enough.', tier: 'common', lootBoxTier: 'bronze', slot: null, effortType: null, skillBonus: null, floorFound: 1, isConsumable: true, tags: 'consumable,medical' },
   { name: 'Smoke Pellet', description: 'Creates a small smoke cloud for 2 rounds. Useful. Popular. The audience expects it.', tier: 'common', lootBoxTier: 'bronze', slot: null, effortType: null, skillBonus: null, floorFound: 1, isConsumable: true, tags: 'consumable,tactical' },
 
+  // ── BRONZE SURVIVAL GEAR ────────────────────────────────────
+  { name: "50' Synthetic Rope", description: 'Standard carbon-fiber braided rope. Holds up to 800 lbs. Smells faintly of burnt plastic, but it is supernaturally strong. The System notes you will probably use this to hang yourself by accident.', tier: 'common', lootBoxTier: 'bronze', slot: null, effortType: null, skillBonus: null, floorFound: 1, isConsumable: false, tags: 'survival,utility,gear' },
+  { name: 'Corporate Flint & Tinderbox', description: 'A plastic box branded with the Borant logo. It contains a single magnesium block, a flint strip, and steel striker. Slogan on box: "Igniting your prospects!" - Single use, but works in any weather.', tier: 'common', lootBoxTier: 'bronze', slot: null, effortType: null, skillBonus: null, floorFound: 1, isConsumable: true, tags: 'survival,utility,gear' },
+  { name: 'Smoky Iron Torch', description: 'A wooden stick wrapped in oil-soaked dungeon rags. Burns for 2 rooms. Emits a choking black smoke that the audience complains about, but it lets you see the death traps before you step on them.', tier: 'common', lootBoxTier: 'bronze', slot: null, effortType: null, skillBonus: null, floorFound: 1, isConsumable: true, tags: 'survival,utility,gear' },
+  { name: 'Iron Spikes & Piton Hammer', description: 'Four heavy iron spikes and a small, heavy ball-peen hammer. Used to wedge doors shut or secure rope. The System reminds you that jamming doors only stops mobs who don\'t know how to turn a handle.', tier: 'common', lootBoxTier: 'bronze', slot: null, effortType: null, skillBonus: null, floorFound: 1, isConsumable: false, tags: 'survival,utility,gear' },
+  { name: 'Synthetic Bedroll & Blanket', description: 'A ultra-light space blanket that crinkles louder than a bag of potato chips, and a thin foam pad. The System warns that sleeping on the floor exposes you to concrete-worms, but it is better than standing up.', tier: 'common', lootBoxTier: 'bronze', slot: null, effortType: null, skillBonus: null, floorFound: 1, isConsumable: false, tags: 'survival,utility,gear' },
+  { name: 'Dungeon-Grade Lantern', description: 'A brass-plated oil lantern that casts light in a 30-foot circle. Needs oil, but the light is steady. The glass is slightly cracked, giving the light a sinister shadow, which is great for ratings.', tier: 'common', lootBoxTier: 'bronze', slot: null, effortType: null, skillBonus: null, floorFound: 1, isConsumable: false, tags: 'survival,utility,gear' },
+
   // ── SILVER CONSUMABLES ────────────────────────────────────────
   { name: 'Greater Healing Potion', description: 'Restores 2d6 HP. Actually tastes acceptable. The System is in a good mood.', tier: 'uncommon', lootBoxTier: 'silver', slot: null, effortType: null, skillBonus: null, floorFound: 1, isConsumable: true, tags: 'consumable,potion,healing' },
   { name: 'Skill Potion (Minor)', description: 'Grants +2 to one chosen skill for 3 rounds. Choose wisely. The audience is watching.', tier: 'uncommon', lootBoxTier: 'silver', slot: null, effortType: null, skillBonus: '+2 to chosen skill (3 rounds)', floorFound: 1, isConsumable: true, tags: 'consumable,potion' },
@@ -103,11 +111,11 @@ const ITEMS = [
   { name: 'Toe Spikes of the Desperate', description: 'Sharpened spikes on your toes. You can kick. Hard. The audience winces.', tier: 'rare', lootBoxTier: 'gold', slot: 'toes', effortType: 'weapon', skillBonus: '+3 to Unarmed Combat Skill (kicks only)', floorFound: 2, tags: 'weapon,armor' },
 ]
 
-async function seedItems() {
+export async function seedItems() {
   const existing = await db.select().from(items)
-  if (existing.length > 0) {
-    console.log('[seed] Items already seeded:', existing.length, 'items')
-    process.exit(0)
+  if (existing.length > 10) { // Keep safety check but don't exit if it already has some, just skip or return
+    console.log('[seed] Core items already seeded (skipping):', existing.length, 'items')
+    return
   }
 
   for (const item of ITEMS) {
@@ -125,8 +133,10 @@ async function seedItems() {
     })
     console.log('[seed] Added item:', item.name)
   }
-  console.log('[seed] Done.', ITEMS.length, 'items seeded.')
-  process.exit(0)
+  console.log('[seed] Done.', ITEMS.length, 'core items seeded.')
 }
 
-seedItems().catch(err => { console.error('[seed] Error:', err); process.exit(1) })
+// Standalone runner guard
+if (process.argv[1]?.endsWith('items-seed.ts') || process.argv[1]?.endsWith('items-seed.js')) {
+  seedItems().catch(err => { console.error('[seed] Error:', err); process.exit(1) })
+}

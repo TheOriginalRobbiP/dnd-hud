@@ -2,6 +2,7 @@ import { db } from './client.js'
 import { floorState } from './schema.js'
 import { seedBopcaMobs } from './bopca-mobs-seed.js'
 import { seedBopcaItems } from './bopca-items-seed.js'
+import { seedItems } from './items-seed.js'
 import { seedTier2Items } from './items-seed-tier2.js'
 import { seedFloorPlans } from './floor-plan-seed.js'
 
@@ -16,6 +17,9 @@ async function seed() {
 
   console.log('[seed] Importing Bopca items...')
   await seedBopcaItems()
+
+  console.log('[seed] Importing core items (rusty weapons, armor, starting potions)...')
+  await seedItems()
 
   console.log('[seed] Importing tier-2 items (gold/platinum/legendary/celestial)...')
   await seedTier2Items()

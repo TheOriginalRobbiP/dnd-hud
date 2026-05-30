@@ -21,7 +21,7 @@ const BOX_TYPES = [
 ] as const
 
 const TYPE_TAGS_MAP: Record<LootBoxType, string[]> = {
-  adventurer: ['armor', 'potion', 'basic', 'utility', 'gear', 'biscuit'],
+  adventurer: ['armor', 'basic', 'utility', 'gear', 'biscuit', 'survival', 'junk'],
   assassin: ['dagger', 'poison', 'stealth', 'speed', 'blade'],
   lucky_bitch: ['luck', 'scroll', 'gamble', 'healing', 'revive'],
   asshole: ['curse', 'junk', 'unreliable', 'hazard'],
@@ -108,28 +108,87 @@ export function LootAssignModal({ characterId, characterName, onClose, send }: L
   useEffect(() => { fetchItems() }, [fetchItems])
 
   const assign = () => {
-    let name: string
-    let desc: string
-    let itemTier: string = 'common'
-    let itemSlot: string | null = null
+    const contents: any[] = []
 
     if (mode === 'random') {
       const picked = pickRandom(dbItems)
       if (!picked) return
-      name = picked.name
-      desc = picked.description
-      itemTier = picked.tier
-      itemSlot = picked.slot
+      contents.push({
+        id: crypto.randomUUID(),
+        name: picked.name,
+        description: picked.description,
+        tier: (picked.tier as any) ?? 'common',
+        isEquipped: false,
+        equippedSlot: picked.slot as any ?? null,
+        fromLootBox: true,
+        lootBoxTier: tier,
+        boxType,
+      })
+
+      // Multi-item bundle for Adventurer Boxes at Bronze tier
+      if (boxType === 'adventurer' && tier === 'bronze') {
+        // Find pool of small survival items from dbItems (or general items)
+        const survivalPool = dbItems.filter(i => 
+          (i.tags && (
+            i.tags.toLowerCase().includes('survival') || 
+            i.tags.toLowerCase().includes('utility') || 
+            i.tags.toLowerCase().includes('junk')
+          )) ||
+          i.name.toLowerCase().includes('rope') || 
+          i.name.toLowerCase().includes('torch') || 
+          i.name.toLowerCase().includes('chalk') || 
+          i.name.toLowerCase().includes('ration')
+        )
+        
+        if (survivalPool.length > 0) {
+          // Add 1 to 2 random survival items!
+          const numAdditional = Math.floor(Math.random() * 2) + 1 // 1 or 2 items
+          for (let k = 0; k < numAdditional; k++) {
+            const addPicked = pickRandom(survivalPool)
+            if (addPicked && !contents.some(item => item.name === addPicked.name)) { // avoid duplicate names in same box
+              contents.push({
+                id: crypto.randomUUID(),
+                name: addPicked.name,
+                description: addPicked.description,
+                tier: (addPicked.tier as any) ?? 'common',
+                isEquipped: false,
+                equippedSlot: addPicked.slot as any ?? null,
+                fromLootBox: true,
+                lootBoxTier: tier,
+                boxType,
+              })
+            }
+          }
+        }
+      }
     } else if (mode === 'pick') {
       if (!selectedItem) return
-      name = selectedItem.name
-      desc = selectedItem.description ?? ''
-      itemTier = selectedItem.tier
-      itemSlot = selectedItem.slot
+      contents.push({
+        id: crypto.randomUUID(),
+        name: selectedItem.name,
+        description: selectedItem.description ?? '',
+        tier: selectedItem.tier ?? 'common',
+        isEquipped: false,
+        equippedSlot: selectedItem.slot as any ?? null,
+        fromLootBox: true,
+        lootBoxTier: tier,
+        boxType,
+      })
     } else {
-      name = customName.trim()
-      desc = customDesc.trim()
+      const name = customName.trim()
+      const desc = customDesc.trim()
       if (!name) return
+      contents.push({
+        id: crypto.randomUUID(),
+        name,
+        description: desc,
+        tier: 'common',
+        isEquipped: false,
+        equippedSlot: null,
+        fromLootBox: true,
+        lootBoxTier: tier,
+        boxType,
+      })
     }
 
     send({
@@ -138,17 +197,7 @@ export function LootAssignModal({ characterId, characterName, onClose, send }: L
         id: crypto.randomUUID(),
         tier,
         boxType,
-        contents: [{
-          id: crypto.randomUUID(),
-          name,
-          description: desc,
-          tier: (itemTier as any) ?? 'common',
-          isEquipped: false,
-          equippedSlot: itemSlot as any ?? null,
-          fromLootBox: true,
-          lootBoxTier: tier,
-          boxType, // Also save inside item contents for backup!
-        }],
+        contents,
         state: 'pending',
         assignedTo: characterId,
         assignedAt: Date.now(),

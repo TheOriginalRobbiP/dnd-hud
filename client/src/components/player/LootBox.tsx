@@ -76,7 +76,6 @@ export function LootBox({ lootBox, charId, send, floorState, onLogAction }: Loot
   const specialtyLabel = SPECIALTY_LABELS[boxType] || 'ADVENTURER'
   const aiCommentary = AI_COMMENTARIES[boxType] || AI_COMMENTARIES.adventurer
 
-  const item = lootBox.contents[0]
   const boxImg = LOOTBOX_IMAGES[lootBox.tier] ?? LOOTBOX_IMAGES.bronze
 
   const currentTags = floorState?.currentRoomData?.tags || ''
@@ -151,13 +150,17 @@ export function LootBox({ lootBox, charId, send, floorState, onLogAction }: Loot
           <span className="font-mono-dcc text-[9px] text-hud-muted">DECRYPTED ✓</span>
         </div>
         
-        {item && (
-          <div className="flex items-start gap-4">
-            <img src={boxImg} alt={lootBox.tier} className="w-12 h-12 object-contain opacity-40" />
-            <div className="flex-1">
-              <div className="font-hud text-sm font-semibold text-hud-text uppercase tracking-wider">{item.name}</div>
-              <div className="font-hud text-xs text-hud-muted mt-1 leading-relaxed">{item.description}</div>
-            </div>
+        {lootBox.contents && lootBox.contents.length > 0 && (
+          <div className="flex flex-col gap-3">
+            {lootBox.contents.map((item, idx) => (
+              <div key={item.id || idx} className="flex items-start gap-4 border-b border-hud-border/10 pb-2.5 last:border-0 last:pb-0">
+                <img src={boxImg} alt={lootBox.tier} className="w-10 h-10 object-contain opacity-45 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="font-hud text-sm font-semibold text-hud-text uppercase tracking-wider">{item.name}</div>
+                  <div className="font-hud text-[11px] text-hud-muted mt-0.5 leading-relaxed">{item.description}</div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
