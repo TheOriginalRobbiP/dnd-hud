@@ -68,8 +68,8 @@ export function Battlemap({
       <div
         ref={containerRef}
         style={aspectRatio ? { aspectRatio: `${aspectRatio}` } : {}}
-        className={`relative max-w-full max-h-full bg-[#0a0a0c] border border-hud-border rounded-lg overflow-hidden select-none touch-none transition-all duration-300 ${
-          aspectRatio ? 'shadow-[0_0_20px_rgba(0,0,0,0.8)]' : 'w-full h-full'
+        className={`relative h-full bg-[#0a0a0c] border border-hud-border rounded-lg overflow-hidden select-none touch-none transition-all duration-300 ${
+          aspectRatio ? 'w-auto shadow-[0_0_20px_rgba(0,0,0,0.8)]' : 'w-full'
         }`}
       >
         {/* Dynamic scanlines & retro grid pattern */}
