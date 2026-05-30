@@ -81,7 +81,7 @@ export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign,
               </div>
               <div className="font-hud text-xs text-hud-muted flex items-center gap-1">
                 <span>👁</span>
-                <span>{viewerCount.toLocaleString()}</span>
+                <span>{character.class ? viewerCount.toLocaleString() : '0'}</span>
               </div>
             </div>
           </>
@@ -95,7 +95,7 @@ export function CharacterCard({ character, pendingLootBoxes, send, onLootAssign,
             </div>
             <div className="font-hud text-xs text-hud-muted flex items-center gap-1 flex-shrink-0">
               <span>👁</span>
-              <span>{viewerCount.toLocaleString()}</span>
+              <span>{character.class ? viewerCount.toLocaleString() : '0'}</span>
             </div>
           </div>
         )}

@@ -139,7 +139,7 @@ export function RoleSelector({ characters, sessionActive, onSelect, onCharacterC
             <div className="font-hud text-2xl text-hud-accent tracking-widest">{char.crawlerName}</div>
             <div className="font-hud text-sm text-hud-muted mt-1 leading-none">{char.playerName}</div>
             <div className="font-hud text-[11px] text-hud-muted mt-2 uppercase opacity-60">
-              HP {char.hp}/{char.maxHp} · MP {char.mp}/{char.maxMp} · 👁 {char.viewerCount.toLocaleString()}
+              HP {char.hp}/{char.maxHp} · MP {char.mp}/{char.maxMp} · 👁 {char.class ? char.viewerCount.toLocaleString() : '0'}
             </div>
           </div>
 

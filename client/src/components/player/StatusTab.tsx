@@ -78,7 +78,7 @@ export function StatusTab({ character, floor, allCharacters, activeCharIds, onIn
               <div className="font-hud text-xs text-hud-text tracking-widest uppercase leading-none flex items-center gap-1.5 px-1.5 py-1.5 border border-hud-border bg-hud-panel rounded justify-center font-bold">
                 <span className="text-red-500 animate-pulse text-sm">●</span>
                 <span className="hidden md:inline">LIVE:</span>
-                <span className="text-hud-accent text-sm md:text-base font-extrabold">{viewerCount.toLocaleString()}</span>
+                <span className="text-hud-accent text-sm md:text-base font-extrabold">{character.class ? viewerCount.toLocaleString() : '0'}</span>
               </div>
               <div className="w-12 h-18 md:w-24 md:h-36 md:mx-auto border border-hud-border overflow-hidden relative bg-black/40 rounded-lg">
                 <img src={portrait} alt={crawlerName} className="w-full h-full object-contain object-center opacity-80" />

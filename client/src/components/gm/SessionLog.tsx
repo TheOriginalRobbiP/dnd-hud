@@ -19,7 +19,7 @@ export function SessionLog({ state }: SessionLogProps) {
       ...state.characters.map(c => [
         `${c.crawlerName} (${c.playerName})`,
         `  HP: ${c.hp}/${c.maxHp} | MP: ${c.mp}/${c.maxMp}`,
-        `  Viewers: ${c.viewerCount.toLocaleString()}`,
+        `  Viewers: ${c.class ? c.viewerCount.toLocaleString() : '0'}`,
         `  Status: ${c.isAlive ? 'Alive' : 'DECEASED'}`,
         c.statusEffects.length > 0 ? `  Effects: ${(c.statusEffects as any[]).map((e: any) => e.name).join(', ')}` : '',
         c.achievements.length > 0 ? `  Achievements: ${(c.achievements as any[]).map((a: any) => a.name).join(', ')}` : '',

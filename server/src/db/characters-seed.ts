@@ -26,7 +26,7 @@ const crawlers = [
       { id: crypto.randomUUID(), name: "Werther's Original", description: "Heals 1 HP.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null, isConsumable: true, hpEffect: 1, charges: null },
       { id: crypto.randomUUID(), name: "Werther's Original", description: "Heals 1 HP.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null, isConsumable: true, hpEffect: 1, charges: null },
     ],
-    viewerCount: 1240,
+    viewerCount: 0,
     notes: "Retired bingo hall manager from Wolverhampton. 67. Three recessions, two divorces, one dungeon. She has a son who was in a different sector when the sky cracked. She doesn't talk about it. She keeps moving. BEGINNER FRIENDLY: high HP, forgiving, readable skills.",
   },
   {
@@ -49,7 +49,7 @@ const crawlers = [
       { id: crypto.randomUUID(), name: "Resistance Band", description: "5m of latex. Utility — tie things, trip things, makeshift tourniquet.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null },
       { id: crypto.randomUUID(), name: "Gym Vest", description: "Chest slot. No armour value. +1 CHA. Impressively cut.", tier: 'common', isEquipped: true, equippedSlot: 'chest', fromLootBox: false, lootBoxTier: null },
     ],
-    viewerCount: 980,
+    viewerCount: 0,
     notes: "Personal trainer. Was with a client when it happened. Doesn't know if she made it. Keeps training because stopping means thinking about it. INT 2 — magic permanently unavailable (wetware flag: insufficient processing power). INTERMEDIATE: hits very hard, needs someone watching his back.",
   },
   {
@@ -72,7 +72,7 @@ const crawlers = [
       { id: crypto.randomUUID(), name: "Notebook & Pen", description: "She's been writing everything down since the sky cracked. The wetware offers digital notes. She prefers paper.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null },
       { id: crypto.randomUUID(), name: "Reading Light (Clip-On)", description: "5-hour battery. Useful in dark rooms. She brought it for her commute book.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null },
     ],
-    viewerCount: 1450,
+    viewerCount: 0,
     notes: "Librarian. 22 years of catalogue work, 40,000 books — all gone. She's cataloguing the dungeon instead. Highest viewer count (the audience already has a favourite). ADVANCED: fragile, magic potential, high skill ceiling. Protect her.",
   },
   {
@@ -95,7 +95,7 @@ const crawlers = [
       { id: crypto.randomUUID(), name: "Key Fob (Van, No Van)", description: "He still has the key. The van is gone. The wetware won't let him delete it.", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null },
       { id: crypto.randomUUID(), name: "Thermos (Coffee, Lukewarm)", description: "3 uses. Each use: restore 1 MP or gain Focused Buff (+1 to next INT roll).", tier: 'common', isEquipped: false, equippedSlot: null, fromLootBox: false, lootBoxTier: null, isConsumable: true, mpEffect: 1, charges: 3 },
     ],
-    viewerCount: 1100,
+    viewerCount: 0,
     notes: "Delivery driver. Has 6 deliveries left on his route. Keeps checking his phone to see if the app updated. It hasn't. He's going to finish the route. He doesn't know what that means down here. BEGINNER FRIENDLY: utility, hard to panic, clear role.",
   },
 ]

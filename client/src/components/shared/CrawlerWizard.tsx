@@ -386,7 +386,7 @@ export function CrawlerWizard({ onClose, onComplete }: CrawlerWizardProps) {
         skills,
         equipment: {}, // Server auto-maps isEquipped startingInventory items into equipment slots!
         inventory: startingInventory,
-        viewerCount: 500,
+        viewerCount: 0,
         notes: [
           wizard.preJob && `Pre-dungeon: ${wizard.preJob}`,
           wizard.pastTrauma && `Past trauma: ${wizard.pastTrauma}`,

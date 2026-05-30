@@ -22,7 +22,7 @@ export function CharacterCreateModal({ onClose, onCreated, send }: CharacterCrea
   const [maxHp, setMaxHp] = useState('10')
   const [maxMp, setMaxMp] = useState('0')
   const [stats, setStats] = useState({ STR: 4, DEX: 4, CON: 4, INT: 4, CHA: 4 })
-  const [viewerCount, setViewerCount] = useState('1000')
+  const [viewerCount, setViewerCount] = useState('0')
   const [skills, setSkills] = useState<Skill[]>([])
   const [addingSkill, setAddingSkill] = useState(false)
   const [skillForm, setSkillForm] = useState<Skill>({ name: '', level: 1, effortType: 'basic', description: '' })
