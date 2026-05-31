@@ -101,6 +101,8 @@ function applyPatch(state: AppState, msg: WSMessage): AppState {
       return { ...state, characters: state.characters.map(c => c.id === msg.charId ? { ...c, isAlive: true, hp: msg.hp } : c) }
     case 'room_target_update':
       return { ...state, floor: { ...state.floor, roomTarget: msg.target } }
+    case 'display_view_mode_update':
+      return { ...state, floor: { ...state.floor, displayViewMode: msg.mode as any } }
     case 'floor_update':
       return { ...state, floor: { ...state.floor, ...msg.floor } }
     case 'collapse_timer_start':
