@@ -54,12 +54,12 @@ export function Battlemap({
 
     const handlePointerUp = (upEvent: PointerEvent) => {
       target.releasePointerCapture(upEvent.pointerId)
-      container.removeEventListener('pointermove', handlePointerMove)
-      container.removeEventListener('pointerup', handlePointerUp)
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
     }
 
-    container.addEventListener('pointermove', handlePointerMove)
-    container.addEventListener('pointerup', handlePointerUp)
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
   }
 
   return (
@@ -123,7 +123,7 @@ export function Battlemap({
 
           const rawTokens: RenderToken[] = [
             ...characters
-              .filter((c) => c.isActive && c.isAlive && (!activeCharIds || activeCharIds.includes(c.id)))
+              .filter((c) => c.isActive && c.isAlive && (!activeCharIds || activeCharIds.length === 0 || activeCharIds.includes(c.id) || c.id === myCharacterId))
               .map((c) => ({
                 id: c.id,
                 isMob: false,
@@ -223,7 +223,7 @@ export function Battlemap({
                     top: `${posY}%`,
                     transform: 'translate(-50%, -50%)',
                   }}
-                  className={`absolute z-20 flex flex-col items-center group transition-all duration-150 ease-out select-none ${
+                  className={`absolute z-20 flex flex-col items-center group transition-all duration-150 ease-out select-none touch-none ${
                     canDrag ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
                   }`}
                 >
@@ -280,7 +280,7 @@ export function Battlemap({
                     top: `${posY}%`,
                     transform: 'translate(-50%, -50%)',
                   }}
-                  className={`absolute z-20 flex flex-col items-center group transition-all duration-150 ease-out select-none ${
+                  className={`absolute z-20 flex flex-col items-center group transition-all duration-150 ease-out select-none touch-none ${
                     canDrag ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
                   }`}
                 >
