@@ -262,13 +262,13 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                 actionLog={actionLog}
               />
             </div>
-            <div className={tab === 'skills' ? 'block' : 'hidden'}>
+            <div className={tab === 'skills' ? 'block md:hidden' : 'hidden'}>
               <SkillsTab character={character} onSelectAction={setSelectedAction} selectedActionId={selectedAction?.id} />
             </div>
             <div className={tab === 'fame' ? 'block' : 'hidden md:hidden'}>
               <FameTab character={character} floorNumber={state.floor.floorNumber} locked={state.floor.preTutorialActive} />
             </div>
-            <div className={tab === 'map' ? 'block h-[calc(100vh-180px)] md:h-full p-2' : 'hidden'}>
+            <div className={tab === 'map' ? 'block md:hidden h-[calc(100vh-180px)] p-2' : 'hidden'}>
               {state.floor.displayViewMode === 'scene' && (state.floor.currentRoomData?.sceneArt || state.floor.currentRoomData?.flavourArt) ? (
                 <div className="relative w-full h-full bg-[#0a0a0c] border border-hud-border rounded-lg overflow-hidden flex flex-col justify-end">
                   <img
@@ -303,10 +303,10 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                 />
               )}
             </div>
-            <div className={tab === 'rules' ? 'block' : 'hidden'}>
+            <div className={tab === 'rules' ? 'block md:hidden' : 'hidden'}>
               <RulesTab />
             </div>
-            <div className={tab === 'notes' ? 'block h-full p-2' : 'hidden'}>
+            <div className={tab === 'notes' ? 'block md:hidden h-full p-2' : 'hidden'}>
               <JournalEditor
                 characterId={character.id}
                 crawlerName={character.crawlerName}
