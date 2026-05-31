@@ -316,30 +316,120 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
             </div>
           </div>
           
-          {/* Desktop-only Middle Column (Hero Dice Roller & Skills) */}
-          <div className="hidden md:flex md:flex-col md:p-8 md:gap-8 md:overflow-y-auto bg-hud-bg">
-             {/* Middle column contains the dice roller + skills on desktop */}
-             <div className="flex-1 flex flex-col gap-8">
-               <DiceHero 
-                 character={character} 
-                 floor={state.floor} 
-                 send={send} 
-                 selectedAction={selectedAction} 
-                 onClearSelection={() => setSelectedAction(null)} 
-               />
-               
-               <Hotlist 
-                 character={character} 
-                 send={send} 
-                 onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} 
-                 locked={state.floor.preTutorialActive}
-               />
-               
-               <div className="bg-hud-panel border border-hud-border rounded-xl p-6">
-                 <div className="font-mono text-xs text-hud-muted tracking-[0.2em] mb-4 uppercase border-b border-hud-border pb-2">Skills & Abilities</div>
-                 <SkillsTab character={character} onSelectAction={setSelectedAction} selectedActionId={selectedAction?.id} />
-               </div>
-             </div>
+          {/* Desktop Middle Column - Dynamically swaps based on tab selection! */}
+          <div className="hidden md:flex md:flex-col md:p-6 md:gap-5 md:overflow-hidden bg-hud-bg">
+            
+            {/* Desktop Tab Bar */}
+            <div className="flex gap-1 bg-hud-panel border border-hud-border/30 p-0.5 rounded flex-shrink-0 select-none">
+              {TABS.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className={`flex-1 font-hud text-[10px] py-1.5 rounded transition-all font-bold tracking-widest uppercase text-center ${
+                    tab === t.id
+                      ? 'bg-hud-accent text-hud-bg font-extrabold shadow-sm'
+                      : 'text-hud-muted hover:text-hud-text hover:bg-hud-panel/40'
+                  }`}
+                >
+                  {t.id === 'status' ? '🎲 ROLLER' : t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Scrollable Content Container */}
+            <div className="flex-1 overflow-y-auto min-h-0">
+              {tab === 'status' && (
+                <div className="flex flex-col gap-6">
+                  <DiceHero 
+                    character={character} 
+                    floor={state.floor} 
+                    send={send} 
+                    selectedAction={selectedAction} 
+                    onClearSelection={() => setSelectedAction(null)} 
+                  />
+                  
+                  <Hotlist 
+                    character={character} 
+                    send={send} 
+                    onCharacterUpdate={() => send({ type: 'full_state_sync_request' } as any)} 
+                    locked={state.floor.preTutorialActive}
+                  />
+                  
+                  <div className="bg-hud-panel border border-hud-border rounded-xl p-6">
+                    <div className="font-mono text-xs text-hud-muted tracking-[0.2em] mb-4 uppercase border-b border-hud-border pb-2">Skills & Abilities</div>
+                    <SkillsTab character={character} onSelectAction={setSelectedAction} selectedActionId={selectedAction?.id} />
+                  </div>
+                </div>
+              )}
+
+              {tab === 'map' && (
+                <div className="h-full flex flex-col min-h-[400px]">
+                  {state.floor.displayViewMode === 'scene' && (state.floor.currentRoomData?.sceneArt || state.floor.currentRoomData?.flavourArt) ? (
+                    <div className="relative w-full h-full min-h-[350px] bg-[#0a0a0c] border border-hud-border rounded-lg overflow-hidden flex flex-col justify-end">
+                      <img
+                        src={state.floor.currentRoomData.sceneArt || state.floor.currentRoomData.flavourArt}
+                        alt="Scene"
+                        className="absolute inset-0 w-full h-full object-cover opacity-85"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
+                      <div className="relative z-10 p-5 flex flex-col gap-1">
+                        <span className="font-hud text-[8px] text-[#f59e0b] tracking-[0.25em] uppercase font-bold">NARRATIVE VIEW ACTIVE</span>
+                        <span className="font-hud text-sm text-hud-text font-extrabold uppercase">{state.floor.currentRoomData.roomName}</span>
+                        <span className="font-hud text-[10px] text-hud-muted mt-1 leading-relaxed max-w-[280px]">
+                          The dungeon is currently in narrative mode. The GM will cross-fade to the tactical combat map when positioning matters!
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <Battlemap
+                      mapUrl={state.floor.currentRoomData?.battlemapArt || state.floor.currentRoomData?.flavourArt || null}
+                      characters={state.characters}
+                      activeMobs={state.floor.activeMobs}
+                      isEditable={false}
+                      myCharacterId={character.id}
+                      activeCharIds={activeCharIds}
+                      onTokenMove={(id, isMob, posX, posY) => {
+                        if (!isMob) {
+                          send({ type: 'token_move', charId: id, posX, posY })
+                        } else {
+                          send({ type: 'token_move', mobId: id, posX, posY })
+                        }
+                      }}
+                    />
+                  )}
+                </div>
+              )}
+
+              {tab === 'skills' && (
+                <div className="bg-hud-panel border border-hud-border rounded-xl p-4">
+                  <SkillsTab character={character} onSelectAction={setSelectedAction} selectedActionId={selectedAction?.id} />
+                </div>
+              )}
+
+              {tab === 'notes' && (
+                <div className="h-full flex flex-col bg-hud-panel border border-hud-border rounded-xl p-4 min-h-[400px]">
+                  <JournalEditor
+                    characterId={character.id}
+                    crawlerName={character.crawlerName}
+                    initialNotes={character.playerNotes || ''}
+                    send={send}
+                  />
+                </div>
+              )}
+
+              {tab === 'rules' && (
+                <div className="bg-hud-panel border border-hud-border rounded-xl p-4">
+                  <RulesTab />
+                </div>
+              )}
+
+              {tab === 'fame' && (
+                <div className="bg-hud-panel border border-hud-border rounded-xl p-4">
+                  <FameTab character={character} floorNumber={state.floor.floorNumber} locked={state.floor.preTutorialActive} />
+                </div>
+              )}
+            </div>
+
           </div>
 
         {/* Desktop-only Right Column (Fame, Inventory, Party) */}
