@@ -151,6 +151,22 @@ function applyPatch(state: AppState, msg: WSMessage): AppState {
       return { ...state, characters: state.characters.map(c => c.id === msg.charId ? { ...c, playerNotes: msg.notes } : c) }
     case 'ai_favour_update':
       return { ...state, characters: state.characters.map(c => c.id === msg.charId ? { ...c, aiFavour: Math.max(0, c.aiFavour + msg.delta) } : c) }
+    case 'token_move':
+      if (msg.charId) {
+        return {
+          ...state,
+          characters: state.characters.map(c => c.id === msg.charId ? { ...c, tokenPosX: msg.posX, tokenPosY: msg.posY } : c)
+        }
+      } else if (msg.mobId) {
+        return {
+          ...state,
+          floor: {
+            ...state.floor,
+            activeMobs: state.floor.activeMobs.map(m => m.id === msg.mobId ? { ...m, posX: msg.posX, posY: msg.posY } : m)
+          }
+        }
+      }
+      return state;
     case 'session_start':
       return { ...state, floor: { ...state.floor, sessionActive: true } }
     case 'session_stop':

@@ -20,9 +20,44 @@ export function RoomPanel({ floor, send }: RoomPanelProps) {
   const [targetVal, setTargetVal] = useState(String(floor.roomTarget))
   const [editingNeighbourhood, setEditingNeighbourhood] = useState(false)
   const [neighbourhoodVal, setNeighbourhoodVal] = useState(floor.neighbourhoodName)
-  const [roomNotes, setRoomNotes] = useState('')
   const [timerSecs, setTimerSecs] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // ── Persistent GM campaign scratchpad & beats ──
+  const storageKeyPrefix = `hud:gm:scratchpad:${floor.floorNumber}:${floor.neighbourhoodName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`
+  const [scratchpad, setScratchpad] = useState('')
+  const [beats, setBeats] = useState<Array<{ id: string; text: string; done: boolean }>>([])
+
+  useEffect(() => {
+    const savedNotes = localStorage.getItem(`${storageKeyPrefix}:notes`) ?? ''
+    setScratchpad(savedNotes)
+
+    const savedBeats = localStorage.getItem(`${storageKeyPrefix}:beats`)
+    if (savedBeats) {
+      try {
+        setBeats(JSON.parse(savedBeats))
+      } catch {
+        setBeats([])
+      }
+    } else {
+      setBeats([
+        { id: 'beat-1', text: 'Describe room transitions with unhinged sci-fi details', done: false },
+        { id: 'beat-2', text: 'Present any nearby vendor or alien sponsor screens', done: false },
+        { id: 'beat-3', text: 'Build dramatic tension before spawning mobs', done: false },
+        { id: 'beat-4', text: 'Seed foreshadowing clues for the boss encounter', done: false },
+      ])
+    }
+  }, [floor.floorNumber, floor.neighbourhoodName])
+
+  const saveScratchpad = (val: string) => {
+    setScratchpad(val)
+    localStorage.setItem(`${storageKeyPrefix}:notes`, val)
+  }
+
+  const saveBeats = (newBeats: typeof beats) => {
+    setBeats(newBeats)
+    localStorage.setItem(`${storageKeyPrefix}:beats`, JSON.stringify(newBeats))
+  }
 
   useEffect(() => { setTargetVal(String(floor.roomTarget)) }, [floor.roomTarget])
 
@@ -125,8 +160,14 @@ export function RoomPanel({ floor, send }: RoomPanelProps) {
           </button>
         )}
 
-        {/* Room notes — collapsed into a small button that opens inline */}
-        <RoomNotesButton notes={roomNotes} onChange={setRoomNotes} />
+        {/* Campaign Notes & Scratchpad Button */}
+        <CampaignNotesButton 
+          scratchpad={scratchpad} 
+          beats={beats} 
+          onScratchpadChange={saveScratchpad} 
+          onBeatsChange={saveBeats} 
+          floor={floor}
+        />
       </div>
 
       {/* GM Quick Roller Panel */}
@@ -142,25 +183,178 @@ export function RoomPanel({ floor, send }: RoomPanelProps) {
   )
 }
 
-function RoomNotesButton({ notes, onChange }: { notes: string; onChange: (v: string) => void }) {
+interface CampaignNotesButtonProps {
+  scratchpad: string
+  beats: Array<{ id: string; text: string; done: boolean }>
+  onScratchpadChange: (val: string) => void
+  onBeatsChange: (beats: Array<{ id: string; text: string; done: boolean }>) => void
+  floor: FloorState
+}
+
+function CampaignNotesButton({ scratchpad, beats, onScratchpadChange, onBeatsChange, floor }: CampaignNotesButtonProps) {
   const [open, setOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<'beats' | 'scratchpad'>('beats')
+  const [newBeatText, setNewBeatText] = useState('')
+
+  const handleToggleBeat = (id: string) => {
+    const updated = beats.map(b => b.id === id ? { ...b, done: !b.done } : b)
+    onBeatsChange(updated)
+  }
+
+  const handleAddBeat = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newBeatText.trim()) return
+    const newBeat = {
+      id: `beat-${Date.now()}`,
+      text: newBeatText.trim(),
+      done: false
+    }
+    onBeatsChange([...beats, newBeat])
+    setNewBeatText('')
+  }
+
+  const handleDeleteBeat = (id: string) => {
+    onBeatsChange(beats.filter(b => b.id !== id))
+  }
+
+  const activeBeatsCount = beats.filter(b => b.done).length
+
   return (
     <div className="relative ml-auto">
       <button onClick={() => setOpen(o => !o)}
-        className={`font-hud text-xs border px-3 py-1 transition-colors ${notes.trim() ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'}`}>
-        {notes.trim() ? '📝 NOTES ●' : '📝 NOTES'}
+        className={`font-hud text-xs border px-3 py-1 transition-colors flex items-center gap-1.5 ${
+          scratchpad.trim() || beats.some(b => b.done) 
+            ? 'border-hud-accent text-hud-accent bg-hud-accent/5' 
+            : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'
+        }`}>
+        <span>📝</span>
+        <span>CAMPAIGN PLANNER</span>
+        {beats.length > 0 && (
+          <span className="text-[10px] bg-hud-bg px-1 border border-hud-border/40 text-hud-accent font-bold rounded">
+            {activeBeatsCount}/{beats.length}
+          </span>
+        )}
       </button>
+
       {open && (
-        <div className="absolute right-0 top-8 z-20 w-72 bg-hud-panel border border-hud-border p-3 flex flex-col gap-2 shadow-xl">
-          <div className="font-hud text-xs text-hud-muted tracking-wider">ROOM NOTES (GM ONLY)</div>
-          <textarea value={notes} onChange={e => onChange(e.target.value)} rows={4}
-            autoFocus
-            placeholder="Private notes — not synced to players..."
-            className="w-full bg-hud-bg border border-hud-border text-hud-text font-hud text-sm p-2 focus:border-hud-accent outline-none resize-none" />
-          <button onClick={() => setOpen(false)}
-            className="font-hud text-xs border border-hud-border text-hud-muted px-2 py-1 hover:border-hud-accent self-end">
-            DONE
-          </button>
+        <div className="absolute right-0 top-8 z-30 w-[380px] bg-hud-panel border border-hud-border p-4 flex flex-col gap-3 shadow-2xl rounded">
+          
+          {/* Header */}
+          <div className="flex justify-between items-center border-b border-hud-border/20 pb-2">
+            <div className="flex flex-col">
+              <span className="font-hud text-[9px] text-hud-accent uppercase tracking-widest font-bold">GM CAMPAIGN DIRECTORY</span>
+              <span className="font-hud text-xs text-hud-text font-semibold uppercase truncate max-w-[220px]">
+                FL{floor.floorNumber}: {floor.neighbourhoodName}
+              </span>
+            </div>
+            <button onClick={() => setOpen(false)} className="text-hud-muted hover:text-hud-text text-sm">✕</button>
+          </div>
+
+          {/* Double Tabs */}
+          <div className="grid grid-cols-2 gap-1 bg-hud-bg border border-hud-border/30 p-0.5 rounded">
+            <button
+              onClick={() => setActiveTab('beats')}
+              className={`py-1.5 rounded text-[10px] font-bold tracking-widest uppercase transition-colors flex items-center justify-center gap-1.5 ${
+                activeTab === 'beats' ? 'bg-hud-accent text-hud-bg font-extrabold' : 'text-hud-muted hover:text-hud-text'
+              }`}
+            >
+              <span>📋</span> STORY BEATS
+            </button>
+            <button
+              onClick={() => setActiveTab('scratchpad')}
+              className={`py-1.5 rounded text-[10px] font-bold tracking-widest uppercase transition-colors flex items-center justify-center gap-1.5 ${
+                activeTab === 'scratchpad' ? 'bg-hud-accent text-hud-bg font-extrabold' : 'text-hud-muted hover:text-hud-text'
+              }`}
+            >
+              <span>📝</span> SCRATCHPAD
+            </button>
+          </div>
+
+          {/* TAB 1: STORY BEATS Checklist */}
+          {activeTab === 'beats' && (
+            <div className="flex flex-col gap-2.5">
+              <form onSubmit={handleAddBeat} className="flex gap-1.5">
+                <input
+                  value={newBeatText}
+                  onChange={e => setNewBeatText(e.target.value)}
+                  placeholder="Add a storytelling beat/reveal..."
+                  className="flex-1 bg-hud-bg border border-hud-border/40 text-hud-text font-hud text-xs px-2.5 py-1.5 outline-none focus:border-hud-accent/60 placeholder:text-hud-muted/50"
+                />
+                <button
+                  type="submit"
+                  className="font-hud text-[11px] border border-hud-accent text-hud-accent bg-hud-accent/10 px-3 hover:bg-hud-accent hover:text-hud-bg font-extrabold rounded-[2px]"
+                >
+                  +
+                </button>
+              </form>
+
+              <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto pr-1 scrollbar-thin">
+                {beats.length === 0 ? (
+                  <div className="text-center font-hud text-[11px] text-hud-muted italic py-6 border border-dashed border-hud-border/30 rounded">
+                    No story beats listed. Keep it free-flow!
+                  </div>
+                ) : (
+                  beats.map(beat => (
+                    <div
+                      key={beat.id}
+                      className={`flex items-center justify-between gap-2 border p-2 bg-hud-bg/30 transition-all rounded-[3px] ${
+                        beat.done ? 'border-hud-border/20 opacity-55' : 'border-hud-border/40 hover:border-hud-accent/20'
+                      }`}
+                    >
+                      <label className="flex items-start gap-2.5 min-w-0 flex-1 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={beat.done}
+                          onChange={() => handleToggleBeat(beat.id)}
+                          className="mt-0.5 accent-hud-accent"
+                        />
+                        <span className={`font-hud text-xs text-hud-text leading-snug break-words ${beat.done ? 'line-through text-hud-muted' : ''}`}>
+                          {beat.text}
+                        </span>
+                      </label>
+                      <button
+                        onClick={() => handleDeleteBeat(beat.id)}
+                        className="text-hud-muted hover:text-red-400 text-xs px-1"
+                        title="Delete this beat"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: PERSISTENT SCRATCHPAD */}
+          {activeTab === 'scratchpad' && (
+            <div className="flex flex-col gap-2">
+              <textarea
+                value={scratchpad}
+                onChange={e => onScratchpadChange(e.target.value)}
+                rows={6}
+                placeholder="Private GM notebook — auto-saves instantly and stays specific to this level/neighbourhood..."
+                className="w-full bg-hud-bg border border-hud-border/40 text-hud-text font-hud text-xs p-2.5 focus:border-hud-accent outline-none resize-none leading-relaxed rounded"
+              />
+              <span className="font-hud text-[8px] text-hud-muted italic text-right uppercase">
+                ✓ Auto-saved to local browser storage
+              </span>
+            </div>
+          )}
+
+          {/* Footer */}
+          <div className="flex justify-between items-center border-t border-hud-border/10 pt-2 mt-1">
+            <span className="font-hud text-[8px] text-hud-muted italic">
+              Floor {floor.floorNumber} Campaign Directory
+            </span>
+            <button
+              onClick={() => setOpen(false)}
+              className="font-hud text-[9px] border border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent px-3 py-1 rounded-[2px]"
+            >
+              CLOSE
+            </button>
+          </div>
+
         </div>
       )}
     </div>

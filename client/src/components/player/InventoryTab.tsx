@@ -212,6 +212,7 @@ export function InventoryTab({
     
     // Check if this signature is hotlisted
     const isHotlisted = stack.items.some((i: any) => i.isHotlisted)
+    const soundId = getSoundIdFromItem(item)
 
     return (
       <div key={item.id} className="border border-hud-border bg-hud-panel rounded bg-opacity-45">
@@ -285,6 +286,18 @@ export function InventoryTab({
                 <span>{isHotlisted ? '⭐' : '☆'}</span>
                 <span>{isHotlisted ? 'REMOVE FROM HOTLIST' : 'PIN TO HOTLIST'}</span>
               </button>
+              {soundId && (
+                <button
+                  onClick={() => {
+                    send({ type: 'play_sound', soundId })
+                    onLogAction?.(`Activated sound for item: ${item.name} 🔊`, 'item')
+                  }}
+                  className="font-hud text-[10px] border border-hud-accent text-hud-accent hover:bg-hud-accent/15 px-2.5 py-1 rounded transition-colors flex items-center gap-1 bg-hud-panel"
+                >
+                  <span>🔊</span>
+                  <span>PLAY SOUND</span>
+                </button>
+              )}
             </div>
 
             {consumable ? (
@@ -571,4 +584,23 @@ export function InventoryTab({
       )}
     </div>
   )
+}
+
+function getSoundIdFromItem(item: any): string | null {
+  if (!item) return null
+  if (item.soundId) return item.soundId
+  const desc = (item.description || '').toLowerCase()
+  const name = (item.name || '').toLowerCase()
+  
+  // Parse explicit [sound:name] tags
+  const match = desc.match(/\[sound:\s*([a-z0-9_-]+)\]/i)
+  if (match) return match[1]
+  
+  // Keyword fallbacks for default sounds on existing items
+  if (name.includes('slipper') || name.includes('predator')) return 'loot_legendary'
+  if (name.includes('werther') || name.includes('candy') || name.includes('sweet')) return 'achievement_standard'
+  if (name.includes('beacon') || name.includes('sword') || name.includes('glow')) return 'ai_favour'
+  if (name.includes('protein') || name.includes('vest') || name.includes('gym')) return 'achievement_standard'
+  
+  return null
 }

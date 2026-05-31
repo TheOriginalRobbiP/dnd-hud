@@ -287,7 +287,7 @@ export function DiceHero({ character, floor, send, selectedAction, onClearSelect
           <div className="text-center">
             {result.isWeaponAttack ? (
               <div className={`font-hud text-sm tracking-wider font-bold uppercase ${result.pass ? 'text-green-400' : 'text-red-400'}`}>
-                {result.pass ? '🎯 HIT' : '✗ MISS'} ({result.isPhysical ? 'physical' : 'd20'} {result.raw} + {checkMod} vs {result.target})
+                {activeAction?.type === 'weapon' ? (result.pass ? '🎯 HIT' : '✗ MISS') : (result.pass ? '✓ SUCCESS' : '✗ FAILURE')} ({result.isPhysical ? 'physical' : 'd20'} {result.raw} + {checkMod} vs {result.target})
               </div>
             ) : result.isWeaponDamage ? (
               <div className="font-hud text-sm text-amber-400 tracking-wider font-bold uppercase">
@@ -345,13 +345,17 @@ export function DiceHero({ character, floor, send, selectedAction, onClearSelect
         <>
           <div className="flex gap-2.5 justify-center flex-wrap w-full border-b border-hud-border/20 pb-5 mb-5">
             {DICE.map(d => (
-              <button key={d} onClick={() => triggerRoll(d)} disabled={rolling}
+              <button key={d} onClick={() => d === 20 && activeAction ? triggerActionCheck() : triggerRoll(d)} disabled={rolling}
                 className={`font-hud transition-all rounded-lg disabled:opacity-50 ${
                   d === 20 
                     ? 'border border-hud-accent text-hud-accent bg-hud-accent/10 px-5 py-3 text-base flex-1 min-w-[120px] font-bold tracking-wider' 
                     : 'border border-hud-border text-hud-text hover:border-hud-accent px-4 py-2.5 text-xs w-[68px]'
                 }`}>
-                {d === 20 ? (rollMode === 'manual' ? 'ENTER D20' : 'ROLL D20') : `${rollMode === 'manual' ? 'd' : 'd'}${d}`}
+                {d === 20 ? (
+                  activeAction 
+                    ? `${rollMode === 'manual' ? 'ENTER' : 'ROLL'} CHECK (${checkMod >= 0 ? '+' : ''}${checkMod})`
+                    : (rollMode === 'manual' ? 'ENTER D20' : 'ROLL D20')
+                ) : `${rollMode === 'manual' ? 'd' : 'd'}${d}`}
               </button>
             ))}
           </div>
