@@ -174,6 +174,33 @@ function App() {
     send({ type: 'full_state_sync_request' } as any)
   }, [send])
 
+  if (role === 'gm') {
+    // 1. GM needs credentials login
+    if (!token) return (
+      <ThemeProvider campaign={campaignInfo}>
+        <GMAuthGate
+          onLoginSuccess={handleLoginSuccess}
+          onBack={() => {
+            localStorage.removeItem(ROLE_KEY)
+            setRole(null)
+            window.location.pathname = '/'
+          }}
+        />
+      </ThemeProvider>
+    )
+
+    // 2. GM on root "/" or without active campaign should see their Campaign Selector
+    if (!activeCampaignId || !route) return (
+      <ThemeProvider campaign={campaignInfo}>
+        <GMCampaignDashboard
+          token={token}
+          onSelectCampaign={handleSelectCampaign}
+          onLogout={handleLogout}
+        />
+      </ThemeProvider>
+    )
+  }
+
   // 1. If on root `/` (No Campaign selected or parsed), show PIN joining panel or login link
   if (!route) {
     return (
@@ -232,31 +259,6 @@ function App() {
   }
 
   if (role === 'gm') {
-    // GM needs credentials login
-    if (!token) return (
-      <ThemeProvider campaign={campaignInfo}>
-        <GMAuthGate
-          onLoginSuccess={handleLoginSuccess}
-          onBack={() => {
-            localStorage.removeItem(ROLE_KEY)
-            setRole(null)
-            window.location.pathname = '/'
-          }}
-        />
-      </ThemeProvider>
-    )
-
-    // General GM Campaign Selector (if visiting general /c/:slug but missing activeCampaignId link or similar)
-    if (!activeCampaignId) return (
-      <ThemeProvider campaign={campaignInfo}>
-        <GMCampaignDashboard
-          token={token}
-          onSelectCampaign={handleSelectCampaign}
-          onLogout={handleLogout}
-        />
-      </ThemeProvider>
-    )
-
     // Render full GMDashboard once authorized & campaign is selected
     if (!state) return <div className="h-screen bg-hud-bg flex items-center justify-center font-hud text-hud-muted animate-pulse">SYNCING STATE...</div>
     
