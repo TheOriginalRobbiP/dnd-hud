@@ -216,7 +216,7 @@ export function GMDashboard({
 
         {gmMode === 'items' && (
           <div className="flex-1 overflow-hidden flex flex-col pb-12 md:pb-0">
-            <ItemDatabasePanel />
+            <ItemDatabasePanel campaign={state.campaign} />
           </div>
         )}
 
@@ -258,7 +258,7 @@ export function GMDashboard({
                   />
                 </div>
                 <div className="border-l border-hud-border flex flex-col overflow-y-auto">
-                  <RoomPanel floor={state.floor} send={send} />
+                  <RoomPanel floor={state.floor} send={send} campaign={state.campaign} />
                 </div>
               </div>
             </div>

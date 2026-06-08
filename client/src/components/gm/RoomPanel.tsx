@@ -6,6 +6,7 @@ import { GMDiceRoller } from './GMDiceRoller'
 interface RoomPanelProps {
   floor: FloorState
   send: (msg: WSMessage) => void
+  campaign?: any
 }
 
 function formatTime(secs: number) {
@@ -15,7 +16,7 @@ function formatTime(secs: number) {
   return `${m}:${s}`
 }
 
-export function RoomPanel({ floor, send }: RoomPanelProps) {
+export function RoomPanel({ floor, send, campaign }: RoomPanelProps) {
   const [editingTarget, setEditingTarget] = useState(false)
   const [targetVal, setTargetVal] = useState(String(floor.roomTarget))
   const [editingNeighbourhood, setEditingNeighbourhood] = useState(false)
@@ -177,7 +178,7 @@ export function RoomPanel({ floor, send }: RoomPanelProps) {
 
       {/* ── Mob tracker — gets all remaining space ─────────── */}
       <div className="flex-1 overflow-y-auto">
-        <MobTracker floor={floor} send={send} />
+        <MobTracker floor={floor} send={send} campaign={campaign} />
       </div>
     </div>
   )

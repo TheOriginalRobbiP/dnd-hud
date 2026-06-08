@@ -7,9 +7,10 @@ import type { Mob, WSMessage, FloorState } from '../../types'
 interface MobTrackerProps {
   floor: FloorState
   send: (msg: WSMessage) => void
+  campaign?: any
 }
 
-export function MobTracker({ floor, send }: MobTrackerProps) {
+export function MobTracker({ floor, send, campaign }: MobTrackerProps) {
   const { activeMobs: mobs, floorNumber: currentFloor, bonePile, currentRoomData } = floor
   const [adding, setAdding] = useState(false)
   const [showBestiary, setShowBestiary] = useState(false)
@@ -143,6 +144,7 @@ export function MobTracker({ floor, send }: MobTrackerProps) {
       {showBestiary && (
         <BestiaryPicker
           currentFloor={currentFloor}
+          campaign={campaign}
           onClose={() => setShowBestiary(false)}
           onSpawn={(mob) => {
             send({ type: 'mob_add', mob: { id: crypto.randomUUID(), ...mob, effortType: mob.effortType as 'basic' | 'weapon' | 'magic' } })
