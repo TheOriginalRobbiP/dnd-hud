@@ -9,6 +9,7 @@ import { GMRulesPanel } from './GMRulesPanel'
 import { SoundboardPanel } from './SoundboardPanel'
 import { CharacterBar } from './CharacterBar'
 import { ItemDatabasePanel } from './ItemDatabasePanel'
+import { GMCampaignSettings } from './GMCampaignSettings'
 import type { DirectMessage } from '../../hooks/useWebSocket'
 
 interface GMDashboardProps {
@@ -20,7 +21,7 @@ interface GMDashboardProps {
   onDMEcho: (dm: DirectMessage) => void
 }
 
-type GmMode = 'plan' | 'session' | 'sound' | 'rules' | 'items'
+type GmMode = 'plan' | 'session' | 'sound' | 'rules' | 'items' | 'settings'
 type NotesSize = 'sm' | 'md' | 'lg'
 type SessionMobileTab = 'map' | 'room' | 'log'
 
@@ -186,6 +187,12 @@ export function GMDashboard({
           >
             📦 ITEMS
           </button>
+          <button
+            onClick={() => setGmMode('settings')}
+            className={`font-hud text-xs border px-2 py-1 transition-colors ${gmMode === 'settings' ? 'border-hud-accent text-hud-accent' : 'border-hud-border text-hud-muted hover:border-hud-accent hover:text-hud-accent'}`}
+          >
+            ⚙️ SETTINGS
+          </button>
         </div>
 
         <div className="flex items-center gap-3 flex-shrink-0">
@@ -229,6 +236,12 @@ export function GMDashboard({
         {gmMode === 'items' && (
           <div className="flex-1 overflow-hidden flex flex-col pb-12 md:pb-0">
             <ItemDatabasePanel campaign={state.campaign} />
+          </div>
+        )}
+
+        {gmMode === 'settings' && (
+          <div className="flex-1 overflow-hidden flex flex-col pb-12 md:pb-0">
+            <GMCampaignSettings campaign={state.campaign} onUpdateCampaign={() => {}} />
           </div>
         )}
 

@@ -73,4 +73,16 @@ describe('Campaigns Router Tests', () => {
     const data = await res.json()
     expect(data.error).toBe('Campaign not found for this PIN')
   })
+
+  it('PATCH /api/campaigns/:id should reject unauthorized requests with 401', async () => {
+    const res = await campaignsRouter.request('/some-uuid', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'New Name' }),
+    })
+
+    expect(res.status).toBe(401)
+    const data = await res.json()
+    expect(data.error).toBe('Unauthorized')
+  })
 })

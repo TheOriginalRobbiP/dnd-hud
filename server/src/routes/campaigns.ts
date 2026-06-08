@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { db } from '../db/client.js'
 import { campaigns, floorState } from '../db/schema.js'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { verify } from 'hono/jwt'
 
 export const campaignsRouter = new Hono()
@@ -203,6 +203,62 @@ campaignsRouter.get('/by-pin/:pin', async (c) => {
 
     return c.json(camp)
   } catch (error: any) {
+    return c.json({ error: error.message }, 500)
+  }
+})
+
+// PATCH /api/campaigns/:id — Update campaign settings (GM only)
+campaignsRouter.patch('/:id', async (c) => {
+  const gmId = await authenticateGM(c)
+  if (!gmId) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
+  const { id } = c.req.param()
+  try {
+    // 1. Verify GM owns this campaign
+    const [existing] = await db
+      .select()
+      .from(campaigns)
+      .where(and(eq(campaigns.id, id), eq(campaigns.gmId, gmId)))
+      .limit(1)
+
+    if (!existing) {
+      return c.json({ error: 'Campaign not found or unauthorized' }, 404)
+    }
+
+    const body = await c.req.json()
+    const updateData: any = {}
+
+    if (body.name) updateData.name = body.name
+    if (body.themeConfig) updateData.themeConfig = body.themeConfig
+    if (body.rulesetConfig) updateData.rulesetConfig = body.rulesetConfig
+    
+    if (body.roomCode) {
+      // If roomCode is being changed, verify it is unique
+      if (body.roomCode !== existing.roomCode) {
+        const [taken] = await db
+          .select()
+          .from(campaigns)
+          .where(eq(campaigns.roomCode, body.roomCode))
+          .limit(1)
+
+        if (taken) {
+          return c.json({ error: 'Player PIN/Room Code is already taken by another campaign.' }, 400)
+        }
+      }
+      updateData.roomCode = body.roomCode
+    }
+
+    const [updated] = await db
+      .update(campaigns)
+      .set(updateData)
+      .where(eq(campaigns.id, id))
+      .returning()
+
+    return c.json(updated)
+  } catch (error: any) {
+    console.error('[PATCH CAMPAIGN ERROR]', error)
     return c.json({ error: error.message }, 500)
   }
 })
