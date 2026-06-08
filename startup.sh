@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+echo "[startup] Running pre-migration database cleanup..."
+node /app/server/dist/db/drop-conflicting-tables.js || true
+
 echo "[startup] Running DB migrations..."
 cd /app/server && npx drizzle-kit push
 
