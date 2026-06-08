@@ -1,8 +1,19 @@
 import { pgTable, text, integer, boolean, jsonb, timestamp, uuid, unique, real } from 'drizzle-orm/pg-core'
 
+// ── Users (GMs) ───────────────────────────────────────────────
+export const users = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: text('email').notNull(),
+  passwordHash: text('password_hash').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+}, (t) => ({
+  emailUnique: unique().on(t.email),
+}))
+
 // ── Campaigns ─────────────────────────────────────────────────
 export const campaigns = pgTable('campaigns', {
   id: uuid('id').primaryKey().defaultRandom(),
+  gmId: uuid('gm_id').references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   slug: text('slug').notNull(),
   roomCode: text('room_code').notNull(),

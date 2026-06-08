@@ -11,12 +11,16 @@ import { mobsRouter } from './routes/mobs.js'
 import { floorPlansRouter } from './routes/floor-plans.js'
 import { audioRouter } from './routes/audio.js'
 import { portraitRouter } from './routes/portrait.js'
+import { authRouter } from './routes/auth.js'
+import { campaignsRouter } from './routes/campaigns.js'
 import { handleWsConnection } from './ws/handler.js'
 
 dotenv.config()
 
 const app = new Hono()
 app.use('/*', cors())
+app.route('/api/auth', authRouter)
+app.route('/api/campaigns', campaignsRouter)
 app.route('/api/characters', charactersRouter)
 app.route('/api/session', sessionRouter)
 app.route('/api/items', itemsRouter)
@@ -68,7 +72,8 @@ const server = serve({ fetch: app.fetch, port }, () => {
 const wss = new WebSocketServer({ noServer: true })
 
 server.on('upgrade', (req: IncomingMessage, socket, head) => {
-  if (req.url === '/ws') {
+  const url = req.url ? new URL(req.url, 'http://localhost') : null
+  if (url && url.pathname === '/ws') {
     wss.handleUpgrade(req, socket, head, (ws) => {
       wss.emit('connection', ws, req)
     })
@@ -77,8 +82,8 @@ server.on('upgrade', (req: IncomingMessage, socket, head) => {
   }
 })
 
-wss.on('connection', (ws) => {
-  handleWsConnection(ws)
+wss.on('connection', (ws, req) => {
+  handleWsConnection(ws, req)
 })
 
 console.log(`[HUD] WebSocket ready on ws://localhost:${port}/ws`)

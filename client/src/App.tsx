@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react'
 import { useWebSocket } from './hooks/useWebSocket'
 import { RoleSelector } from './components/shared/RoleSelector'
 import { GMDashboard } from './components/gm/GMDashboard'
-import { GMPinGate, isGMVerified, clearGMVerified } from './components/gm/GMPinGate'
+import { GMAuthGate } from './components/gm/GMAuthGate'
+import { GMCampaignDashboard } from './components/gm/GMCampaignDashboard'
 import { PlayerHUD } from './components/player/PlayerHUD'
 import { ToastFeed } from './components/shared/ToastFeed'
 import { DisplayScreen } from './components/display/DisplayScreen'
@@ -17,6 +18,8 @@ const isDisplayRoute =
   new URLSearchParams(window.location.search).get('display') === '1'
 
 const ROLE_KEY = 'hud:role'
+const TOKEN_KEY = 'hud:gm_token'
+const CAMPAIGN_KEY = 'hud:active_campaign_id'
 
 function App() {
   // Short-circuit for display screen — no auth, no role, no hooks overlap
@@ -25,7 +28,15 @@ function App() {
   const [role, setRole] = useState<UserRole | null>(() => {
     return (localStorage.getItem(ROLE_KEY) as UserRole | null)
   })
-  const [gmVerified, setGmVerified] = useState(() => isGMVerified())
+  
+  const [token, setToken] = useState<string | null>(() => {
+    return localStorage.getItem(TOKEN_KEY)
+  })
+  
+  const [activeCampaignId, setActiveCampaignId] = useState<string | null>(() => {
+    return localStorage.getItem(CAMPAIGN_KEY)
+  })
+
   const [toasts, setToasts] = useState<Toast[]>([])
   const [dmMessages, setDmMessages] = useState<DirectMessage[]>([])
 
@@ -36,13 +47,36 @@ function App() {
     setToasts(prev => [...prev, { id: crypto.randomUUID(), label, text, ts: Date.now() }].slice(-3))
   }, [])
 
-  const { state, connected, send, activeCharIds } = useWebSocket({ role: role ?? undefined, onAnnouncement, onDirectMessage: onDM })
+  // Pass the campaignId to our websocket hook
+  const { state, connected, send, activeCharIds } = useWebSocket({ 
+    role: role ?? undefined, 
+    campaignId: activeCampaignId ?? undefined,
+    onAnnouncement, 
+    onDirectMessage: onDM 
+  })
 
   const dismissToast = useCallback((id: string) => setToasts(p => p.filter(t => t.id !== id)), [])
+  
   const handleRoleSelect = useCallback((r: UserRole) => {
     localStorage.setItem(ROLE_KEY, r)
-    if (r !== 'gm') clearGMVerified()
     setRole(r)
+  }, [])
+
+  const handleLoginSuccess = useCallback((_user: any, newToken: string) => {
+    localStorage.setItem(TOKEN_KEY, newToken)
+    setToken(newToken)
+  }, [])
+
+  const handleSelectCampaign = useCallback((campaign: { id: string }) => {
+    localStorage.setItem(CAMPAIGN_KEY, campaign.id)
+    setActiveCampaignId(campaign.id)
+  }, [])
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(CAMPAIGN_KEY)
+    setToken(null)
+    setActiveCampaignId(null)
   }, [])
 
   // ── Render ──────────────────────────────────────────────────
@@ -68,10 +102,11 @@ function App() {
   )
 
   if (role === 'gm') {
-    if (!gmVerified) return (
+    // 1. GM needs credentials login
+    if (!token) return (
       <ThemeProvider campaign={state?.campaign}>
-        <GMPinGate
-          onVerified={() => setGmVerified(true)}
+        <GMAuthGate
+          onLoginSuccess={handleLoginSuccess}
           onBack={() => {
             localStorage.removeItem(ROLE_KEY)
             setRole(null)
@@ -79,7 +114,21 @@ function App() {
         />
       </ThemeProvider>
     )
+
+    // 2. GM needs to select or create a Campaign
+    if (!activeCampaignId) return (
+      <ThemeProvider campaign={state?.campaign}>
+        <GMCampaignDashboard
+          token={token}
+          onSelectCampaign={handleSelectCampaign}
+          onLogout={handleLogout}
+        />
+      </ThemeProvider>
+    )
+
+    // 3. Render full GMDashboard once authorized & campaign is selected
     if (!state) return <div className="h-screen bg-hud-bg flex items-center justify-center font-hud text-hud-muted animate-pulse">SYNCING STATE...</div>
+    
     return (
       <ThemeProvider campaign={state?.campaign}>
         {connBadge}
@@ -91,6 +140,20 @@ function App() {
           onDMRead={onDMRead}
           onDMEcho={onDM}
         />
+        
+        {/* Back to Campaigns overlay switch */}
+        <div className="fixed bottom-2 right-2 z-50">
+          <button
+            onClick={() => {
+              localStorage.removeItem(CAMPAIGN_KEY)
+              setActiveCampaignId(null)
+            }}
+            className="font-hud text-[10px] bg-hud-panel border border-hud-border text-hud-muted px-2 py-1 hover:text-hud-accent hover:border-hud-accent transition-colors"
+          >
+            ← CAMPAIGNS DASHBOARD
+          </button>
+        </div>
+
         <ToastFeed toasts={toasts} onDismiss={dismissToast} />
       </ThemeProvider>
     )
@@ -119,10 +182,10 @@ function App() {
         character={character}
         state={state}
         send={send}
+        activeCharIds={activeCharIds}
         dmMessages={dmMessages}
         onDMRead={onDMRead}
         onDMEcho={onDM}
-        activeCharIds={activeCharIds}
       />
       <ToastFeed toasts={toasts} onDismiss={dismissToast} />
     </ThemeProvider>

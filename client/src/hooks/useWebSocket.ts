@@ -15,11 +15,12 @@ export interface DirectMessage {
 
 interface UseWebSocketOptions {
   role?: UserRole
+  campaignId?: string
   onAnnouncement?: (label: string, text: string) => void
   onDirectMessage?: (dm: DirectMessage) => void
 }
 
-export function useWebSocket({ role, onAnnouncement, onDirectMessage }: UseWebSocketOptions = {}) {
+export function useWebSocket({ role, campaignId, onAnnouncement, onDirectMessage }: UseWebSocketOptions = {}) {
   const wsRef = useRef<WebSocket | null>(null)
   const [state, setState] = useState<AppState | null>(null)
   const [connected, setConnected] = useState(false)
@@ -27,13 +28,21 @@ export function useWebSocket({ role, onAnnouncement, onDirectMessage }: UseWebSo
   const announcementRef = useRef(onAnnouncement)
   const dmRef = useRef(onDirectMessage)
   const roleRef = useRef(role)
+  const campaignIdRef = useRef(campaignId)
+  
   announcementRef.current = onAnnouncement
   dmRef.current = onDirectMessage
   roleRef.current = role
+  campaignIdRef.current = campaignId
 
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return
-    const ws = new WebSocket(WS_URL)
+    
+    const wsUrlWithQuery = campaignIdRef.current 
+      ? `${WS_URL}?campaignId=${campaignIdRef.current}` 
+      : WS_URL
+      
+    const ws = new WebSocket(wsUrlWithQuery)
     wsRef.current = ws
 
     ws.onopen = () => {
@@ -67,9 +76,13 @@ export function useWebSocket({ role, onAnnouncement, onDirectMessage }: UseWebSo
   }, [])
 
   useEffect(() => {
+    if (wsRef.current) {
+      wsRef.current.close()
+      wsRef.current = null
+    }
     connect()
     return () => { wsRef.current?.close() }
-  }, [connect])
+  }, [connect, campaignId])
 
   useEffect(() => {
     if (role && wsRef.current?.readyState === WebSocket.OPEN) {
