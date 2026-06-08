@@ -17,13 +17,13 @@
     "drizzle-orm": "^0.31.0",
     "pg": "^8.12.0",
     "ws": "^8.18.0",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "drizzle-kit": "^0.22.0"
   },
   "devDependencies": {
     "@types/pg": "^8.11.6",
     "@types/ws": "^8.5.10",
     "@types/node": "^20.0.0",
-    "drizzle-kit": "^0.22.0",
     "tsx": "^4.15.0",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0"
