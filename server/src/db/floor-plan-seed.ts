@@ -1,7 +1,7 @@
 import { db } from './client.js'
 import { floorPlans, floorRooms, roomConnections } from './schema.js'
 
-export async function seedFloorPlans() {
+export async function seedFloorPlans(campaignId: string = '00000000-0000-0000-0000-000000000000') {
   console.log('[seed] Wiping old floor plans and connections (cascade)...')
   await db.delete(floorPlans)
 
@@ -9,6 +9,7 @@ export async function seedFloorPlans() {
 
   // 1. Insert Floor 1 Plan
   const [plan] = await db.insert(floorPlans).values({
+    campaignId,
     name: 'Floor 1 — The Antechamber',
     theme: 'the-commons',
     themeColour: '#f59e0b',

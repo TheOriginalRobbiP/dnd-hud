@@ -1,8 +1,24 @@
 import { pgTable, text, integer, boolean, jsonb, timestamp, uuid, unique, real } from 'drizzle-orm/pg-core'
 
+// ── Campaigns ─────────────────────────────────────────────────
+export const campaigns = pgTable('campaigns', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  slug: text('slug').notNull(),
+  roomCode: text('room_code').notNull(),
+  themeConfig: jsonb('theme_config').notNull().default({}),
+  rulesetConfig: jsonb('ruleset_config').notNull().default({}),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+}, (t) => ({
+  slugUnique: unique().on(t.slug),
+  roomCodeUnique: unique().on(t.roomCode),
+}))
+
 // ── Characters ───────────────────────────────────────────────
 export const characters = pgTable('characters', {
   id: uuid('id').primaryKey().defaultRandom(),
+  campaignId: uuid('campaign_id').references(() => campaigns.id, { onDelete: 'cascade' }),
   crawlerName: text('crawler_name').notNull(),
   playerName: text('player_name').notNull(),
   class: text('class'),
@@ -34,7 +50,8 @@ export const characters = pgTable('characters', {
 
 // ── Floor State ──────────────────────────────────────────────
 export const floorState = pgTable('floor_state', {
-  id: integer('id').primaryKey().default(1), // singleton row
+  id: uuid('id').primaryKey().defaultRandom(),
+  campaignId: uuid('campaign_id').references(() => campaigns.id, { onDelete: 'cascade' }),
   sessionActive: boolean('session_active').notNull().default(false),
   floorNumber: integer('floor_number').notNull().default(1),
   neighbourhoodName: text('neighbourhood_name').notNull().default('The Commons'),
@@ -56,6 +73,7 @@ export const floorState = pgTable('floor_state', {
 // ── Loot Boxes ───────────────────────────────────────────────
 export const lootBoxes = pgTable('loot_boxes', {
   id: uuid('id').primaryKey().defaultRandom(),
+  campaignId: uuid('campaign_id').references(() => campaigns.id, { onDelete: 'cascade' }),
   tier: text('tier').notNull(), // LootBoxTier enum
   contents: jsonb('contents').notNull().default([]),
   state: text('state').notNull().default('pending'), // pending | authorised | opened
@@ -67,6 +85,7 @@ export const lootBoxes = pgTable('loot_boxes', {
 // ── GM Log ───────────────────────────────────────────────────
 export const gmLog = pgTable('gm_log', {
   id: uuid('id').primaryKey().defaultRandom(),
+  campaignId: uuid('campaign_id').references(() => campaigns.id, { onDelete: 'cascade' }),
   message: text('message').notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 })
@@ -74,6 +93,7 @@ export const gmLog = pgTable('gm_log', {
 // ── Item Database ─────────────────────────────────────────────
 export const items = pgTable('items', {
   id: uuid('id').primaryKey().defaultRandom(),
+  campaignId: uuid('campaign_id').references(() => campaigns.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   description: text('description').notNull().default(''),
   tier: text('tier').notNull(),              // common | uncommon | rare | legendary
@@ -93,6 +113,7 @@ export const items = pgTable('items', {
 // ── Mob Template Database ─────────────────────────────────────
 export const mobTemplates = pgTable('mob_templates', {
   id: uuid('id').primaryKey().defaultRandom(),
+  campaignId: uuid('campaign_id').references(() => campaigns.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   description: text('description').notNull().default(''),
   hpMin: integer('hp_min').notNull().default(5),
@@ -111,6 +132,7 @@ export const mobTemplates = pgTable('mob_templates', {
 // Named saves of the full game state — restore any snapshot to roll back
 export const sessionSnapshots = pgTable('session_snapshots', {
   id: uuid('id').primaryKey().defaultRandom(),
+  campaignId: uuid('campaign_id').references(() => campaigns.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),                 // e.g. "Pre-Floor 2", "End of Session 1"
   snapshotData: jsonb('snapshot_data').notNull(), // full AppState JSON
   createdAt: timestamp('created_at').defaultNow(),
@@ -119,6 +141,7 @@ export const sessionSnapshots = pgTable('session_snapshots', {
 // ── Floor Plans ───────────────────────────────────────────────
 export const floorPlans = pgTable('floor_plans', {
   id: uuid('id').primaryKey().defaultRandom(),
+  campaignId: uuid('campaign_id').references(() => campaigns.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   theme: text('theme').notNull().default('the-commons'),
   themeColour: text('theme_colour').notNull().default('#94a3b8'),

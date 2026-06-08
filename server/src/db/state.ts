@@ -1,8 +1,10 @@
 import { db } from './client.js'
-import { characters, floorState, lootBoxes, gmLog, sessionSnapshots, floorRooms } from './schema.js'
-import { desc, eq, ne } from 'drizzle-orm'
+import { characters, floorState, lootBoxes, gmLog, sessionSnapshots, floorRooms, floorPlans } from './schema.js'
+import { desc, eq, ne, and, inArray } from 'drizzle-orm'
 import type { AppState, WSMessage, Character, FloorState, LootBox } from '../types/index.js'
 import crypto from 'crypto'
+
+const SANDBOX_CAMPAIGN_ID = '00000000-0000-0000-0000-000000000000'
 
 const DEFAULT_FLOOR: FloorState = {
   sessionActive: false,
@@ -21,22 +23,26 @@ const DEFAULT_FLOOR: FloorState = {
   preTutorialActive: false,
 }
 
-async function ensureFloorState() {
-  const existing = await db.select().from(floorState).limit(1)
+async function ensureFloorState(campaignId: string = SANDBOX_CAMPAIGN_ID) {
+  const existing = await db.select().from(floorState).where(eq(floorState.campaignId, campaignId)).limit(1)
   if (existing.length === 0) {
-    await db.insert(floorState).values({ id: 1, ...DEFAULT_FLOOR as any })
-    console.log('[DB] Created default floor state')
-    return DEFAULT_FLOOR
+    await db.insert(floorState).values({
+      campaignId,
+      ...DEFAULT_FLOOR as any
+    })
+    console.log('[DB] Created default floor state for campaign:', campaignId)
+    const created = await db.select().from(floorState).where(eq(floorState.campaignId, campaignId)).limit(1)
+    return created[0]
   }
   return existing[0]
 }
 
-export async function getFullState(): Promise<AppState> {
+export async function getFullState(campaignId: string = SANDBOX_CAMPAIGN_ID): Promise<AppState> {
   const [chars, floor, loot, log] = await Promise.all([
-    db.select().from(characters),
-    ensureFloorState(),
-    db.select().from(lootBoxes).where(ne(lootBoxes.state, 'opened')),
-    db.select().from(gmLog).orderBy(desc(gmLog.createdAt)).limit(20),
+    db.select().from(characters).where(eq(characters.campaignId, campaignId)),
+    ensureFloorState(campaignId),
+    db.select().from(lootBoxes).where(and(eq(lootBoxes.campaignId, campaignId), ne(lootBoxes.state, 'opened'))),
+    db.select().from(gmLog).where(eq(gmLog.campaignId, campaignId)).orderBy(desc(gmLog.createdAt)).limit(20),
   ])
 
   return {
@@ -47,9 +53,9 @@ export async function getFullState(): Promise<AppState> {
   }
 }
 
-export async function applyMessage(msg: WSMessage): Promise<void> {
+export async function applyMessage(msg: WSMessage, campaignId: string = SANDBOX_CAMPAIGN_ID): Promise<void> {
   // Ensure floor state exists before any update
-  await ensureFloorState()
+  await ensureFloorState(campaignId)
 
   switch (msg.type) {
     case 'hp_update':
@@ -80,12 +86,12 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
     case 'room_target_update':
       await db.update(floorState)
         .set({ roomTarget: msg.target, updatedAt: new Date() })
-        .where(eq(floorState.id, 1))
+        .where(eq(floorState.campaignId, campaignId))
       break
     case 'floor_update':
       await db.update(floorState)
         .set({ ...(msg.floor as object), updatedAt: new Date() })
-        .where(eq(floorState.id, 1))
+        .where(eq(floorState.campaignId, campaignId))
       break
     case 'display_room_enter':
       // Persist current room data so display can restore on reconnect
@@ -106,15 +112,15 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
           displayViewMode: 'scene', // Automatically reset to scene view mode on room enter
           updatedAt: new Date(),
         })
-        .where(eq(floorState.id, 1))
+        .where(eq(floorState.campaignId, campaignId))
       break
     case 'display_view_mode_update':
       await db.update(floorState)
         .set({ displayViewMode: msg.mode, updatedAt: new Date() })
-        .where(eq(floorState.id, 1))
+        .where(eq(floorState.campaignId, campaignId))
       break
     case 'bone_harvest_trigger': {
-      const [f] = await db.select().from(floorState).limit(1)
+      const [f] = await db.select().from(floorState).where(eq(floorState.campaignId, campaignId)).limit(1)
       const bonePileList = (f?.bonePile as string[]) ?? []
       if (bonePileList.length === 0) break
 
@@ -154,9 +160,10 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
           bonePile: [], // Clear the bone pile
           updatedAt: new Date()
         })
-        .where(eq(floorState.id, 1))
+        .where(eq(floorState.campaignId, campaignId))
 
       await db.insert(gmLog).values({
+        campaignId,
         message: `[Bone Harvest] The Bone Collector raised ${spawnedSkeletons.length} skeletal minions onto the tracks!`
       })
       break
@@ -164,7 +171,7 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
     case 'display_clear':
       await db.update(floorState)
         .set({ currentRoomData: null, updatedAt: new Date() })
-        .where(eq(floorState.id, 1))
+        .where(eq(floorState.campaignId, campaignId))
       break
     case 'play_sound':
     case 'system_alert':
@@ -173,17 +180,20 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
     case 'collapse_timer_start':
       await db.update(floorState)
         .set({ collapseTimerSeconds: msg.seconds, collapseTimerActive: true, collapseTimerStartedAt: new Date(), updatedAt: new Date() })
-        .where(eq(floorState.id, 1))
+        .where(eq(floorState.campaignId, campaignId))
       break
     case 'collapse_timer_stop':
       await db.update(floorState)
         .set({ collapseTimerSeconds: null, collapseTimerActive: false, collapseTimerStartedAt: null, updatedAt: new Date() })
-        .where(eq(floorState.id, 1))
+        .where(eq(floorState.campaignId, campaignId))
       break
     case 'loot_assign':
       await db.insert(lootBoxes).values({
-        id: msg.lootBox.id, tier: msg.lootBox.tier,
-        contents: msg.lootBox.contents, state: 'pending',
+        campaignId,
+        id: msg.lootBox.id,
+        tier: msg.lootBox.tier,
+        contents: msg.lootBox.contents,
+        state: 'pending',
         assignedTo: msg.lootBox.assignedTo,
       })
       break
@@ -220,22 +230,28 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
 
           // Log the event
           const itemsList = newItems.map(i => i.name).join(', ')
-          await db.insert(gmLog).values({ message: `[Loot] ${char.crawlerName} opened a ${box.tier.toUpperCase()} box containing: ${itemsList}` })
+          await db.insert(gmLog).values({
+            campaignId,
+            message: `[Loot] ${char.crawlerName} opened a ${box.tier.toUpperCase()} box containing: ${itemsList}`
+          })
         }
       }
       break
     }
     case 'announcement':
-      await db.insert(gmLog).values({ message: `[${msg.label}] ${msg.text}` })
+      await db.insert(gmLog).values({
+        campaignId,
+        message: `[${msg.label}] ${msg.text}`
+      })
       break
     case 'mob_add': {
-      const [f] = await db.select().from(floorState).limit(1)
+      const [f] = await db.select().from(floorState).where(eq(floorState.campaignId, campaignId)).limit(1)
       const mobs = [...((f?.activeMobs as object[]) ?? []), msg.mob]
-      await db.update(floorState).set({ activeMobs: mobs, updatedAt: new Date() }).where(eq(floorState.id, 1))
+      await db.update(floorState).set({ activeMobs: mobs, updatedAt: new Date() }).where(eq(floorState.campaignId, campaignId))
       break
     }
     case 'mob_remove': {
-      const [f] = await db.select().from(floorState).limit(1)
+      const [f] = await db.select().from(floorState).where(eq(floorState.campaignId, campaignId)).limit(1)
       const activeMobsList = (f?.activeMobs as Array<{id:string; hp:number; name:string}>) ?? []
       const originalMob = activeMobsList.find(m => m.id === msg.mobId)
       
@@ -248,11 +264,11 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
         updates.bonePile = [...currentBonePile, originalMob.name]
       }
       
-      await db.update(floorState).set(updates).where(eq(floorState.id, 1))
+      await db.update(floorState).set(updates).where(eq(floorState.campaignId, campaignId))
       break
     }
     case 'mob_hp_update': {
-      const [f] = await db.select().from(floorState).limit(1)
+      const [f] = await db.select().from(floorState).where(eq(floorState.campaignId, campaignId)).limit(1)
       const activeMobsList = (f?.activeMobs as Array<{id:string; hp:number; name:string}>) ?? []
       const originalMob = activeMobsList.find(m => m.id === msg.mobId)
       
@@ -265,7 +281,7 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
         updates.bonePile = [...currentBonePile, originalMob.name]
       }
       
-      await db.update(floorState).set(updates).where(eq(floorState.id, 1))
+      await db.update(floorState).set(updates).where(eq(floorState.campaignId, campaignId))
       break
     }
     case 'achievement_unlock': {
@@ -338,20 +354,26 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
     case 'session_start': {
       await db.update(floorState)
         .set({ sessionActive: true, updatedAt: new Date() })
-        .where(eq(floorState.id, 1))
-      await db.insert(gmLog).values({ message: '[System] Session started — crawlers can now join.' })
+        .where(eq(floorState.campaignId, campaignId))
+      await db.insert(gmLog).values({
+        campaignId,
+        message: '[System] Session started — crawlers can now join.'
+      })
       break
     }
     case 'session_stop': {
-      await db.update(characters).set({ isActive: false, updatedAt: new Date() })
+      await db.update(characters).set({ isActive: false, updatedAt: new Date() }).where(eq(characters.campaignId, campaignId))
       await db.update(floorState)
         .set({ sessionActive: false, currentRoomData: null, updatedAt: new Date() })
-        .where(eq(floorState.id, 1))
-      await db.insert(gmLog).values({ message: '[System] Session stopped — all crawlers deregistered.' })
+        .where(eq(floorState.campaignId, campaignId))
+      await db.insert(gmLog).values({
+        campaignId,
+        message: '[System] Session stopped — all crawlers deregistered.'
+      })
       break
     }
     case 'session_reset': {
-      const allChars = await db.select().from(characters)
+      const allChars = await db.select().from(characters).where(eq(characters.campaignId, campaignId))
       for (const char of allChars) {
         await db.update(characters)
           .set({ hp: char.maxHp, mp: char.maxMp, isAlive: true, statusEffects: [], updatedAt: new Date() })
@@ -359,27 +381,41 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
       }
       await db.update(floorState)
         .set({ activeMobs: [], collapseTimerActive: false, collapseTimerSeconds: null, collapseTimerStartedAt: null, roomNumber: 1, currentRoomData: null, bonePile: [], updatedAt: new Date() })
-        .where(eq(floorState.id, 1))
-      await db.delete(lootBoxes).where(ne(lootBoxes.state, 'opened'))
+        .where(eq(floorState.campaignId, campaignId))
+      await db.delete(lootBoxes).where(and(eq(lootBoxes.campaignId, campaignId), ne(lootBoxes.state, 'opened')))
       
-      // Wipe the GM event log completely
-      await db.delete(gmLog)
+      // Wipe the GM event log completely for this campaign
+      await db.delete(gmLog).where(eq(gmLog.campaignId, campaignId))
       
-      // Reset visited and current room flags for all floor plan rooms
-      await db.update(floorRooms).set({ isVisited: false, isCurrentRoom: false })
+      // Reset visited and current room flags for all floor plan rooms of this campaign
+      const plans = await db.select().from(floorPlans).where(eq(floorPlans.campaignId, campaignId))
+      const planIds = plans.map(p => p.id)
+      if (planIds.length > 0) {
+        await db.update(floorRooms).set({ isVisited: false, isCurrentRoom: false }).where(inArray(floorRooms.floorPlanId, planIds))
+      }
 
       // Seed the fresh reset event into the log
-      await db.insert(gmLog).values({ message: '[System] Session reset — HP/MP restored, status cleared, mobs removed, maps reset.' })
+      await db.insert(gmLog).values({
+        campaignId,
+        message: '[System] Session reset — HP/MP restored, status cleared, mobs removed, maps reset.'
+      })
       break
     }
     case 'session_snapshot_save': {
-      const state = await getFullState()
-      await db.insert(sessionSnapshots).values({ name: msg.name, snapshotData: state as any })
-      await db.insert(gmLog).values({ message: `[System] Snapshot saved: "${msg.name}"` })
+      const state = await getFullState(campaignId)
+      await db.insert(sessionSnapshots).values({
+        campaignId,
+        name: msg.name,
+        snapshotData: state as any
+      })
+      await db.insert(gmLog).values({
+        campaignId,
+        message: `[System] Snapshot saved: "${msg.name}"`
+      })
       break
     }
     case 'session_snapshot_load': {
-      const [snap] = await db.select().from(sessionSnapshots).where(eq(sessionSnapshots.id, msg.snapshotId))
+      const [snap] = await db.select().from(sessionSnapshots).where(and(eq(sessionSnapshots.campaignId, campaignId), eq(sessionSnapshots.id, msg.snapshotId)))
       if (!snap) break
       const saved = snap.snapshotData as AppState
       for (const char of saved.characters) {
@@ -392,8 +428,11 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
       }
       await db.update(floorState)
         .set({ ...saved.floor as any, updatedAt: new Date() })
-        .where(eq(floorState.id, 1))
-      await db.insert(gmLog).values({ message: `[System] Snapshot restored: "${snap.name}"` })
+        .where(eq(floorState.campaignId, campaignId))
+      await db.insert(gmLog).values({
+        campaignId,
+        message: `[System] Snapshot restored: "${snap.name}"`
+      })
       break
     }
     case 'token_move': {
@@ -402,10 +441,10 @@ export async function applyMessage(msg: WSMessage): Promise<void> {
           .set({ tokenPosX: msg.posX, tokenPosY: msg.posY, updatedAt: new Date() })
           .where(eq(characters.id, msg.charId))
       } else if (msg.mobId) {
-        const [f] = await db.select().from(floorState).limit(1)
+        const [f] = await db.select().from(floorState).where(eq(floorState.campaignId, campaignId)).limit(1)
         const mobs = ((f?.activeMobs as Array<{id:string; posX?: number; posY?: number}>) ?? [])
           .map(m => m.id === msg.mobId ? { ...m, posX: msg.posX, posY: msg.posY } : m)
-        await db.update(floorState).set({ activeMobs: mobs, updatedAt: new Date() }).where(eq(floorState.id, 1))
+        await db.update(floorState).set({ activeMobs: mobs, updatedAt: new Date() }).where(eq(floorState.campaignId, campaignId))
       }
       break
     }

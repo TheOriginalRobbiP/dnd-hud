@@ -1,5 +1,5 @@
 import { db } from './client.js'
-import { characters } from './schema.js'
+import { characters, campaigns } from './schema.js'
 import * as dotenv from 'dotenv'
 dotenv.config()
 
@@ -100,7 +100,19 @@ const crawlers = [
   },
 ]
 
+const SANDBOX_CAMPAIGN_ID = '00000000-0000-0000-0000-000000000000'
+
 async function seed() {
+  // Ensure sandbox campaign exists
+  await db.insert(campaigns)
+    .values({
+      id: SANDBOX_CAMPAIGN_ID,
+      name: 'Dungeon Crawler Sandbox',
+      slug: 'dcc-sandbox',
+      roomCode: 'SANDBOX',
+    })
+    .onConflictDoNothing()
+
   // Wipe and reseed — character setup pass
   await db.delete(characters)
   console.log('[seed] Cleared existing characters.')
@@ -121,6 +133,7 @@ async function seed() {
     }
 
     await db.insert(characters).values({
+      campaignId: SANDBOX_CAMPAIGN_ID,
       crawlerName: c.crawlerName,
       playerName: c.playerName,
       hp: c.hp, maxHp: c.maxHp,
