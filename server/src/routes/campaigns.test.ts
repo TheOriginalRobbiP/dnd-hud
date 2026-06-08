@@ -17,7 +17,7 @@ vi.mock('../db/client.js', () => {
   mockDb.select.mockImplementation(() => mockDb)
   mockDb.from.mockImplementation(() => mockDb)
   mockDb.where.mockImplementation(() => mockDb)
-  mockDb.limit.mockImplementation(() => mockDb)
+  mockDb.limit.mockImplementation(() => Promise.resolve([]))
   mockDb.insert.mockImplementation(() => mockDb)
   mockDb.values.mockImplementation(() => mockDb)
   mockDb.returning.mockImplementation(() => Promise.resolve([]))
@@ -52,5 +52,25 @@ describe('Campaigns Router Tests', () => {
     expect(res.status).toBe(401)
     const data = await res.json()
     expect(data.error).toBe('Unauthorized')
+  })
+
+  it('GET /api/campaigns/by-slug/:slug should return 404 when campaign not found', async () => {
+    const res = await campaignsRouter.request('/by-slug/nonexistent', {
+      method: 'GET',
+    })
+
+    expect(res.status).toBe(404)
+    const data = await res.json()
+    expect(data.error).toBe('Campaign not found')
+  })
+
+  it('GET /api/campaigns/by-pin/:pin should return 404 when campaign not found', async () => {
+    const res = await campaignsRouter.request('/by-pin/9999', {
+      method: 'GET',
+    })
+
+    expect(res.status).toBe(404)
+    const data = await res.json()
+    expect(data.error).toBe('Campaign not found for this PIN')
   })
 })

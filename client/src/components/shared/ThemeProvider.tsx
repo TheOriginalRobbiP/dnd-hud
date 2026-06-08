@@ -20,12 +20,13 @@ export function ThemeProvider({ campaign, children }: ThemeProviderProps) {
   useEffect(() => {
     const root = document.documentElement
     
-    // Extract color tokens with default fallbacks
-    const canvas = campaign?.themeConfig?.canvas || '#0d0d0f'
-    const surface = campaign?.themeConfig?.surface || '#161619'
-    const border = campaign?.themeConfig?.border || '#2a2a2e'
-    const primary = campaign?.themeConfig?.primary || '#f59e0b'
-    const accent = campaign?.themeConfig?.accent || '#FFB800'
+    // Extract color tokens with default fallbacks (supports camelCase and raw hex keys)
+    const config = (campaign?.themeConfig || {}) as any
+    const canvas = config.canvas || config.canvasColor || '#0d0d0f'
+    const surface = config.surface || config.surfaceColor || '#161619'
+    const border = config.border || config.borderColor || '#2a2a2e'
+    const primary = config.primary || config.primaryColor || '#f59e0b'
+    const accent = config.accent || config.accentColor || '#FFB800'
 
     // Set CSS properties on root element dynamically at runtime
     root.style.setProperty('--theme-canvas', canvas)

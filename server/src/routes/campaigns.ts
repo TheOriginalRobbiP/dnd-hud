@@ -24,6 +24,33 @@ async function authenticateGM(c: any): Promise<string | null> {
   }
 }
 
+// GET /api/campaigns/by-slug/:slug — Resolve a public campaign by its URL slug
+campaignsRouter.get('/by-slug/:slug', async (c) => {
+  const { slug } = c.req.param()
+  try {
+    const [camp] = await db
+      .select({
+        id: campaigns.id,
+        name: campaigns.name,
+        slug: campaigns.slug,
+        themeConfig: campaigns.themeConfig,
+        rulesetConfig: campaigns.rulesetConfig,
+        isActive: campaigns.isActive,
+      })
+      .from(campaigns)
+      .where(eq(campaigns.slug, slug.toLowerCase().trim()))
+      .limit(1)
+
+    if (!camp) {
+      return c.json({ error: 'Campaign not found' }, 404)
+    }
+
+    return c.json(camp)
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500)
+  }
+})
+
 // GET /api/campaigns — List all campaigns owned by the authenticated GM
 campaignsRouter.get('/', async (c) => {
   const gmId = await authenticateGM(c)
@@ -150,5 +177,32 @@ campaignsRouter.post('/', async (c) => {
   } catch (error: any) {
     console.error('[CREATE CAMPAIGN ERROR]', error)
     return c.json({ error: 'Failed to create campaign: ' + error.message }, 500)
+  }
+})
+
+// GET /api/campaigns/by-pin/:pin — Lookup campaign by 4-digit room code PIN
+campaignsRouter.get('/by-pin/:pin', async (c) => {
+  const { pin } = c.req.param()
+  try {
+    const [camp] = await db
+      .select({
+        id: campaigns.id,
+        name: campaigns.name,
+        slug: campaigns.slug,
+        themeConfig: campaigns.themeConfig,
+        rulesetConfig: campaigns.rulesetConfig,
+        isActive: campaigns.isActive,
+      })
+      .from(campaigns)
+      .where(eq(campaigns.roomCode, pin.trim()))
+      .limit(1)
+
+    if (!camp) {
+      return c.json({ error: 'Campaign not found for this PIN' }, 404)
+    }
+
+    return c.json(camp)
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500)
   }
 })
