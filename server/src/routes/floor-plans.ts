@@ -5,18 +5,22 @@ import { eq, desc } from 'drizzle-orm'
 
 export const floorPlansRouter = new Hono()
 
+const SANDBOX_CAMPAIGN_ID = '00000000-0000-0000-0000-000000000000'
+
 // ── Floor Plans ───────────────────────────────────────────────
 
 // GET / — list all floor plans ordered by createdAt desc
 floorPlansRouter.get('/', async (c) => {
-  const plans = await db.select().from(floorPlans).orderBy(desc(floorPlans.createdAt))
+  const campaignId = c.req.query('campaignId') || SANDBOX_CAMPAIGN_ID
+  const plans = await db.select().from(floorPlans).where(eq(floorPlans.campaignId, campaignId)).orderBy(desc(floorPlans.createdAt))
   return c.json(plans)
 })
 
 // POST / — create a new floor plan
 floorPlansRouter.post('/', async (c) => {
+  const campaignId = c.req.query('campaignId') || SANDBOX_CAMPAIGN_ID
   const body = await c.req.json()
-  const [created] = await db.insert(floorPlans).values(body).returning()
+  const [created] = await db.insert(floorPlans).values({ ...body, campaignId }).returning()
   return c.json(created, 201)
 })
 
@@ -34,12 +38,13 @@ floorPlansRouter.get('/:id', async (c) => {
 
 // PUT /:id — update floor plan fields
 floorPlansRouter.put('/:id', async (c) => {
+  const campaignId = c.req.query('campaignId') || SANDBOX_CAMPAIGN_ID
   const { id } = c.req.param()
   const body = await c.req.json()
 
-  // If setting this plan to active, deactivate all other plans first
+  // If setting this plan to active, deactivate all other plans in this campaign first
   if (body.isActive === true) {
-    await db.update(floorPlans).set({ isActive: false })
+    await db.update(floorPlans).set({ isActive: false }).where(eq(floorPlans.campaignId, campaignId))
   }
 
   const [updated] = await db.update(floorPlans)

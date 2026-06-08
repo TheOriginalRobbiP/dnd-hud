@@ -478,9 +478,11 @@ function ConnectionPanel({ planId, rooms, connections, onConnectionAdded, onConn
 
 interface FloorPlannerProps {
   send: (msg: WSMessage) => void
+  campaign?: any
 }
 
-export function FloorPlanner({ send: _send }: FloorPlannerProps) {
+export function FloorPlanner({ send: _send, campaign }: FloorPlannerProps) {
+  const campaignId = campaign?.id || '00000000-0000-0000-0000-000000000000'
   const [plans, setPlans] = useState<FloorPlan[]>([])
   const [activePlanId, setActivePlanId] = useState<string | null>(null)
   const [rooms, setRooms] = useState<FloorRoom[]>([])
@@ -496,11 +498,11 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
 
   // ── Load floor plan list on mount ─────────────────────────────
   useEffect(() => {
-    fetch('/api/floor-plans')
+    fetch(`/api/floor-plans?campaignId=${campaignId}`)
       .then(r => r.json())
       .then((data: FloorPlan[]) => setPlans(data))
       .catch(() => {/* silently ignore */ })
-  }, [])
+  }, [campaignId])
 
   // ── Load selected plan's rooms + connections ───────────────────
   useEffect(() => {
@@ -535,7 +537,7 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
     if (!name?.trim()) return
     const theme = prompt(`Theme? (${THEMES.join(', ')})`) ?? THEMES[0]
     const validTheme = THEMES.includes(theme as typeof THEMES[number]) ? theme : THEMES[0]
-    const res = await fetch('/api/floor-plans', {
+    const res = await fetch(`/api/floor-plans?campaignId=${campaignId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: name.trim(), theme: validTheme }),
@@ -550,14 +552,14 @@ export function FloorPlanner({ send: _send }: FloorPlannerProps) {
   // ── Activate floor plan ────────────────────────────────────────
   const activatePlan = async () => {
     if (!activePlanId) return
-    const res = await fetch(`/api/floor-plans/${activePlanId}`, {
+    const res = await fetch(`/api/floor-plans/${activePlanId}?campaignId=${campaignId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isActive: true }),
     })
     if (res.ok) {
       // Re-fetch floor plans list to refresh active state in dropdown
-      fetch('/api/floor-plans')
+      fetch(`/api/floor-plans?campaignId=${campaignId}`)
         .then(r => r.json())
         .then((data: FloorPlan[]) => setPlans(data))
         .catch(() => {})

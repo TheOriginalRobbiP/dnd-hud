@@ -198,7 +198,7 @@ export function GMDashboard({
       <div className="flex-1 flex overflow-hidden">
         {gmMode === 'plan' && (
           <div className="flex-1 overflow-hidden flex flex-col pb-12 md:pb-0">
-            <FloorPlanner send={send} />
+            <FloorPlanner send={send} campaign={state.campaign} />
           </div>
         )}
 
