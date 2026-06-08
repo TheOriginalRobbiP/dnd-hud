@@ -10,10 +10,11 @@ interface Snapshot {
 interface SessionManagerProps {
   floorState: FloorState
   send: (msg: WSMessage) => void
+  campaign?: any
   onClose: () => void
 }
 
-export function SessionManager({ floorState, send, onClose }: SessionManagerProps) {
+export function SessionManager({ floorState, send, campaign, onClose }: SessionManagerProps) {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([])
   const [newName, setNewName] = useState('')
   const [loading, setLoading] = useState(false)
@@ -75,23 +76,25 @@ export function SessionManager({ floorState, send, onClose }: SessionManagerProp
         </div>
 
         {/* ── PRE-TUTORIAL LOCKOUT ────────────────────────── */}
-        <div className="border border-hud-border p-3 flex flex-col gap-2">
-          <div className="font-hud text-xs text-hud-muted tracking-wider">SYSTEM HUD ENCRYPTION</div>
-          <p className="font-hud text-xs text-hud-muted italic">
-            In the books, crawlers have locked hotlists and inventory on Floor 1 until registering at a Tutorial Guild. 
-            Toggle this on to lock your players' HUD modules.
-          </p>
-          <button
-            onClick={() => send({ type: 'floor_update', floor: { preTutorialActive: !floorState.preTutorialActive } })}
-            className={`font-hud text-sm py-2.5 border tracking-widest uppercase transition-all ${
-              floorState.preTutorialActive
-                ? 'border-red-500 text-red-500 bg-red-950/20 animate-pulse font-bold'
-                : 'border-hud-success text-hud-success bg-green-950/10 hover:bg-green-950/30'
-            }`}
-          >
-            {floorState.preTutorialActive ? '🔒 RESTRICTIONS ACTIVE (PRE-TUTORIAL)' : '🔓 DECRYPTED (FULL ACCESS)'}
-          </button>
-        </div>
+        {campaign?.rulesetConfig?.tutorialActive !== false && (
+          <div className="border border-hud-border p-3 flex flex-col gap-2">
+            <div className="font-hud text-xs text-hud-muted tracking-wider">SYSTEM HUD ENCRYPTION</div>
+            <p className="font-hud text-xs text-hud-muted italic">
+              In the books, crawlers have locked hotlists and inventory on Floor 1 until registering at a Tutorial Guild. 
+              Toggle this on to lock your players' HUD modules.
+            </p>
+            <button
+              onClick={() => send({ type: 'floor_update', floor: { preTutorialActive: !floorState.preTutorialActive } })}
+              className={`font-hud text-sm py-2.5 border tracking-widest uppercase transition-all ${
+                floorState.preTutorialActive
+                  ? 'border-red-500 text-red-500 bg-red-950/20 animate-pulse font-bold'
+                  : 'border-hud-success text-hud-success bg-green-950/10 hover:bg-green-950/30'
+              }`}
+            >
+              {floorState.preTutorialActive ? '🔒 RESTRICTIONS ACTIVE (PRE-TUTORIAL)' : '🔓 DECRYPTED (FULL ACCESS)'}
+            </button>
+          </div>
+        )}
 
         {/* ── RESET ────────────────────────────────────────── */}
         <div className="border border-hud-border p-3 flex flex-col gap-2">

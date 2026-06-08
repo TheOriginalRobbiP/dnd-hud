@@ -1,5 +1,5 @@
 import { db } from './client.js'
-import { characters, floorState, lootBoxes, gmLog, sessionSnapshots, floorRooms, floorPlans } from './schema.js'
+import { characters, floorState, lootBoxes, gmLog, sessionSnapshots, floorRooms, floorPlans, campaigns } from './schema.js'
 import { desc, eq, ne, and, inArray } from 'drizzle-orm'
 import type { AppState, WSMessage, Character, FloorState, LootBox } from '../types/index.js'
 import crypto from 'crypto'
@@ -38,11 +38,12 @@ async function ensureFloorState(campaignId: string = SANDBOX_CAMPAIGN_ID) {
 }
 
 export async function getFullState(campaignId: string = SANDBOX_CAMPAIGN_ID): Promise<AppState> {
-  const [chars, floor, loot, log] = await Promise.all([
+  const [chars, floor, loot, log, camp] = await Promise.all([
     db.select().from(characters).where(eq(characters.campaignId, campaignId)),
     ensureFloorState(campaignId),
     db.select().from(lootBoxes).where(and(eq(lootBoxes.campaignId, campaignId), ne(lootBoxes.state, 'opened'))),
     db.select().from(gmLog).where(eq(gmLog.campaignId, campaignId)).orderBy(desc(gmLog.createdAt)).limit(20),
+    db.select().from(campaigns).where(eq(campaigns.id, campaignId)).limit(1),
   ])
 
   return {
@@ -50,6 +51,7 @@ export async function getFullState(campaignId: string = SANDBOX_CAMPAIGN_ID): Pr
     floor: floor as unknown as FloorState,
     lootQueue: loot as unknown as LootBox[],
     gmLog: log.map((l) => l.message),
+    campaign: camp[0] as any || null,
   }
 }
 

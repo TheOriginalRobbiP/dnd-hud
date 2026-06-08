@@ -44,6 +44,8 @@ interface PlayerHUDProps {
 }
 
 export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, onDMRead, onDMEcho, activeCharIds }: PlayerHUDProps) {
+  const showFame = state.campaign?.rulesetConfig?.allowSponsors !== false
+  const activeTabs = TABS.filter(t => t.id !== 'fame' || showFame)
   const [tab, setTab] = useState<Tab>('status')
   const [selectedAction, setSelectedAction] = useState<any>(null)
   const [showRulesModal, setShowRulesModal] = useState(false)
@@ -321,7 +323,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
             
             {/* Desktop Tab Bar */}
             <div className="flex gap-1 bg-hud-panel border border-hud-border/30 p-0.5 rounded flex-shrink-0 select-none">
-              {TABS.map(t => (
+              {activeTabs.map(t => (
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id)}
@@ -459,9 +461,11 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
                  />
                </div>
 
-               <div className="p-4">
-                 <FameTab character={character} floorNumber={state.floor.floorNumber} locked={state.floor.preTutorialActive} />
-               </div>
+               {showFame && (
+                 <div className="p-4">
+                   <FameTab character={character} floorNumber={state.floor.floorNumber} locked={state.floor.preTutorialActive} />
+                 </div>
+               )}
              </div>
           </div>
         </div>
@@ -469,7 +473,7 @@ export function PlayerHUD({ character: rawCharacter, state, send, dmMessages, on
       
       {/* Mobile-only Bottom Nav */}
       <div className="md:hidden flex border-t border-hud-border bg-hud-bg py-4 pb-8 fixed bottom-0 left-0 right-0 z-50">
-        {TABS.map(t => {
+        {activeTabs.map(t => {
           let icon = "📊"
           if (t.id === 'skills') icon = "⚔️"
           if (t.id === 'map') icon = "🗺️"

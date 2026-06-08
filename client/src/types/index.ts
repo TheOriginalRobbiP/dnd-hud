@@ -187,12 +187,34 @@ export interface FloorState {
   preTutorialActive: boolean
 }
 
+export interface Campaign {
+  id: string
+  name: string
+  slug: string
+  roomCode: string
+  themeConfig: {
+    primary?: string
+    surface?: string
+    canvas?: string
+    border?: string
+    accent?: string
+  }
+  rulesetConfig: {
+    engine?: string
+    allowSponsors?: boolean
+    safeRoomLocks?: boolean
+    unboxingGMLockout?: boolean
+    tutorialActive?: boolean
+  }
+}
+
 // ── App State (full sync payload on connect) ─────────────────
 export interface AppState {
   characters: Character[]
   floor: FloorState
   lootQueue: LootBox[]         // all pending/authorised boxes across all chars
   gmLog: string[]              // last 20 GM event strings
+  campaign?: Campaign | null
 }
 
 // ── WebSocket Messages ───────────────────────────────────────

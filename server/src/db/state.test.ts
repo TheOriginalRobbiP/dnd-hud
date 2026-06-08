@@ -46,12 +46,12 @@ describe('DND HUD Core State Engine - Multi-Tenancy Scoping Tests', () => {
     
     // Setup Mock behavior for select
     const mockSelect = vi.spyOn(db, 'select')
-    const mockWhere = vi.spyOn(db, 'where')
+    const mockWhere = vi.spyOn(db as any, 'where')
     
     await getFullState(TEST_CAMPAIGN_ID)
 
-    // Verify select is called for characters, floorState, lootBoxes, and gmLog
-    expect(mockSelect).toHaveBeenCalledTimes(5) // ensureFloorState does 1 select, then getFullState does 4 concurrent selects
+    // Verify select is called for characters, floorState, lootBoxes, campaigns, and gmLog
+    expect(mockSelect).toHaveBeenCalledTimes(6) // ensureFloorState does 1 select, then getFullState does 5 concurrent selects
 
     // Verify all selects are filtered using the campaignId
     expect(mockWhere).toHaveBeenCalled()
@@ -59,8 +59,8 @@ describe('DND HUD Core State Engine - Multi-Tenancy Scoping Tests', () => {
 
   it('applyMessage should scope hp_update directly to character id', async () => {
     const mockUpdate = vi.spyOn(db, 'update')
-    const mockSet = vi.spyOn(db, 'set')
-    const mockWhere = vi.spyOn(db, 'where')
+    const mockSet = vi.spyOn(db as any, 'set')
+    const mockWhere = vi.spyOn(db as any, 'where')
 
     const message = {
       type: 'hp_update' as const,
@@ -77,7 +77,7 @@ describe('DND HUD Core State Engine - Multi-Tenancy Scoping Tests', () => {
 
   it('applyMessage should scope floor_update by the campaignId', async () => {
     const mockUpdate = vi.spyOn(db, 'update')
-    const mockSet = vi.spyOn(db, 'set')
+    const mockSet = vi.spyOn(db as any, 'set')
 
     const message = {
       type: 'floor_update' as const,

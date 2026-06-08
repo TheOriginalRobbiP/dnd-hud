@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { WSMessage, AppState, Mob, Achievement } from '../../types'
 import { Battlemap } from '../shared/Battlemap'
+import { ThemeProvider } from '../shared/ThemeProvider'
 
 // ── Types ─────────────────────────────────────────────────────
 interface RoomData {
@@ -122,6 +123,7 @@ export function DisplayScreen() {
   const [connected, setConnected] = useState(false)
   const [countdown, setCountdown] = useState<number | null>(null)
   const [sessionActive, setSessionActive] = useState(false)
+  const [campaign, setCampaign] = useState<any | null>(null)
   
   // Custom HUD states for visual overhaul
   const [activePlan, setActivePlan] = useState<FloorPlan | null>(null)
@@ -224,6 +226,7 @@ export function DisplayScreen() {
               break
             case 'full_state_sync': {
               const state = (msg as { type: 'full_state_sync'; state: AppState }).state
+              setCampaign(state.campaign || null)
               const floor = state.floor
               setSessionActive(floor.sessionActive ?? false)
               setTimer({
@@ -414,16 +417,18 @@ export function DisplayScreen() {
   // ── Render ────────────────────────────────────────────────
   if (!sessionActive) {
     return (
-      <div className="h-screen w-screen bg-hud-bg flex flex-col items-center justify-center gap-6">
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
-          body { font-family: 'Inter', sans-serif; background-color: #09090b; color: #f4eee2; margin: 0; }
-          .font-hud { font-family: 'JetBrains Mono', monospace; }
-        `}</style>
-        <div className="font-hud text-hud-accent text-5xl tracking-[0.2em] animate-pulse">THE HUD</div>
-        <div className="font-hud text-hud-muted text-sm tracking-[0.15em] uppercase">DUNGEON CRAWLER CARL — COMPANION SYSTEM</div>
-        <div className="font-hud text-hud-muted text-xs opacity-50 mt-12 tracking-[0.3em] animate-pulse">AWAITING SESSION START</div>
-      </div>
+      <ThemeProvider campaign={campaign}>
+        <div className="h-screen w-screen bg-hud-bg flex flex-col items-center justify-center gap-6">
+          <style>{`
+            @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+            body { font-family: 'Inter', sans-serif; background-color: #09090b; color: #f4eee2; margin: 0; }
+            .font-hud { font-family: 'JetBrains Mono', monospace; }
+          `}</style>
+          <div className="font-hud text-hud-accent text-5xl tracking-[0.2em] animate-pulse">THE HUD</div>
+          <div className="font-hud text-hud-muted text-sm tracking-[0.15em] uppercase">DUNGEON CRAWLER CARL — COMPANION SYSTEM</div>
+          <div className="font-hud text-hud-muted text-xs opacity-50 mt-12 tracking-[0.3em] animate-pulse">AWAITING SESSION START</div>
+        </div>
+      </ThemeProvider>
     )
   }
 
@@ -441,10 +446,11 @@ export function DisplayScreen() {
     : []
 
   return (
-    <div
-      className={`relative h-screen w-screen overflow-hidden bg-[#09090b] text-[#f4eee2] flex flex-col ${isShaking ? 'animate-shake' : ''}`}
-      style={room ? { '--theme-colour': room.themeColour } as React.CSSProperties : undefined}
-    >
+    <ThemeProvider campaign={campaign}>
+      <div
+        className={`relative h-screen w-screen overflow-hidden bg-[#09090b] text-[#f4eee2] flex flex-col ${isShaking ? 'animate-shake' : ''}`}
+        style={room ? { '--theme-colour': room.themeColour } as React.CSSProperties : undefined}
+      >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
         
@@ -896,6 +902,7 @@ export function DisplayScreen() {
 
       </div>
     </div>
+    </ThemeProvider>
   )
 }
 

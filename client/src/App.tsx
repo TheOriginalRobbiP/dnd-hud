@@ -6,6 +6,7 @@ import { GMPinGate, isGMVerified, clearGMVerified } from './components/gm/GMPinG
 import { PlayerHUD } from './components/player/PlayerHUD'
 import { ToastFeed } from './components/shared/ToastFeed'
 import { DisplayScreen } from './components/display/DisplayScreen'
+import { ThemeProvider } from './components/shared/ThemeProvider'
 import type { UserRole } from './types'
 import type { DirectMessage } from './hooks/useWebSocket'
 import type { Toast } from './components/shared/ToastFeed'
@@ -60,22 +61,27 @@ function App() {
   }, [send])
 
   if (!role) return (
-    <>{connBadge}<RoleSelector characters={state?.characters ?? []} sessionActive={state?.floor?.sessionActive ?? false} onSelect={handleRoleSelect} onCharacterCreated={handleCharacterCreated} /></>
+    <ThemeProvider campaign={state?.campaign}>
+      {connBadge}
+      <RoleSelector characters={state?.characters ?? []} sessionActive={state?.floor?.sessionActive ?? false} onSelect={handleRoleSelect} onCharacterCreated={handleCharacterCreated} />
+    </ThemeProvider>
   )
 
   if (role === 'gm') {
     if (!gmVerified) return (
-      <GMPinGate
-        onVerified={() => setGmVerified(true)}
-        onBack={() => {
-          localStorage.removeItem(ROLE_KEY)
-          setRole(null)
-        }}
-      />
+      <ThemeProvider campaign={state?.campaign}>
+        <GMPinGate
+          onVerified={() => setGmVerified(true)}
+          onBack={() => {
+            localStorage.removeItem(ROLE_KEY)
+            setRole(null)
+          }}
+        />
+      </ThemeProvider>
     )
     if (!state) return <div className="h-screen bg-hud-bg flex items-center justify-center font-hud text-hud-muted animate-pulse">SYNCING STATE...</div>
     return (
-      <>
+      <ThemeProvider campaign={state?.campaign}>
         {connBadge}
         <GMDashboard
           state={state}
@@ -86,7 +92,7 @@ function App() {
           onDMEcho={onDM}
         />
         <ToastFeed toasts={toasts} onDismiss={dismissToast} />
-      </>
+      </ThemeProvider>
     )
   }
 
@@ -94,18 +100,20 @@ function App() {
   const character = state?.characters.find(c => c.id === charId)
 
   if (!state || !character) return (
-    <div className="h-screen bg-hud-bg flex flex-col items-center justify-center gap-4">
-      {connBadge}
-      <div className="font-hud text-hud-muted animate-pulse">CONNECTING TO SYSTEM...</div>
-      <button onClick={() => { localStorage.removeItem(ROLE_KEY); setRole(null) }}
-        className="font-hud text-xs text-hud-muted border border-hud-border px-3 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors">
-        CHANGE CRAWLER
-      </button>
-    </div>
+    <ThemeProvider campaign={state?.campaign}>
+      <div className="h-screen bg-hud-bg flex flex-col items-center justify-center gap-4">
+        {connBadge}
+        <div className="font-hud text-hud-muted animate-pulse">CONNECTING TO SYSTEM...</div>
+        <button onClick={() => { localStorage.removeItem(ROLE_KEY); setRole(null) }}
+          className="font-hud text-xs text-hud-muted border border-hud-border px-3 py-1 hover:border-hud-accent hover:text-hud-accent transition-colors">
+          CHANGE CRAWLER
+        </button>
+      </div>
+    </ThemeProvider>
   )
 
   return (
-    <>
+    <ThemeProvider campaign={state?.campaign}>
       {connBadge}
       <PlayerHUD
         character={character}
@@ -117,7 +125,7 @@ function App() {
         activeCharIds={activeCharIds}
       />
       <ToastFeed toasts={toasts} onDismiss={dismissToast} />
-    </>
+    </ThemeProvider>
   )
 }
 
