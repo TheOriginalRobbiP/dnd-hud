@@ -111,6 +111,19 @@ export function GMDashboard({
   // activeCharacters contains anyone currently online OR anyone seen during this active session
   const activeCharacters = state.characters.filter(c => c.isActive !== false && seenCharIds.includes(c.id))
 
+  // Check if there are active floor plans; if not, go straight to 'plan' tab
+  useEffect(() => {
+    fetch('/api/floor-plans')
+      .then((res) => res.json())
+      .then((plans: any[]) => {
+        const hasActive = Array.isArray(plans) && plans.some((p: any) => p.isActive)
+        if (!hasActive) {
+          setGmMode('plan')
+        }
+      })
+      .catch((err) => console.error('Failed to check active floor plans', err))
+  }, [])
+
   return (
     <div className="min-h-screen flex flex-col bg-hud-bg overflow-y-auto font-sans" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
@@ -123,14 +136,13 @@ export function GMDashboard({
         <div className="flex items-center gap-3 flex-shrink-0">
           <button
             onClick={() => {
-              localStorage.removeItem('hud:role')
-              sessionStorage.removeItem('hud:gm-verified')
-              window.location.reload()
+              localStorage.removeItem('hud:active_campaign_id')
+              window.location.pathname = '/'
             }}
-            title="Switch Role / Logout"
-            className="w-8 h-8 flex items-center justify-center border border-hud-border rounded text-hud-muted hover:border-red-500 hover:text-red-500 transition-colors"
+            title="Return to Campaigns Selector"
+            className="w-8 h-8 flex items-center justify-center border border-hud-border rounded text-hud-muted hover:border-hud-accent hover:text-hud-accent transition-colors font-bold"
           >
-            ⏏
+            ←
           </button>
           <div>
             <div className="text-[22px] font-extrabold leading-none tracking-tight text-hud-text">
